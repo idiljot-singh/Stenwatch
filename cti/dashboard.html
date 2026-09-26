@@ -44,6 +44,29 @@ th{position:sticky;top:0;background:var(--bg2);cursor:pointer;white-space:nowrap
 th:hover{color:var(--accent)}
 tbody tr:hover{background:rgba(62,230,168,.04)}
 td.why{color:var(--mute);font-size:12.5px;min-width:320px}
+tr.row{cursor:pointer}tr.row:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+tr.row td:first-child::before{content:"▸";display:inline-block;width:14px;color:var(--dim);transition:transform .15s}
+tr.row[aria-expanded=true] td:first-child::before{transform:rotate(90deg);color:var(--accent)}
+tr.detail td{background:rgba(62,230,168,.04);border-left:2px solid var(--accent);padding:14px 18px 16px}
+tr.detail p{margin:0 0 10px;max-width:110ch;line-height:1.65;color:var(--fg)}
+.dmodel,.defend{margin-top:14px}
+.dmodel h4,.defend h4{margin:0 0 10px;font:700 10px var(--display,var(--mono));letter-spacing:.22em;text-transform:uppercase;color:var(--accent)}
+.diamond{display:grid;grid-template-columns:1fr 64px 1fr;grid-template-areas:"a a a" "i c k" "v v v";gap:6px 10px;align-items:center;max-width:760px}
+.dv{background:rgba(6,10,17,.6);border:1px solid var(--line2);border-radius:10px;padding:8px 12px;font-size:12.5px;line-height:1.45;color:var(--mute)}
+.dv b{display:block;font:700 9.5px var(--display,var(--mono));letter-spacing:.2em;text-transform:uppercase;color:var(--fg);margin-bottom:2px}
+.dv.adversary{grid-area:a;border-color:color-mix(in srgb,var(--act) 45%,transparent)}.dv.victim{grid-area:v;border-color:color-mix(in srgb,var(--track) 45%,transparent)}
+.dv.infrastructure{grid-area:i;text-align:right}.dv.capability{grid-area:k;border-color:color-mix(in srgb,var(--attend) 45%,transparent)}
+.dv.adversary,.dv.victim{text-align:center;justify-self:center;width:min(100%,440px)}
+.dcore{grid-area:c;width:44px;height:44px;margin:auto;transform:rotate(45deg);border:1.5px solid var(--accent);box-shadow:0 0 16px -4px var(--accent);
+  background:linear-gradient(135deg,transparent 48%,color-mix(in srgb,var(--accent) 50%,transparent) 49% 51%,transparent 52%),
+             linear-gradient(45deg,transparent 48%,color-mix(in srgb,var(--accent) 50%,transparent) 49% 51%,transparent 52%)}
+.dmodel small{display:block;margin-top:8px;font:12px var(--mono);color:var(--dim)}
+.dt{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px;margin:4px 0}
+.dt b{min-width:70px;font:700 9.5px var(--display,var(--mono));letter-spacing:.18em;text-transform:uppercase;color:var(--fg)}
+.dt a{font:12px var(--mono);color:var(--blue);border:1px solid var(--line2);border-radius:999px;padding:1px 9px;text-decoration:none;white-space:nowrap}
+.dt a:hover{border-color:var(--accent)}
+@media (max-width:720px){.diamond{grid-template-columns:1fr;grid-template-areas:"a" "k" "i" "v"}.dcore{display:none}.dv{text-align:left!important}}
+.facts{display:flex;flex-wrap:wrap;gap:6px}.facts span{font:12px var(--mono);color:var(--mute);border:1px solid var(--line2);border-radius:999px;padding:2px 10px}
 .pill{display:inline-block;padding:3px 10px;border-radius:999px;font:700 10px var(--display);letter-spacing:.14em;text-transform:uppercase;color:var(--c);border:1px solid color-mix(in srgb,var(--c) 50%,transparent);background:color-mix(in srgb,var(--c) 12%,transparent);box-shadow:0 0 14px -6px var(--c)}
 a{color:var(--blue);white-space:nowrap;font-family:var(--mono);font-size:13px}
 .foot{color:var(--dim);font-size:12.5px;margin-top:12px;display:flex;flex-wrap:wrap;gap:6px 18px}.foot span:first-child{flex:1}
@@ -52,7 +75,7 @@ a{color:var(--blue);white-space:nowrap;font-family:var(--mono);font-size:13px}
 <canvas class="orb orb-bg" data-bands="15" data-dots="30" aria-hidden="true"></canvas>
 <div class="tlp"><b>TLP:AMBER</b> limited disclosure · organisation and clients, need-to-know only</div>
 <header><div class="brand"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 2.5l15 8.7v17.6L20 37.5 5 28.8V11.2z" fill="none" stroke="#3ee6a8" stroke-width="1.6"/><circle cx="20" cy="20" r="9" fill="none" stroke="#5aa9ff" stroke-width="1.2" opacity=".8"/><circle cx="20" cy="20" r="3.2" fill="#3ee6a8"/><path d="M20 7v6M20 27v6M7 20h6M27 20h6" stroke="#3ee6a8" stroke-width="1.4" stroke-linecap="round"/></svg><strong>Stenwatch</strong></div><div class="eyebrow">Stenwatch · vulnerability intelligence · __DATE__</div><h1>CVE Priorities: __ORG__</h1>
-<div class="sub">Click a tier card to show or hide it. Click a column heading to sort.</div>
+<div class="sub">Click a tier card to show or hide it. Click a column heading to sort. Click a finding for its full summary.</div>
 <div class="cards" id="cards"></div>
 <div class="controls"><input id="q" placeholder="Search CVE, asset, threat group, reason…" aria-label="Search">
 <select id="src" aria-label="Source"><option value="">All sources</option><option>owned</option><option>third-party</option></select></div></header>
@@ -84,6 +107,32 @@ COLS.forEach(([key, label]) => {
 document.getElementById("q").oninput = render;
 document.getElementById("src").onchange = render;
 
+// finding detail: summary, projected Diamond Model, D3FEND countermeasures, ATT&CK mitigations
+// ponytail: copied in cti/app.html and cti/dashboard.html; keep them in sync
+function detail(r, facts = []) {
+  const dm = r.diamond || {}, box = [el("p", {textContent: r.summary || "Re-rank to generate summaries."})];
+  if (facts.length) box.push(el("div", {className: "facts"}, facts.map(f => el("span", {textContent: f}))));
+  if (dm.victim) {
+    const v = (cls, label) => el("div", {className: "dv " + cls}, [el("b", {textContent: label}), el("span", {textContent: dm[cls]})]);
+    box.push(el("div", {className: "dmodel"}, [el("h4", {textContent: "Diamond Model · projected intrusion"}),
+      el("div", {className: "diamond"}, [v("adversary", "Adversary"), v("infrastructure", "Infrastructure"),
+        el("div", {className: "dcore", ariaHidden: "true"}), v("capability", "Capability"), v("victim", "Victim")]),
+      el("small", {textContent: "Phase: " + dm.phase}), ]));
+  }
+  if ((r.defend || []).length) {
+    const by = {};
+    r.defend.forEach(([id, name, tactic]) => (by[tactic] = by[tactic] || []).push([id, name]));
+    box.push(el("div", {className: "defend"}, [el("h4", {textContent: "Defend · MITRE D3FEND"}),
+      ...Object.entries(by).map(([tactic, list]) => el("div", {className: "dt"}, [el("b", {textContent: tactic}),
+        ...list.map(([id, name]) => el("a", {href: "https://d3fend.mitre.org/technique/d3f:" + name.replace(/ /g, "") + "/",
+          target: "_blank", rel: "noopener", textContent: `${name} (${id})`}))])),
+      ...((r.mitigations || []).length ? [el("div", {className: "dt"}, [el("b", {textContent: "ATT&CK"}),
+        ...r.mitigations.map(([id, name]) => el("a", {href: `https://attack.mitre.org/mitigations/${id}/`, target: "_blank", rel: "noopener",
+          textContent: `${name} (${id})`}))])] : [])]));
+  }
+  return box;
+}
+
 function render() {
   document.querySelectorAll(".card").forEach(c => c.classList.toggle("off", !show.has(c.dataset.tier)));
   const q = document.getElementById("q").value.toLowerCase(), src = document.getElementById("src").value;
@@ -97,10 +146,20 @@ function render() {
     const pill = el("span", {className: "pill", textContent: r.tier});
     pill.style.setProperty("--c", `var(${COLOR[r.tier]})`);
     const link = el("a", {href: "https://nvd.nist.gov/vuln/detail/" + encodeURIComponent(r.cve), textContent: r.cve, target: "_blank", rel: "noopener"});
-    body.append(el("tr", {}, [el("td", {}, [pill]), el("td", {textContent: r.risk}), el("td", {}, [link]),
+    const tr = el("tr", {className: "row", tabIndex: 0}, [el("td", {}, [pill]), el("td", {textContent: r.risk}), el("td", {}, [link]),
       el("td", {textContent: r.asset}), el("td", {textContent: r.source}), el("td", {textContent: r.kev ? "yes" : ""}),
       el("td", {textContent: r.epss}), el("td", {textContent: r.cvss ?? "n/a"}), el("td", {textContent: r.groups}),
-      el("td", {className: "why", textContent: r.why})]));
+      el("td", {className: "why", textContent: r.why})]);
+    tr.setAttribute("aria-expanded", "false");
+    link.onclick = e => e.stopPropagation();
+    onActivate(tr, () => {  // full plain-English summary under the row
+      const open = tr.nextSibling && tr.nextSibling.classList.contains("detail");
+      tr.setAttribute("aria-expanded", String(!open));
+      if (open) return tr.nextSibling.remove();
+      const facts = [r.published && "published " + r.published, r.cwe, ...r.techniques].filter(Boolean);
+      tr.after(el("tr", {className: "detail"}, [el("td", {colSpan: COLS.length}, detail(r, facts))]));
+    });
+    body.append(tr);
   });
   document.getElementById("foot").textContent =
     `${rows.length} findings shown` + (rows.length > 1000 ? " (first 1000 rendered; refine the search)" : "");

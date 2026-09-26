@@ -43,8 +43,9 @@ The result is a ranked, explainable list in four SSVC decision tiers: **Act** (w
 | | |
 |---|---|
 | **Full CTI lifecycle** | Direction → Collection → Processing → Analysis → Dissemination → Feedback, one module per stage |
-| **Explainable scoring** | `risk = likelihood × impact`. Every term is written out next to each finding; all weights live in one YAML file |
+| **Explainable scoring** | `risk = likelihood × impact`. Every term is written out next to each finding, plus a plain-English summary: what it is, how likely it is to be used, by whom, what an attacker gains and what to do; all weights live in one YAML file |
 | **Deterministic** | The same inputs give a byte-identical ranking. An optional LLM only writes the management brief and never scores |
+| **Defend and model** | Every finding lists MITRE **D3FEND** countermeasures and ATT&CK mitigations for its techniques, and a projected **Diamond Model** (adversary, capability, infrastructure, victim) of the intrusion it would enable |
 | **Third-party risk** | Supplier CVEs are weighted by data access and privileged access |
 | **Five outputs** | Analyst dashboard, Markdown report, management brief, CSV, and a **STIX 2.1** bundle for MISP, OpenCTI or Sentinel |
 | **Console** | A local web interface that walks through each stage, runs the real code and streams its output |
@@ -89,7 +90,7 @@ python run.py --suggest-cpe exchange    # find the NVD product name for the cpe 
 | CTI stage | Module | What it does |
 |---|---|---|
 | Direction | `profile.yaml` | Organisation, Priority Intelligence Requirements, threat groups, weights, tiers |
-| Collection | `cti/collect.py` | NVD (every CVE), CISA KEV, FIRST EPSS, MITRE ATT&CK, CTID KEV→ATT&CK into `cve.db` |
+| Collection | `cti/collect.py` | NVD (every CVE), CISA KEV, FIRST EPSS, MITRE ATT&CK + D3FEND, CTID KEV→ATT&CK into `cve.db` |
 | Processing | `cti/process.py` | Owned assets and suppliers → CPE + version matching; optional Microsoft Defender inventory |
 | Analysis | `cti/analyse.py` | Risk score, threat-profile overlap, ATT&CK techniques, SSVC tier |
 | Dissemination | `cti/disseminate.py` | `report.md`, `report.csv`, `dashboard.html`, `brief.md`, STIX 2.1 `bundle.json` |
