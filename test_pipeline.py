@@ -121,6 +121,11 @@ assert by_group["cited_by"] == ["APT28"] and by_group["likelihood"] > by_tech["l
 # SSVC tiers: exploited + internet-facing crown jewel -> Act; same CVE internal low value -> Attend
 assert by_group["tier"] == "Act"
 assert analyse.score(dict(found[0], asset=lab), profile, threat)["tier"] == "Attend"
+# data-first: same CPE, same exposure, KEV CVE -> the data-holding server (criticality 3) beats the workstation (1) and is Act
+ws, data = dict(mail, name="ws", criticality=1, internet_facing=False), dict(mail, name="data srv", criticality=3, internet_facing=False)
+r = analyse.rank([dict(found[0], asset=ws), dict(found[0], asset=data)], profile, threat)
+assert [x["asset"]["name"] for x in r] == ["data srv", "ws"] and [x["tier"] for x in r] == ["Act", "Attend"]
+
 quiet = dict(found[0], kev=False, ransomware=False, epss=0.001, cvss=5.0, cve="CVE-0000-0001")
 assert analyse.score(quiet, profile, no_threat)["tier"] == "Ignore"
 assert analyse.score(dict(quiet, cvss=9.8), profile, no_threat)["tier"] == "Track"
