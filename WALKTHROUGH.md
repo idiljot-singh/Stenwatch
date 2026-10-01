@@ -80,7 +80,7 @@ profile → │ Collection │ → │ Processing │ → │  Analysis  │ →
 
 ## 5. Stage 2: Collection (`cti/collect.py`)
 
-**What happens:** five public feeds are downloaded into `cve.db`, a single SQLite file.
+**What happens:** six public feeds are downloaded into `cve.db`, a single SQLite file.
 
 | Feed | Publisher | What it adds | Refresh |
 |---|---|---|---|
@@ -89,6 +89,7 @@ profile → │ Collection │ → │ Processing │ → │  Analysis  │ →
 | EPSS | FIRST | Exploitation probability for every CVE | Full, daily |
 | ATT&CK Enterprise | MITRE | Techniques, adversary groups, which group uses which technique, CVEs named in group and campaign reports | Full |
 | KEV → ATT&CK | CTID | Which techniques each KEV CVE enables | Newest release |
+| D3FEND | MITRE | Defensive countermeasures for each of those techniques (Harden, Detect, Isolate, Deceive, Evict, Restore); ATT&CK mitigations come with the ATT&CK feed | Full |
 
 **How it works:**
 - The first NVD run downloads the full history (about 400,000 CVEs). Later runs ask only for records changed since the last run, respecting NVD's rate limits and its 120-day window limit.
@@ -146,7 +147,12 @@ All numbers come from `profile.yaml`. Every finding carries a written **"why"** 
 
 **Why it matters:** the scoring is **deterministic**. The same data always produces a byte-identical ranking. No AI takes part in any decision, so an auditor or examiner can check every number.
 
-**Try it:** **Analysis → Re-rank** (no download, a few seconds), then read the "why" column of the top 10.
+**Context for every finding.** Next to the score, each finding gets:
+- **A plain-English summary:** what the flaw is, where it sits, whether it is exploited and by whom, what an attacker gains, and the decision with its reason.
+- **Defend (MITRE D3FEND):** the countermeasures for the finding's ATT&CK techniques, grouped by D3FEND tactic, with Software Update always first because patching answers any known vulnerability. ATT&CK mitigations (for example M1051 Update Software) are listed alongside.
+- **A projected Diamond Model:** the four vertices of an intrusion through this finding. *Adversary:* the profiled groups known to exploit it or able to use its techniques. *Capability:* the CVE, its weakness and techniques. *Infrastructure:* the path in (internet-facing, a supplier's access, or an internal foothold). *Victim:* the organisation and asset. The phase lists the ATT&CK tactics. It is projected, not observed: it describes the intrusion this finding would enable, so defenders can reason about it before it happens.
+
+**Try it:** **Analysis → Re-rank** (no download, a few seconds), then click any row of the top 10 to open its summary, Diamond and D3FEND countermeasures.
 
 ---
 

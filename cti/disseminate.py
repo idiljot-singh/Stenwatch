@@ -5,10 +5,11 @@ from pathlib import Path
 
 import stix2
 
+from cti import analyse
+from cti.analyse import ACTION as TIER_ACTION
+
 BANNER = "**TLP:AMBER**: limited disclosure, organisation and clients on a need-to-know basis only."
 TIERS = ["Act", "Attend", "Track", "Ignore"]
-TIER_ACTION = {"Act": "patch or mitigate within 48 h", "Attend": "next patch cycle",
-               "Track": "watch for exploitation", "Ignore": "no action"}
 
 
 def table(rows, top):
@@ -25,12 +26,15 @@ def write_reports(ranked, out_dir, profile, top=50, suppressed=(), expired=()):
     with open(out / "report.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(["rank", "tier", "risk", "cve", "asset", "source", "kev", "ransomware", "epss", "cvss",
-                    "likelihood", "impact", "exploited_by", "techniques", "why"])
+                    "likelihood", "impact", "exploited_by", "techniques", "why", "summary", "d3fend", "mitigations",
+                    "diamond_adversary", "diamond_capability", "diamond_infrastructure", "diamond_victim", "diamond_phase"])
         for i, r in enumerate(ranked, 1):
             w.writerow([i, r["tier"], r["risk"], r["cve"], r["asset"]["name"],
                         "third-party" if r["asset"]["third_party"] else "owned", r["kev"], r["ransomware"],
                         r["epss"], r["cvss"], r["likelihood"], r["impact"], ";".join(r["cited_by"]),
-                        ";".join(t[0] for t in r["techniques"]), r["why"]])
+                        ";".join(t[0] for t in r["techniques"]), r["why"], r["summary"],
+                        ";".join(f"{t}: {n} ({i})" for i, n, t in r["defend"]), ";".join(f"{n} ({i})" for i, n in r["mitigations"]),
+                        *(r["diamond"][k] for k in ("adversary", "capability", "infrastructure", "victim", "phase"))])
 
     owned = [r for r in ranked if not r["asset"]["third_party"]]
     third = [r for r in ranked if r["asset"]["third_party"]]
@@ -71,6 +75,21 @@ def write_reports(ranked, out_dir, profile, top=50, suppressed=(), expired=()):
            "CVEs in products our suppliers run for us. We can't patch these ourselves. "
            "**Action:** ask the supplier to confirm the patch status, and restrict their access until they do.", ""]
     md += table(third, top)
+    md += ["", "## Finding details: Act and Attend", "",
+           "What each urgent finding is, how likely it is to be used, by whom, and what to do.", ""]
+    for i, r in enumerate(urgent[:top], 1):
+        md += [f"### {i}. {r['cve']} · {r['asset']['name']} · {r['tier']} (risk {r['risk']})", "",
+               r["summary"].replace("|", "/"), "",
+               "**Diamond Model** (projected intrusion, not an observed event)", "", "| Vertex | |", "|---|---|"]
+        md += [f"| {k.title()} | {r['diamond'][k].replace('|', '/')} |" for k in ("adversary", "capability", "infrastructure", "victim", "phase")]
+        md += ["", "**Defend (MITRE D3FEND):** " + "; ".join(
+                   f"{t}: [{n}](https://d3fend.mitre.org/technique/d3f:{n.replace(' ', '')}/) ({i})" for i, n, t in r["defend"]), ""]
+        if r["mitigations"]:
+            md += ["**ATT&CK mitigations:** " + "; ".join(
+                   f"[{n}](https://attack.mitre.org/mitigations/{i}/) ({i})" for i, n in r["mitigations"]), ""]
+        md += [f"[NVD](https://nvd.nist.gov/vuln/detail/{r['cve']}) · score terms: {r['why']}", ""]
+    if not urgent:
+        md += ["None."]
     md += ["", "## Feedback: exceptions", "",
            f"{len(suppressed)} findings suppressed by analyst decisions in `exceptions.csv`.", ""]
     if suppressed:
@@ -125,10 +144,14 @@ def write_stix(ranked, out_dir, profile, tiers=("Act", "Attend")):
         owner = f"Supplier-operated ({a['type']})" if a["third_party"] else "Owned"
         infra = add(stix2.Infrastructure(id=sid("infrastructure", a["name"]), name=a["name"],
                                          description=f"{owner}: {a['cpe']} {a['version']}".strip(), **common))
-        rel(infra, "has", vuln, description=f"{r['tier']} | risk {r['risk']} | {r['why']}")
+        rel(infra, "has", vuln, description=f"{r['tier']} | risk {r['risk']} | {r['summary']}")
         for g in r["cited_by"]:
             ref = [{"source_name": "mitre-attack", "external_id": group_ids[g]}] if g in group_ids else None
             rel(add(stix2.IntrusionSet(id=sid("intrusion-set", g), name=g, external_references=ref, **common)), "targets", vuln)
+        for did, name, tactic in r["defend"]:  # D3FEND countermeasure mitigates the vulnerability
+            coa = stix2.CourseOfAction(id=sid("course-of-action", did), name=f"{name} ({did})", description=f"MITRE D3FEND {tactic}", **common,
+                                       external_references=[{"source_name": "mitre-d3fend", "external_id": did}])
+            rel(add(coa), "mitigates", vuln)
         for tid, name, _ in r["techniques"]:
             ap = stix2.AttackPattern(id=sid("attack-pattern", tid), name=name, **common,
                                      external_references=[{"source_name": "mitre-attack", "external_id": tid}])
@@ -143,7 +166,10 @@ def write_stix(ranked, out_dir, profile, tiers=("Act", "Attend")):
 def write_dashboard(ranked, out_dir, profile):
     rows = [{"tier": r["tier"], "risk": r["risk"], "cve": r["cve"], "asset": r["asset"]["name"],
              "source": "third-party" if r["asset"]["third_party"] else "owned", "kev": r["kev"],
-             "epss": round(r["epss"], 3), "cvss": r["cvss"], "groups": ", ".join(r["cited_by"]), "why": r["why"]}
+             "epss": round(r["epss"], 3), "cvss": r["cvss"], "groups": ", ".join(r["cited_by"]), "why": r["why"],
+             "summary": r["summary"], "cwe": analyse.cwes(r), "published": (r.get("published") or "")[:10],
+             "techniques": [f"{t[0]} {t[1]}" for t in r["techniques"]], "diamond": r["diamond"],
+             "defend": [[i, n, t] for i, n, t in r["defend"]], "mitigations": [[i, n] for i, n in r["mitigations"]]}
             for r in ranked]
     # data goes into a <script> block: escape "</" so hostile feed text can't close the tag
     data = json.dumps(rows).replace("</", "<\\/")

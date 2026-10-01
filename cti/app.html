@@ -29,7 +29,7 @@ a{color:var(--blue)}
   text-transform:uppercase;color:var(--mute);background:#000;border-bottom:1px solid var(--line)}
 .tlp b{color:#000;background:var(--amber);padding:1px 8px;border-radius:3px}
 
-.top{max-width:1240px;margin:0 auto;padding:18px 20px 6px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.top{max-width:1600px;margin:0 auto;padding:18px 20px 6px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
 .brand svg{width:38px;height:38px;filter:drop-shadow(0 0 10px rgba(62,230,168,.35))}
 .brand small{display:block;font:700 9.5px var(--display);letter-spacing:.18em;color:var(--accent);text-transform:uppercase}
@@ -42,7 +42,7 @@ a{color:var(--blue)}
 #status .orb{--s:18px}
 @keyframes pulse{50%{opacity:.25}}
 
-.layout{max-width:1240px;margin:0 auto;padding:14px 20px 24px;display:grid;grid-template-columns:290px minmax(0,1fr);gap:22px}
+.layout{max-width:1600px;margin:0 auto;padding:14px 20px 24px;display:grid;grid-template-columns:290px minmax(0,1fr) 360px;gap:22px}
 nav{position:sticky;top:14px;align-self:start;padding:10px 0 8px}
 nav ol{list-style:none;margin:0;padding:6px 0 2px;position:relative}
 /* the funnel: each step is narrower than the one before; the backdrop tapers to the same 70% */
@@ -125,7 +125,31 @@ th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vert
 tr:last-child td{border-bottom:0}
 th{white-space:nowrap;font:600 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--dim);background:var(--card)}
 td.why{color:var(--mute);font-size:12.5px;min-width:280px}td a{white-space:nowrap;font-family:var(--mono);font-size:13px}
-td.asset{min-width:170px}td.risk{min-width:120px;font:600 13px var(--mono)}
+td.asset{min-width:170px}
+tr.row{cursor:pointer}tr.row:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+tr.row td:first-child::before{content:"▸";display:inline-block;width:14px;color:var(--dim);transition:transform .15s}
+tr.row[aria-expanded=true] td:first-child::before{transform:rotate(90deg);color:var(--accent)}
+tr.detail td{background:rgba(62,230,168,.04);border-left:2px solid var(--accent);padding:14px 18px 16px}
+tr.detail p{margin:0 0 10px;max-width:110ch;line-height:1.65;color:var(--fg)}
+.dmodel,.defend{margin-top:14px}
+.dmodel h4,.defend h4{margin:0 0 10px;font:700 10px var(--display,var(--mono));letter-spacing:.22em;text-transform:uppercase;color:var(--accent)}
+.diamond{display:grid;grid-template-columns:1fr 64px 1fr;grid-template-areas:"a a a" "i c k" "v v v";gap:6px 10px;align-items:center;max-width:760px}
+.dv{background:rgba(6,10,17,.6);border:1px solid var(--line2);border-radius:10px;padding:8px 12px;font-size:12.5px;line-height:1.45;color:var(--mute)}
+.dv b{display:block;font:700 9.5px var(--display,var(--mono));letter-spacing:.2em;text-transform:uppercase;color:var(--fg);margin-bottom:2px}
+.dv.adversary{grid-area:a;border-color:color-mix(in srgb,var(--act) 45%,transparent)}.dv.victim{grid-area:v;border-color:color-mix(in srgb,var(--track) 45%,transparent)}
+.dv.infrastructure{grid-area:i;text-align:right}.dv.capability{grid-area:k;border-color:color-mix(in srgb,var(--attend) 45%,transparent)}
+.dv.adversary,.dv.victim{text-align:center;justify-self:center;width:min(100%,440px)}
+.dcore{grid-area:c;width:44px;height:44px;margin:auto;transform:rotate(45deg);border:1.5px solid var(--accent);box-shadow:0 0 16px -4px var(--accent);
+  background:linear-gradient(135deg,transparent 48%,color-mix(in srgb,var(--accent) 50%,transparent) 49% 51%,transparent 52%),
+             linear-gradient(45deg,transparent 48%,color-mix(in srgb,var(--accent) 50%,transparent) 49% 51%,transparent 52%)}
+.dmodel small{display:block;margin-top:8px;font:12px var(--mono);color:var(--dim)}
+.dt{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px;margin:4px 0}
+.dt b{min-width:70px;font:700 9.5px var(--display,var(--mono));letter-spacing:.18em;text-transform:uppercase;color:var(--fg)}
+.dt a{font:12px var(--mono);color:var(--blue);border:1px solid var(--line2);border-radius:999px;padding:1px 9px;text-decoration:none;white-space:nowrap}
+.dt a:hover{border-color:var(--accent)}
+@media (max-width:720px){.diamond{grid-template-columns:1fr;grid-template-areas:"a" "k" "i" "v"}.dcore{display:none}.dv{text-align:left!important}}
+.facts{display:flex;flex-wrap:wrap;gap:6px}.facts span{font:12px var(--mono);color:var(--mute);border:1px solid var(--line2);border-radius:999px;padding:2px 10px}
+td.risk{min-width:120px;font:600 13px var(--mono)}
 .meter{height:5px;border-radius:3px;background:var(--line);margin-top:6px;overflow:hidden}
 .meter i{display:block;height:100%;background:linear-gradient(90deg,var(--attend),var(--act))}
 .pill{display:inline-block;padding:2px 9px;border-radius:999px;font:700 11px var(--mono);letter-spacing:.04em;text-transform:uppercase;
@@ -143,12 +167,13 @@ ul.tiers li{display:grid;grid-template-columns:86px 1fr;gap:10px;align-items:cen
 .msg{font-size:13px}.msg.err{color:var(--act)}.msg.ok{color:var(--ok)}
 .nav-foot{display:flex;justify-content:space-between;gap:10px;margin-top:26px;padding-top:18px;border-top:1px solid var(--line)}
 
-#console{margin-top:18px;background:#05080d;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 20px 50px -30px #000}
-#console .bar{display:flex;gap:12px;align-items:center;padding:10px 14px;background:#0b111b;border-bottom:1px solid #1b2638;font:12px var(--mono);color:#8d9bb0}
+/* processing column: mirrors the funnel on the left, stays in view while the panel scrolls */
+#console{position:sticky;top:14px;align-self:start;display:flex;flex-direction:column;max-height:calc(100vh - 28px);background:#05080d;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 20px 50px -30px #000}
+#console .bar{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;padding:10px 14px;background:#0b111b;border-bottom:1px solid #1b2638;font:12px var(--mono);color:#8d9bb0}
 #console .dots{display:flex;gap:6px}#console .dots i{width:10px;height:10px;border-radius:50%;background:#28364d}
 #console .dots i:first-child{background:#ff5f57}#console .dots i:nth-child(2){background:#febc2e}#console .dots i:last-child{background:#28c840}
 #console .bar b{color:#e6edf6;font-weight:600}#jobstate{margin-left:auto}
-#log{margin:0;padding:14px 16px;min-height:74px;max-height:300px;overflow:auto;font:12.5px/1.6 var(--mono);color:#c5d0de;white-space:pre-wrap;word-break:break-word}
+#log{margin:0;padding:14px 16px;min-height:160px;flex:1;overflow:auto;font:12.5px/1.6 var(--mono);color:#c5d0de;white-space:pre-wrap;word-break:break-word}
 #log .cmd{color:#3ee6a8}#log .err{color:#ff6b78}#log .hint{color:#5d6c83}
 #log.running::after{content:"▋";color:#3ee6a8;animation:pulse 1s steps(1) infinite}
 /* thinking orb: one component for everything that is processing */
@@ -159,15 +184,16 @@ ul.tiers li{display:grid;grid-template-columns:86px 1fr;gap:10px;align-items:cen
 .shimmer{background:linear-gradient(90deg,#8d9bb0 0%,#eaf1fa 45%,#8d9bb0 90%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;
   color:transparent;animation:shimmer 2.2s linear infinite}
 @keyframes shimmer{from{background-position:120% 0}to{background-position:-80% 0}}
-#think{display:none;align-items:center;gap:16px;padding:16px 18px;border-bottom:1px solid #1b2638;
+#think{display:flex;align-items:center;gap:16px;padding:16px 18px;border-bottom:1px solid #1b2638;
   background:radial-gradient(400px 90px at 40px 50%,rgba(62,230,168,.10),transparent 70%)}
-#console.running #think{display:flex}
+@media (max-width:1180px){.layout{grid-template-columns:260px minmax(0,1fr)}#console{grid-column:2;position:static;max-height:none}#log{max-height:320px}}
 #think .orb{--s:44px}
 #think b{display:block;font:700 10.5px var(--display);letter-spacing:.24em;text-transform:uppercase;color:var(--accent);margin-bottom:3px}
-#think span{display:block;font:13px var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70ch}
+#think>div{min-width:0}
+#think span{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;font:12.5px/1.5 var(--mono);word-break:break-word}
 .msg .orb{--s:20px;vertical-align:-5px;margin-right:10px}
 
-footer{max-width:1240px;margin:0 auto;padding:10px 20px 34px;display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;color:var(--dim);font-size:12.5px}
+footer{max-width:1600px;margin:0 auto;padding:10px 20px 34px;display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;color:var(--dim);font-size:12.5px}
 footer a{color:var(--mute);text-decoration:none;border-bottom:1px dotted var(--line2)}footer a:hover{color:var(--accent)}
 footer .sp{flex:1}
 #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;transition:.25s;z-index:10;
@@ -175,6 +201,7 @@ footer .sp{flex:1}
 #toast.show{opacity:1;transform:translateX(-50%)}
 
 @media (max-width:820px){
+  #console{grid-column:auto}
   .layout{grid-template-columns:minmax(0,1fr);gap:14px}nav{min-width:0}
   nav ol{display:flex;overflow-x:auto;gap:6px;position:static;padding-bottom:4px}
   nav{position:static}nav li{width:auto;margin:0}nav ol{padding:0 0 4px}nav::before,nav ol::after,nav .end{display:none}nav button{grid-template-columns:28px auto auto;white-space:nowrap;margin:0}nav button small{display:none}
@@ -200,18 +227,18 @@ footer .sp{flex:1}
   <nav aria-label="Walkthrough steps"><ol id="steps"></ol></nav>
   <main>
     <section class="panel" id="panel" aria-live="polite"></section>
-    <section id="console" aria-label="Background job output">
-      <div class="bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><b>behind the scenes</b><span id="jobname">no job run yet</span><span id="jobstate"></span></div>
-      <div id="think" aria-hidden="true"><canvas class="orb"></canvas><div><b>Processing</b><span class="shimmer" id="thinktext">Starting…</span></div></div>
-      <pre id="log"><span class="hint">Every button runs the real pipeline code in the background. Its output streams here, live.</span></pre>
-    </section>
   </main>
+  <aside id="console" aria-label="Background job output">
+      <div class="bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><b>behind the scenes</b><span id="jobname">no job run yet</span><span id="jobstate"></span></div>
+      <div id="think" aria-hidden="true"><canvas class="orb calm"></canvas><div><b id="thinklabel">Standing by</b><span id="thinktext">Press any ▶ button to run the pipeline.</span></div></div>
+      <pre id="log"><span class="hint">Every button runs the real pipeline code in the background. Its output streams here, live.</span></pre>
+    </aside>
 </div>
 <footer>
   <span><b>Stenwatch</b> by Diljot Singh Johal</span>
   <span>Open source · MIT License</span>
   <span class="sp"></span>
-  <span>Data: NVD · CISA KEV · FIRST EPSS · MITRE ATT&amp;CK · CTID</span>
+  <span>Data: NVD · CISA KEV · FIRST EPSS · MITRE ATT&amp;CK · D3FEND · CTID</span>
 </footer>
 <div id="toast" role="alert"></div>
 <script>
@@ -302,7 +329,11 @@ function busy(on) {
   document.getElementById("log").classList.toggle("running", on);
   document.getElementById("console").classList.toggle("running", on);
   s.querySelector(".orb").classList.toggle("calm", !on);
-  if (on) document.getElementById("thinktext").textContent = "Starting…";
+  const think = document.getElementById("thinktext");
+  document.querySelector("#think .orb").classList.toggle("calm", !on);
+  think.classList.toggle("shimmer", on);
+  document.getElementById("thinklabel").textContent = on ? "Processing" : "Standing by";
+  if (on) { think.textContent = "Starting…"; document.querySelector("#log .hint")?.remove(); }
   if (on) { document.getElementById("jobstate").textContent = "running"; document.getElementById("jobstate").style.color = ""; }
   document.querySelectorAll("[data-action]").forEach(b => b.disabled = on);
 }
@@ -326,10 +357,51 @@ function editor(name, hint) {
   return box;
 }
 
+// finding detail: summary, projected Diamond Model, D3FEND countermeasures, ATT&CK mitigations
+// ponytail: copied in cti/app.html and cti/dashboard.html; keep them in sync
+function detail(r, facts = []) {
+  const dm = r.diamond || {}, box = [el("p", {textContent: r.summary || "Re-rank to generate summaries."})];
+  if (facts.length) box.push(el("div", {className: "facts"}, facts.map(f => el("span", {textContent: f}))));
+  if (dm.victim) {
+    const v = (cls, label) => el("div", {className: "dv " + cls}, [el("b", {textContent: label}), el("span", {textContent: dm[cls]})]);
+    box.push(el("div", {className: "dmodel"}, [el("h4", {textContent: "Diamond Model · projected intrusion"}),
+      el("div", {className: "diamond"}, [v("adversary", "Adversary"), v("infrastructure", "Infrastructure"),
+        el("div", {className: "dcore", ariaHidden: "true"}), v("capability", "Capability"), v("victim", "Victim")]),
+      el("small", {textContent: "Phase: " + dm.phase}), ]));
+  }
+  if ((r.defend || []).length) {
+    const by = {};
+    r.defend.forEach(([id, name, tactic]) => (by[tactic] = by[tactic] || []).push([id, name]));
+    box.push(el("div", {className: "defend"}, [el("h4", {textContent: "Defend · MITRE D3FEND"}),
+      ...Object.entries(by).map(([tactic, list]) => el("div", {className: "dt"}, [el("b", {textContent: tactic}),
+        ...list.map(([id, name]) => el("a", {href: "https://d3fend.mitre.org/technique/d3f:" + name.replace(/ /g, "") + "/",
+          target: "_blank", rel: "noopener", textContent: `${name} (${id})`}))])),
+      ...((r.mitigations || []).length ? [el("div", {className: "dt"}, [el("b", {textContent: "ATT&CK"}),
+        ...r.mitigations.map(([id, name]) => el("a", {href: `https://attack.mitre.org/mitigations/${id}/`, target: "_blank", rel: "noopener",
+          textContent: `${name} (${id})`}))])] : [])]));
+  }
+  return box;
+}
+
+function toggle(tr, r) {  // full summary, Diamond and D3FEND under a finding (r is a report.csv row)
+  const open = tr.nextSibling && tr.nextSibling.classList.contains("detail");
+  tr.setAttribute("aria-expanded", String(!open));
+  if (open) return tr.nextSibling.remove();
+  const split = (s, re) => (s || "").split(";").filter(Boolean).map(x => x.match(re)).filter(Boolean);
+  const view = {summary: r.summary,
+    diamond: r.diamond_victim ? {adversary: r.diamond_adversary, capability: r.diamond_capability,
+      infrastructure: r.diamond_infrastructure, victim: r.diamond_victim, phase: r.diamond_phase} : null,
+    defend: split(r.d3fend, /^(.*?): (.*) \((D3-[^)]+)\)$/).map(m => [m[3], m[2], m[1]]),
+    mitigations: split(r.mitigations, /^(.*) \((M\d+)\)$/).map(m => [m[2], m[1]])};
+  tr.after(el("tr", {className: "detail"}, [el("td", {colSpan: 8}, detail(view))]));
+}
+
 function topTable(rows) {
   const max = Math.max(...rows.map(r => +r.risk), 0.001);
   const head = el("tr", {}, ["#", "Tier", "Risk", "Likelihood", "Impact", "CVE", "Asset", "Why: every term of the score"].map(t => el("th", {textContent: t})));
-  const body = rows.map(r => el("tr", {}, [
+  const body = rows.map(r => el("tr", {className: "row", tabIndex: 0, ariaExpanded: "false", title: "Show the full summary",
+    onclick: e => { if (e.target.tagName !== "A") toggle(e.currentTarget, r); },
+    onkeydown: e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(e.currentTarget, r); } }}, [
     el("td", {textContent: r.rank}), el("td", {}, [pill(r.tier)]),
     el("td", {className: "risk"}, [r.risk, el("div", {className: "meter"}, [Object.assign(el("i"), {style: `width:${(100 * r.risk / max).toFixed(0)}%`})])]),
     el("td", {textContent: r.likelihood}), el("td", {textContent: r.impact}),
@@ -433,7 +505,7 @@ const STEPS = [
       rest.forEach(s => f.append(/^[\d.]+$/.test(s) || /^ = [\d.]+$/.test(s) ? el("span", {className: "w", textContent: s}) : s));
     });
     P.append(
-      el("p", {className: "lede", textContent: "Every finding gets a risk score that can be explained term by term. No AI is involved: the same inputs always produce the same ranking, which is what makes the result defensible."}),
+      el("p", {className: "lede", textContent: "Every finding gets a risk score that can be explained term by term. No AI is involved: the same inputs always produce the same ranking, which is what makes the result defensible. Click a finding for its summary, a projected Diamond Model and MITRE D3FEND countermeasures."}),
       f,
       h3("Decision tiers (SSVC)"),
       el("ul", {className: "tiers"}, [

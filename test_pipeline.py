@@ -56,6 +56,8 @@ assert [f["asset"]["name"] for f in found] == ["mail"] and found[0]["kev"] and f
 lab = dict(mail, name="lab", criticality=1, internet_facing=False)
 ranked = analyse.rank([dict(found[0], asset=lab), found[0]], profile, no_threat)
 assert [r["asset"]["name"] for r in ranked] == ["mail", "lab"] and "KEV" in ranked[0]["why"]
+assert "exploited in the wild" in ranked[0]["summary"] and "Decision: Act" in ranked[0]["summary"]  # plain-English context
+assert ranked[0]["defend"][0][0] == "D3-SU" and ranked[0]["diamond"]["victim"].startswith(profile["organisation"]["name"])
 
 # --- Phase 3: third parties ---
 # unknown-version supplier: only CVEs published or added to KEV in the last 90 days count
@@ -93,8 +95,21 @@ db.executemany("INSERT INTO technique VALUES (?,?,?)", techniques)
 db.executemany("INSERT INTO actor VALUES (?,?,?)", actors)
 db.executemany("INSERT INTO actor_technique VALUES (?,?)", a_tech)
 db.execute("INSERT INTO cve_technique VALUES ('CVE-2021-26855', 'T1190', 'exploitation_technique')")
+# ATT&CK mitigations and D3FEND countermeasures -> per-finding defence, Software Update always first
+mit = collect.parse_mitigations(objs + [
+    {"type": "course-of-action", "id": "coa--1", "name": "Update Software", "external_references": [{"source_name": "mitre-attack", "external_id": "M1051"}]},
+    {"type": "relationship", "id": "r--3", "relationship_type": "mitigates", "source_ref": "coa--1", "target_ref": "ap--1"}])
+assert mit == [("T1190", "M1051", "Update Software")]
+d3 = collect.parse_d3fend("T1190", {"off_to_def": {"results": {"bindings": [
+    {"def_tech_id": {"value": "D3-NTF"}, "def_tech_label": {"value": "Network Traffic Filtering"}, "def_tactic_label": {"value": "Isolate"}}]}}})
+assert d3 == {("T1190", "D3-NTF", "Network Traffic Filtering", "Isolate")}
+db.executemany("INSERT INTO mitigation VALUES (?,?,?)", mit)
+db.executemany("INSERT INTO defend VALUES (?,?,?,?)", d3)
 threat = analyse.load_threat(db, profile)
 assert threat["techniques"]["CVE-2021-26855"][0][0] == "T1190"
+by_def = analyse.score(found[0], profile, threat)
+assert ("D3-NTF", "Network Traffic Filtering", "Isolate") in by_def["defend"] and by_def["mitigations"] == [("M1051", "Update Software")]
+assert "APT28" in by_def["diamond"]["adversary"] and by_def["diamond"]["phase"] == "initial access"
 
 # technique overlap (0.5) < direct citation by a profiled group (1.0)
 by_tech = analyse.score(found[0], profile, threat)
@@ -106,6 +121,11 @@ assert by_group["cited_by"] == ["APT28"] and by_group["likelihood"] > by_tech["l
 # SSVC tiers: exploited + internet-facing crown jewel -> Act; same CVE internal low value -> Attend
 assert by_group["tier"] == "Act"
 assert analyse.score(dict(found[0], asset=lab), profile, threat)["tier"] == "Attend"
+# data-first: same CPE, same exposure, KEV CVE -> the data-holding server (criticality 3) beats the workstation (1) and is Act
+ws, data = dict(mail, name="ws", criticality=1, internet_facing=False), dict(mail, name="data srv", criticality=3, internet_facing=False)
+r = analyse.rank([dict(found[0], asset=ws), dict(found[0], asset=data)], profile, threat)
+assert [x["asset"]["name"] for x in r] == ["data srv", "ws"] and [x["tier"] for x in r] == ["Act", "Attend"]
+
 quiet = dict(found[0], kev=False, ransomware=False, epss=0.001, cvss=5.0, cve="CVE-0000-0001")
 assert analyse.score(quiet, profile, no_threat)["tier"] == "Ignore"
 assert analyse.score(dict(quiet, cvss=9.8), profile, no_threat)["tier"] == "Track"

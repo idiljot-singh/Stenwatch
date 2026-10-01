@@ -98,7 +98,7 @@ def match(db, assets, recent_days=90, today=None):
     findings = []
     for a in assets:
         sql = """
-            SELECT c.id, c.cvss, c.cwe, c.cpes, c.description, e.epss, k.id IS NOT NULL, k.ransomware
+            SELECT c.id, c.cvss, c.cwe, c.cpes, c.description, e.epss, k.id IS NOT NULL, k.ransomware, c.published, e.percentile, k.date_added
             FROM cve c LEFT JOIN epss e USING(id) LEFT JOIN kev k USING(id) WHERE """
         defender = a.get("only_cves")  # Defender already decided which CVEs apply at this patch level
         if defender is not None:
@@ -113,9 +113,10 @@ def match(db, assets, recent_days=90, today=None):
             sql += " AND (c.published >= ? OR k.date_added >= ?)"
             params += [cutoff, cutoff]
         rows = db.execute(sql, params)
-        for cid, cvss, cwe, cpes, desc, epss, in_kev, ransomware in rows:
+        for cid, cvss, cwe, cpes, desc, epss, in_kev, ransomware, published, pct, kev_added in rows:
             if defender is not None or any(m["criteria"].startswith(a["cpe"] + ":") and affects(m, a["version"])
                                            for m in json.loads(cpes)):
                 findings.append({"asset": a, "cve": cid, "cvss": cvss, "cwe": cwe, "description": desc,
-                                 "epss": epss or 0.0, "kev": bool(in_kev), "ransomware": bool(ransomware)})
+                                 "epss": epss or 0.0, "kev": bool(in_kev), "ransomware": bool(ransomware),
+                                 "published": published, "percentile": pct, "kev_added": kev_added})
     return findings

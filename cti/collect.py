@@ -13,6 +13,8 @@ ATTACK_URL = "https://raw.githubusercontent.com/mitre-attack/attack-stix-data/ma
 CTID_API = "https://api.github.com/repos/center-for-threat-informed-defense/mappings-explorer/contents/mappings/kev"
 MIN_KEV, MIN_EPSS = 1000, 100_000  # smaller feed = broken/poisoned download, refuse it
 MIN_TECHNIQUES, MIN_MAPPINGS = 500, 500
+MIN_MITIGATIONS, MIN_DEFEND = 500, 100
+D3FEND_URL = "https://d3fend.mitre.org/api/offensive-technique/attack/{}.json"
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS cve  (id TEXT PRIMARY KEY, published TEXT, modified TEXT, cvss REAL,
@@ -25,6 +27,8 @@ CREATE TABLE IF NOT EXISTS actor           (id TEXT PRIMARY KEY, name TEXT, alia
 CREATE TABLE IF NOT EXISTS actor_technique (actor TEXT, technique TEXT, PRIMARY KEY (actor, technique));
 CREATE TABLE IF NOT EXISTS actor_cve       (actor TEXT, cve TEXT, PRIMARY KEY (actor, cve));
 CREATE TABLE IF NOT EXISTS cve_technique   (cve TEXT, technique TEXT, mapping_type TEXT, PRIMARY KEY (cve, technique, mapping_type));
+CREATE TABLE IF NOT EXISTS mitigation      (technique TEXT, id TEXT, name TEXT, PRIMARY KEY (technique, id));
+CREATE TABLE IF NOT EXISTS defend          (technique TEXT, id TEXT, name TEXT, tactic TEXT, PRIMARY KEY (technique, id));
 """
 CVE_RE = re.compile(r"CVE-\d{4}-\d{4,}")
 
@@ -152,12 +156,30 @@ def parse_attack(objects):
     return techniques, actor_rows, sorted(a_tech), sorted(a_cve)
 
 
+def parse_mitigations(objects):
+    """ATT&CK "course-of-action mitigates technique" -> (technique, M-id, name) rows."""
+    ext = lambda o: next((r["external_id"] for r in o.get("external_references", [])
+                          if r.get("source_name") == "mitre-attack"), None)
+    live = {o["id"]: o for o in objects if not o.get("revoked") and not o.get("x_mitre_deprecated")}
+    rows = set()
+    for o in live.values():
+        if o["type"] == "relationship" and o["relationship_type"] == "mitigates":
+            src, dst = live.get(o["source_ref"]), live.get(o["target_ref"])
+            if src and dst and src["type"] == "course-of-action" and (ext(src) or "").startswith("M"):
+                rows.add((ext(dst), ext(src), src["name"]))
+    return sorted(rows)
+
+
 def sync_attack(db):
-    techniques, actors, a_tech, a_cve = parse_attack(requests.get(ATTACK_URL, timeout=120).json()["objects"])
+    objects = requests.get(ATTACK_URL, timeout=120).json()["objects"]
+    techniques, actors, a_tech, a_cve = parse_attack(objects)
+    mitigations = parse_mitigations(objects)
     check_size("ATT&CK techniques", techniques, MIN_TECHNIQUES)
+    check_size("ATT&CK mitigations", mitigations, MIN_MITIGATIONS)
     with db:
-        for t in ("technique", "actor", "actor_technique", "actor_cve"):
+        for t in ("technique", "actor", "actor_technique", "actor_cve", "mitigation"):
             db.execute(f"DELETE FROM {t}")
+        db.executemany("INSERT INTO mitigation VALUES (?,?,?)", mitigations)
         db.executemany("INSERT INTO technique VALUES (?,?,?)", techniques)
         db.executemany("INSERT INTO actor VALUES (?,?,?)", actors)
         db.executemany("INSERT INTO actor_technique VALUES (?,?)", a_tech)
@@ -184,6 +206,30 @@ def sync_ctid(db):
     return len(rows)
 
 
+def parse_d3fend(technique, data):
+    """D3FEND API answer for one ATT&CK technique -> (technique, D3-id, name, defensive tactic) rows."""
+    rows = set()
+    for b in data.get("off_to_def", {}).get("results", {}).get("bindings", []):
+        if "def_tech_id" in b:
+            rows.add((technique, b["def_tech_id"]["value"], b["def_tech_label"]["value"], b["def_tactic_label"]["value"]))
+    return rows
+
+
+def sync_d3fend(db):
+    """D3FEND countermeasures for every technique a CVE maps to. There is no bulk file, so one request each."""
+    # ponytail: ~155 sequential requests (~1 min); cache by technique if D3FEND starts rate-limiting
+    rows = set()
+    for (tid,) in db.execute("SELECT DISTINCT technique FROM cve_technique").fetchall():
+        r = requests.get(D3FEND_URL.format(tid), timeout=30)
+        if r.ok:
+            rows |= parse_d3fend(tid, r.json())
+    check_size("D3FEND countermeasures", rows, MIN_DEFEND)
+    with db:
+        db.execute("DELETE FROM defend")
+        db.executemany("INSERT INTO defend VALUES (?,?,?,?)", sorted(rows))
+    return len(rows)
+
+
 def main(db_path="cve.db", since=None):
     db = connect(db_path)
     print(f"KEV:  {sync_kev(db)} known-exploited CVEs")
@@ -191,6 +237,7 @@ def main(db_path="cve.db", since=None):
     t, a, c = sync_attack(db)
     print(f"ATT&CK: {t} techniques, {a} groups, {c} group->CVE links")
     print(f"CTID: {sync_ctid(db)} CVE->technique mappings")
+    print(f"D3FEND: {sync_d3fend(db)} technique->countermeasure links")
     print("NVD:  syncing (first full run takes ~15 min without an API key)")
     sync_nvd(db, secret("NVD_API_KEY"), since)
     print(f"NVD:  {db.execute('SELECT COUNT(*) FROM cve').fetchone()[0]} CVEs in db")
