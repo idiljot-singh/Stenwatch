@@ -79,10 +79,14 @@ p.add_argument("--since", help="only pull CVEs modified since this date (skip th
 p.add_argument("--skip-collect", action="store_true")
 p.add_argument("--suggest-cpe", metavar="TERM")
 p.add_argument("--example", action="store_true")
+p.add_argument("--assets", help="assets CSV to use instead of assets.csv; reports go next to it (use with --example)")
 args = p.parse_args()
 if args.example:
     ASSETS, THIRD, PROFILE, EXCEPTIONS = (f.with_name(f.name.replace(".", ".example.", 1)) for f in (ASSETS, THIRD, PROFILE, EXCEPTIONS))
     OUT = OUT / "example"
+if args.assets:
+    ASSETS = Path(args.assets)
+    OUT = ASSETS.parent
 
 if args.suggest_cpe:
     for prefix, n in process.suggest_cpe(collect.connect(DB), args.suggest_cpe):
