@@ -232,10 +232,12 @@ if (!matchMedia("(prefers-reduced-motion: reduce)").matches) setInterval(() => {
   el.textContent = t.slice(0, ++c);
   if (c > t.length + 12) { c = 0; w = (w + 1) % words.length; }
 }, 90);
-// highlight the dock link for the section in view
-const links = [...document.querySelectorAll(".dock a.nav")];
-const io = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && links.forEach(a => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id))),
-  {rootMargin: "-40% 0px -55% 0px"});
-document.querySelectorAll("#top, #how, #decide, #see").forEach(s => io.observe(s));
+// highlight the dock link of the last section whose top has passed the dock
+const links = [...document.querySelectorAll(".dock a.nav")], secs = [...document.querySelectorAll("#top, #how, #decide, #see")];
+const mark = () => {
+  const cur = secs.filter(s => s.getBoundingClientRect().top <= 140).pop() || secs[0];
+  links.forEach(a => a.classList.toggle("on", a.getAttribute("href") === "#" + cur.id));
+};
+addEventListener("scroll", mark, {passive: true}); mark();
 </script>
 </body></html>
