@@ -18,13 +18,13 @@ From every CVE in the world to the few that matter to *your* organisation, with 
 
 ## Showcase
 
-A dark, futuristic interface: the console is a funnel that narrows every CVE in the world down to the few that need action, and a dotted "thinking orb" scrambles and clicks back into place while the pipeline works.
+A monochrome, terminal-style interface: the console is a funnel that narrows every CVE in the world down to the few that need action, and a dotted "thinking orb" scrambles and clicks back into place while the pipeline works. The landing page adds a particle sphere, scroll reveals and a drifting dot field.
 
-![Stenwatch console: the step rail is a funnel from broad to precise, with live counts per stage](docs/img/console.png)
+![Stenwatch console: the step rail is a funnel from broad to precise, with live counts per stage](docs/img/console.jpg)
 
 | Analyst dashboard | Public landing page |
 |---|---|
-| ![Analyst dashboard with tier cards and the ranked findings table](docs/img/dashboard.png) | ![Landing page with the dotted orb behind the hero](docs/img/landing.png) |
+| ![Analyst dashboard with tier cards and the ranked findings table](docs/img/dashboard.jpg) | ![Landing page with the particle sphere in the hero](docs/img/landing.jpg) |
 
 <sub>Screenshots use the bundled Example Organisation, not real data.</sub>
 

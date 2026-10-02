@@ -123,6 +123,10 @@ h1 .w{display:inline-block;opacity:0;translate:0 .5em;filter:blur(6px);animation
 .cell:hover{background:radial-gradient(260px circle at var(--mx) var(--my),#1c1c1c,var(--panel))}
 .pill{transition:background .2s,color .2s}.tiers li:hover .pill{background:var(--c);color:#050505}
 @media (prefers-reduced-motion:reduce){.rv,h1 .w,.bar{opacity:1;translate:none;scale:none;filter:none}.grain,#wave{display:none}}
+.herocell{overflow:hidden}.herocell h1{position:relative;z-index:1;max-width:64%}
+#sphere{position:absolute;right:-30px;top:50%;translate:0 -50%;width:min(52%,520px);aspect-ratio:1;height:auto;z-index:0;pointer-events:none}
+@media (max-width:820px){.herocell h1{max-width:100%}#sphere{opacity:.25;width:80%;right:-20%}}
+@media (prefers-reduced-motion:reduce){#sphere{display:none}}
 </style></head><body>
 <div class="grain" aria-hidden="true"></div>
 
@@ -139,7 +143,7 @@ h1 .w{display:inline-block;opacity:0;translate:0 .5em;filter:blur(6px);animation
 <main id="top">
 <section class="hero"><canvas id="wave" aria-hidden="true"></canvas><div class="wrap">
   <div class="rv idx mono"><span>Stenwatch — signal index</span><span>Free &amp; open source</span></div>
-  <div class="cell">
+  <div class="cell herocell"><canvas id="sphere" aria-hidden="true"></canvas>
     <h1>Out of 40,000 software flaws a year, which ones should <em>you</em> fix first?</h1>
   </div>
   <div class="row">
@@ -194,9 +198,9 @@ h1 .w{display:inline-block;opacity:0;translate:0 .5em;filter:blur(6px);animation
   <h2 class="rv">See it working</h2>
   <p style="max-width:680px">Screenshots use the bundled Example Organisation, not real data. Hover for colour.</p>
   <div class="rv shots" style="margin-top:22px">
-    <figure class="cell wide"><img src="img/console.png" alt="Stenwatch console: a funnel of steps from broad to precise with live counts" loading="lazy"><figcaption>Console / the funnel, step by step</figcaption></figure>
-    <figure class="cell"><img src="img/dashboard.png" alt="Analyst dashboard with tier cards and ranked findings" loading="lazy"><figcaption>Dashboard / ranked findings</figcaption></figure>
-    <figure class="cell"><img src="img/landing.png" alt="Earlier Stenwatch landing page" loading="lazy"><figcaption>Archive / previous landing page</figcaption></figure>
+    <figure class="cell wide"><img src="img/console.jpg" alt="Stenwatch console: a funnel of steps from broad to precise with live counts" loading="lazy"><figcaption>Console / the funnel, step by step</figcaption></figure>
+    <figure class="cell"><img src="img/dashboard.jpg" alt="Analyst dashboard with tier cards and ranked findings" loading="lazy"><figcaption>Dashboard / ranked findings</figcaption></figure>
+    <figure class="cell"><img src="img/landing.jpg" alt="Stenwatch landing page with the particle sphere" loading="lazy"><figcaption>Landing page / this site</figcaption></figure>
   </div>
 </div></section>
 
@@ -288,6 +292,32 @@ document.addEventListener("pointermove", e => { const c = e.target.closest && e.
       const r = (1 + push * 2 + (Math.sin(x * .02 + y * .02 - s * 1.5) + 1) * .6) * d;
       ctx.globalAlpha = .18 + push * .6;
       ctx.beginPath(); ctx.arc(x + ox, y + oy, r, 0, 6.283); ctx.fill();
+    }
+  })(0);
+})();
+// hero: particle sphere (Fibonacci lattice), tilts toward the pointer, a bright band scans over it
+(() => {
+  const cv = document.getElementById("sphere"), ctx = cv.getContext("2d"), N = 900, pts = [];
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  for (let i = 0; i < N; i++) { const y = 1 - 2 * (i + .5) / N, r = Math.sqrt(1 - y * y), a = i * 2.39996323; pts.push([Math.cos(a) * r, y, Math.sin(a) * r]); }
+  let tx = 0, ty = 0, rx = 0, ry = 0, vis = true, S;
+  new IntersectionObserver(e => vis = e[0].isIntersecting).observe(cv);
+  addEventListener("pointermove", e => { tx = (e.clientY / innerHeight - .5) * .8; ty = (e.clientX / innerWidth - .5) * .8; });
+  const size = () => { const d = Math.min(devicePixelRatio, 2); S = cv.width = cv.height = cv.getBoundingClientRect().width * d; };
+  addEventListener("resize", size); size();
+  (function frame(t) {
+    requestAnimationFrame(frame);
+    if (!vis) return;
+    rx += (tx - rx) * .05; ry += (ty - ry) * .05;
+    const a = t / 4000 + ry, b = .35 + rx, ca = Math.cos(a), sa = Math.sin(a), cb = Math.cos(b), sb = Math.sin(b);
+    const scan = (t / 2600) % 2.4 - 1.2, R = S * .42;
+    ctx.clearRect(0, 0, S, S);
+    ctx.fillStyle = "#f2f2f2";
+    for (const [x0, y0, z0] of pts) {
+      const x = x0 * ca + z0 * sa, z1 = -x0 * sa + z0 * ca, y = y0 * cb - z1 * sb, z = y0 * sb + z1 * cb;
+      const k = 1 / (1.9 - z * .6), hit = Math.max(0, 1 - Math.abs(y - scan) * 6);
+      ctx.globalAlpha = Math.min(1, .1 + (z + 1) * .32 + hit * .7);
+      ctx.beginPath(); ctx.arc(S / 2 + x * R * k * 1.5, S / 2 + y * R * k * 1.5, (.7 + hit * 1.6) * (S / 520) * (.6 + k), 0, 6.283); ctx.fill();
     }
   })(0);
 })();

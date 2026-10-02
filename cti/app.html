@@ -3,8 +3,6 @@
 <meta name="author" content="Diljot Singh Johal">
 <title>Stenwatch · CVE Intelligence Console</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2l12 7v14l-12 7-12-7V9z' fill='%230a1220' stroke='%233ee6a8' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%233ee6a8'/%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap">
 <style>
 :root{color-scheme:dark;
   --bg:#060a11;--bg2:#0a101b;--card:#0e1624;--card2:#121c2d;--line:#1b2638;--line2:#28364d;
@@ -209,6 +207,29 @@ footer .sp{flex:1}
   .top{padding:14px 16px 4px}.layout,footer{padding-left:16px;padding-right:16px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* monochrome terminal theme: matches docs/index.html. Tier colours stay: they carry meaning. */
+:root{--bg:#050505;--bg2:#0b0b0b;--card:#0b0b0b;--card2:#111;--line:#222;--line2:#333;--fg:#f2f2f2;--mute:#9a9a9a;--dim:#6a6a6a;
+  --accent:#f2f2f2;--accent-ink:#050505;--blue:#cfcfcf;--glow:none;
+  --display:ui-monospace,"Cascadia Code",Consolas,monospace;--sans:Inter,"Segoe UI",system-ui,sans-serif;--mono:"Cascadia Code",ui-monospace,Consolas,monospace}
+body{background:var(--bg)!important}
+body::before{background-image:repeating-linear-gradient(90deg,transparent 0 calc(100%/6 - 1px),#ffffff0a calc(100%/6 - 1px) calc(100%/6))!important;background-size:auto!important;mask-image:none!important;opacity:1!important}
+.brand svg{filter:none!important}
+.brand strong,.eyebrow,.brand small{font-family:var(--mono)!important;letter-spacing:.16em!important;font-weight:600!important}
+.panel,.card,.wrap,.stat,details,.dv,.headline,.formula,ol.pirs li,.chip,.org,#status,nav button,.fl .bar,button.go,a.go,button.ghost,a.ghost,input,select,textarea{border-radius:4px!important}
+.panel{background:var(--card)!important;border-top:1px solid var(--line)!important;box-shadow:none!important;backdrop-filter:none!important}
+.card,.wrap{background:var(--card)!important;backdrop-filter:none!important}
+.stat::before,.card::before{box-shadow:none!important}
+nav::before{background:linear-gradient(180deg,#ffffff0d,transparent)!important}
+nav button[aria-current=step]{box-shadow:none!important;background:#161616!important}
+nav button[aria-current=step] .n{box-shadow:none!important}
+.fl .bar{background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--c) 40%,transparent) 0 6px,color-mix(in srgb,var(--c) 22%,transparent) 6px 12px)!important}
+button.go,a.go{background:var(--fg)!important;font-family:var(--mono)!important;text-transform:uppercase;letter-spacing:.05em;font-size:13px!important}
+tr.row{display:table-row}
+.panel h2{font-weight:500!important;letter-spacing:-.035em!important}
+.panel>*{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+@keyframes rise{from{opacity:0;translate:0 12px}}
+@media (prefers-reduced-motion:reduce){.panel>*{animation:none}}
 </style></head><body>
 <canvas class="orb orb-bg" data-bands="15" data-dots="30" aria-hidden="true"></canvas>
 <div class="tlp"><b>TLP:AMBER</b> limited disclosure · organisation and clients, need-to-know only</div>
