@@ -1,4 +1,4 @@
-"""Write a synthetic fleet-level assets.csv (~1,800 workstations + data servers) to out/fake_fleet/.
+"""Write a synthetic fleet-level assets.csv (workstations + data servers) to out/fake_fleet/.
 
 Fake data in assets.csv format, not a vendor export. Refuses to overwrite.
 Rows (CPE, concrete build; a literal 'x' in a version would sort above every number):

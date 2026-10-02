@@ -17,3 +17,9 @@ __pycache__/
 # Local tooling (personal memory / assistant context): never publish
 .nemp/
 CLAUDE.md
+
+# Local tooling / notes: never publish
+.omc/
+.enola/
+.obsidian/
+*.canvas
