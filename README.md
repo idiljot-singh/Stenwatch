@@ -54,27 +54,13 @@ The result is a ranked, explainable list in four SSVC decision tiers: **Act** (w
 
 ## Setup from zero (Windows)
 
-Nothing installed yet? In PowerShell:
+Nothing installed yet, and no admin rights or policy changes needed:
 
-```powershell
-winget install -e --id Python.Python.3.14
-winget install -e --id Git.Git
-# close and reopen PowerShell, then:
-python --version        # if this opens the Microsoft Store, use `py` instead of `python`
+1. Install **Python 3.14** from [python.org](https://www.python.org/downloads/): choose *Install just for me* and tick *Add python.exe to PATH*.
+2. Get the code: **Code → Download ZIP** on GitHub and unzip it (or `git clone https://github.com/idiljot-singh/Stenwatch.git`).
+3. Double-click **`start.bat`**.
 
-git clone https://github.com/idiljot-singh/Stenwatch.git
-cd Stenwatch
-
-python -m venv .venv
-.venv\Scripts\Activate.ps1      # if blocked: Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
-pip install --require-hashes -r requirements.txt
-
-python test_pipeline.py                         # prints "ok"
-python run.py --example --since 2026-01-01      # bundled Example Organisation
-start out\example\dashboard.html
-```
-
-Next time: `cd Stenwatch`, `.venv\Scripts\Activate.ps1`, `python app.py`. On Linux/macOS use `python3`, `source .venv/bin/activate` and `cp`.
+First run it creates a private `.venv`, installs the 4 hash-pinned dependencies, runs the bundled Example Organisation and opens its dashboard. Once you have a `profile.yaml` (see below), `start.bat` opens the console instead. It never uses PowerShell scripts, so ExecutionPolicy does not get in the way. On Linux/macOS use `python3 -m venv .venv`, `source .venv/bin/activate` and the commands under Quick start.
 
 ## Quick start
 
