@@ -13,6 +13,7 @@ run.log
 __pycache__/
 *.pyc
 .venv/
+.python/
 
 # Local tooling (personal memory / assistant context): never publish
 .nemp/
