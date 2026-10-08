@@ -52,6 +52,30 @@ The result is a ranked, explainable list in four SSVC decision tiers: **Act** (w
 | **Secure by design** | Localhost-only console with CSRF and DNS-rebinding protection, secrets in the OS credential store, hash-pinned dependencies, TLP:AMBER marking, feed-poisoning guards |
 | **Small** | About 1,100 lines of plain Python, 4 dependencies, SQLite, no servers |
 
+## Setup from zero (Windows)
+
+Nothing installed yet? In PowerShell:
+
+```powershell
+winget install -e --id Python.Python.3.14
+winget install -e --id Git.Git
+# close and reopen PowerShell, then:
+python --version        # if this opens the Microsoft Store, use `py` instead of `python`
+
+git clone https://github.com/idiljot-singh/Stenwatch.git
+cd Stenwatch
+
+python -m venv .venv
+.venv\Scripts\Activate.ps1      # if blocked: Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+pip install --require-hashes -r requirements.txt
+
+python test_pipeline.py                         # prints "ok"
+python run.py --example --since 2026-01-01      # bundled Example Organisation
+start out\example\dashboard.html
+```
+
+Next time: `cd Stenwatch`, `.venv\Scripts\Activate.ps1`, `python app.py`. On Linux/macOS use `python3`, `source .venv/bin/activate` and `cp`.
+
 ## Quick start
 
 ```bash
