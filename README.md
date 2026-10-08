@@ -54,13 +54,12 @@ The result is a ranked, explainable list in four SSVC decision tiers: **Act** (w
 
 ## Setup from zero (Windows)
 
-Nothing installed yet, and no admin rights or policy changes needed:
+Nothing installed, no admin rights, no policy changes:
 
-1. Install **Python 3.14** from [python.org](https://www.python.org/downloads/): choose *Install just for me* and tick *Add python.exe to PATH*.
-2. Get the code: **Code → Download ZIP** on GitHub and unzip it (or `git clone https://github.com/idiljot-singh/Stenwatch.git`).
-3. Double-click **`start.bat`**.
+1. Get the code: **Code → Download ZIP** on GitHub and unzip it (or `git clone https://github.com/idiljot-singh/Stenwatch.git`).
+2. Double-click **`start.bat`**.
 
-First run it creates a private `.venv`, installs the 4 hash-pinned dependencies, runs the bundled Example Organisation and opens its dashboard. Once you have a `profile.yaml` (see below), `start.bat` opens the console instead. It never uses PowerShell scripts, so ExecutionPolicy does not get in the way. On Linux/macOS use `python3 -m venv .venv`, `source .venv/bin/activate` and the commands under Quick start.
+If Python is missing, `start.bat` downloads a portable copy (SHA-256 checked) into `.python\`. Nothing is installed system-wide, and deleting the folder removes it. Otherwise it uses your Python in a private `.venv`. Either way it installs the 4 hash-pinned dependencies, runs the bundled Example Organisation and opens its dashboard. Once you have a `profile.yaml` (see below), `start.bat` opens the console instead. It never uses PowerShell scripts, so ExecutionPolicy does not get in the way. On Linux/macOS use `python3 -m venv .venv`, `source .venv/bin/activate` and the commands under Quick start.
 
 ## Quick start
 
