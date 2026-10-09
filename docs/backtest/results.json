@@ -1,6 +1,6 @@
 {
- "generated": "2026-10-09 13:10",
- "code_commit": "e7516c9 + uncommitted changes",
+ "generated": "2026-10-09 14:57",
+ "code_commit": "cecc64e",
  "python": "3.14.2",
  "numpy": "2.5.3",
  "horizon_days": 180,
