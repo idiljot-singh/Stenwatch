@@ -117,9 +117,20 @@ impact     = CVSS/10 · criticality (or supplier blast radius) · 1.5 if interne
 risk       = likelihood · impact
 ```
 
+## Does the ranking work?
+
+A point-in-time backtest rebuilt six 180-day periods from the data that existed on each start day and scored the rankings against what CISA later added to its Known Exploited Vulnerabilities catalogue (257 later-exploited CVEs).
+
+| Queue | Share of all CVEs | Later-exploited CVEs found (95% interval) |
+|---|---|---|
+| Stenwatch Attend (EPSS 0.1 or above) | 6.1% | 40% (34 to 46%) |
+| CVSS 9 and above | 13.0% | 36% (30 to 42%) |
+
+Attend finds about as many exploited CVEs from a queue less than half the size, but the difference in what they find is **not statistically significant** (p = 0.33). At equal queue size the Stenwatch ranking finds more (50% against 36%); in the long tail severity catches up and passes it, and about 62% of CISA's additions concerned CVEs not yet published when each period began, so no ranking could find them early. An earlier figure of about 70% was wrong (incomplete data) and is withdrawn. Read the full method, statistics and limits in the [backtest report](https://idiljot-singh.github.io/Stenwatch/backtest/report.html) ([PDF](https://idiljot-singh.github.io/Stenwatch/backtest/report.pdf), [summary](docs/backtest.md)). Regenerate it with `python tools/backtest.py` then `python tools/backtest_report.py`.
+
 ## Architecture diagrams
 
-Four diagrams, generated from the real code: the [code map](docs/diagrams/code-map.html) (modules, size, complexity), [one click, step by step](docs/diagrams/one-click.html) (sequence), [the installed app](docs/diagrams/installed-app.html) (what runs where) and [where the complexity lives](docs/diagrams/complexity.html). A [backtest](docs/backtest.md) shows how well the scoring finds later-exploited CVEs.
+Four diagrams, generated from the real code: the [code map](https://idiljot-singh.github.io/Stenwatch/diagrams/code-map.html) (modules, size, complexity), [one click, step by step](https://idiljot-singh.github.io/Stenwatch/diagrams/one-click.html) (sequence), [the installed app](https://idiljot-singh.github.io/Stenwatch/diagrams/installed-app.html) (what runs where) and [where the complexity lives](https://idiljot-singh.github.io/Stenwatch/diagrams/complexity.html).
 
 ## Your data stays yours
 
