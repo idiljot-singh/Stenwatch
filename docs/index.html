@@ -215,7 +215,14 @@ h1 .w{display:inline-block;opacity:0;translate:0 .5em;filter:blur(6px);animation
 <section id="proof"><div class="wrap">
   <div class="rv idx mono"><span>Proof</span></div>
   <h2 class="rv">Tested against real attacks</h2>
-  <p style="max-width:720px">We replayed six 180-day periods using only what was known at the start of each one, then checked which flaws were later confirmed as exploited (257 in total). The Attend tier holds 6% of all flaws and caught 40% of them. A &ldquo;CVSS 9 and above&rdquo; list holds 13% and caught 36%. That gap is too small to call a win, but at the same list size Stenwatch&rsquo;s ranking finds more (50% against 36%). It does worse in the long tail, and the report says so.</p>
+  <p style="max-width:760px">We rebuilt six 180-day periods from the data that existed on each start day, then checked which flaws CISA later added to its Known Exploited Vulnerabilities catalogue. That gave 257 later-exploited CVEs to look for. Nothing from the future was used to rank, and the full method, statistics and limits are in a referenced report.</p>
+  <div class="rv grid" style="margin-top:22px">
+    <div class="cell"><div class="n"><span>Stenwatch Attend queue</span></div><h3>40% found</h3><p>From 6.1% of all CVEs (95% interval 34 to 46%).</p></div>
+    <div class="cell"><div class="n"><span>CVSS 9 and above list</span></div><h3>36% found</h3><p>From 13.0% of all CVEs (95% interval 30 to 42%).</p></div>
+    <div class="cell"><div class="n"><span>Same queue size</span></div><h3>50% against 36%</h3><p>Reading the Stenwatch ranking as far as the critical list is long.</p></div>
+  </div>
+  <p style="max-width:760px;margin-top:22px">So Attend finds about as many exploited flaws from a queue less than half the size, and each CVE read is about twice as likely to matter. The difference in what the two found is not statistically significant (p = 0.33), so this is an efficiency result, not a claim that Stenwatch catches more.</p>
+  <p style="max-width:760px">The report is also plain about the limits. Severity wins in the long tail, because it reaches 80% of exploited CVEs after 43% of its list against 58% for the Stenwatch score. About 62% of CISA's additions concerned CVEs not yet published when each period began, so no ranking could find them early, and that is what the KEV feed is for. An earlier figure of about 70% was wrong, came from incomplete data, and is withdrawn.</p>
   <div class="rv btns" style="margin-top:18px">
     <a class="btn go" href="backtest/report.html">Read the backtest report</a>
     <a class="btn" href="backtest/report.pdf">PDF</a>
