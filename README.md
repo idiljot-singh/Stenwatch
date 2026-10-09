@@ -54,7 +54,7 @@ The result is a ranked, explainable list in four SSVC decision tiers: **Act** (w
 
 ## Install (Windows beta)
 
-Watch the [one-minute video](https://idiljot-singh.github.io/Stenwatch/video.html) first if you want the overview.
+Watch the [overview video](https://idiljot-singh.github.io/Stenwatch/video.html) first if you want the overview.
 
 Download `Stenwatch-Setup-0.1.0-beta.exe` from the Releases page and run it. No admin rights are needed. Windows will show a blue "unknown publisher" screen because the beta is unsigned: choose **More info → Run anyway**, or ask IT to allow-list the file by its SHA-256 (printed next to the download). A short tour opens on first launch. Your data lives in `%APPDATA%\Stenwatch` and survives updates; uninstalling asks whether to delete it. To update, run the newer Setup over the old one.
 
