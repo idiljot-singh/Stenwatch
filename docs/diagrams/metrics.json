@@ -1,0 +1,294 @@
+[
+ {
+  "file": "run.py",
+  "loc": 87,
+  "functions": 2,
+  "decisions": 25,
+  "max_fn": "pipeline",
+  "max_cc": 18,
+  "imports": [
+   "analyse",
+   "collect",
+   "defender",
+   "disseminate",
+   "llm",
+   "paths",
+   "process",
+   "render"
+  ],
+  "top": [
+   [
+    "pipeline",
+    18,
+    48
+   ],
+   [
+    "audit",
+    1,
+    4
+   ]
+  ]
+ },
+ {
+  "file": "app.py",
+  "loc": 323,
+  "functions": 15,
+  "decisions": 100,
+  "max_fn": "do_GET",
+  "max_cc": 30,
+  "imports": [
+   "paths",
+   "process"
+  ],
+  "top": [
+   [
+    "do_GET",
+    30,
+    55
+   ],
+   [
+    "do_POST",
+    23,
+    62
+   ],
+   [
+    "state",
+    12,
+    29
+   ]
+  ]
+ },
+ {
+  "file": "cli.py",
+  "loc": 4,
+  "functions": 0,
+  "decisions": 0,
+  "max_fn": "-",
+  "max_cc": 1,
+  "imports": [],
+  "top": []
+ },
+ {
+  "file": "cti/analyse.py",
+  "loc": 166,
+  "functions": 9,
+  "decisions": 94,
+  "max_fn": "summary",
+  "max_cc": 27,
+  "imports": [],
+  "top": [
+   [
+    "summary",
+    27,
+    36
+   ],
+   [
+    "score",
+    19,
+    35
+   ],
+   [
+    "diamond",
+    18,
+    19
+   ]
+  ]
+ },
+ {
+  "file": "cti/collect.py",
+  "loc": 203,
+  "functions": 14,
+  "decisions": 83,
+  "max_fn": "parse_attack",
+  "max_cc": 27,
+  "imports": [
+   "vault"
+  ],
+  "top": [
+   [
+    "parse_attack",
+    27,
+    31
+   ],
+   [
+    "sync_nvd",
+    16,
+    38
+   ],
+   [
+    "parse_mitigations",
+    14,
+    12
+   ]
+  ]
+ },
+ {
+  "file": "cti/defender.py",
+  "loc": 69,
+  "functions": 4,
+  "decisions": 13,
+  "max_fn": "to_assets",
+  "max_cc": 12,
+  "imports": [],
+  "top": [
+   [
+    "to_assets",
+    12,
+    29
+   ],
+   [
+    "token",
+    2,
+    11
+   ],
+   [
+    "get_all",
+    2,
+    10
+   ]
+  ]
+ },
+ {
+  "file": "cti/disseminate.py",
+  "loc": 152,
+  "functions": 8,
+  "decisions": 59,
+  "max_fn": "write_reports",
+  "max_cc": 41,
+  "imports": [
+   "analyse",
+   "render"
+  ],
+  "top": [
+   [
+    "write_reports",
+    41,
+    83
+   ],
+   [
+    "write_stix",
+    11,
+    41
+   ],
+   [
+    "write_dashboard",
+    7,
+    13
+   ]
+  ]
+ },
+ {
+  "file": "cti/llm.py",
+  "loc": 93,
+  "functions": 5,
+  "decisions": 28,
+  "max_fn": "template",
+  "max_cc": 14,
+  "imports": [
+   "vault"
+  ],
+  "top": [
+   [
+    "template",
+    14,
+    17
+   ],
+   [
+    "write",
+    7,
+    25
+   ],
+   [
+    "brief_input",
+    6,
+    11
+   ]
+  ]
+ },
+ {
+  "file": "cti/paths.py",
+  "loc": 13,
+  "functions": 1,
+  "decisions": 5,
+  "max_fn": "find_browser",
+  "max_cc": 4,
+  "imports": [],
+  "top": [
+   [
+    "find_browser",
+    4,
+    5
+   ]
+  ]
+ },
+ {
+  "file": "cti/process.py",
+  "loc": 119,
+  "functions": 10,
+  "decisions": 52,
+  "max_fn": "match",
+  "max_cc": 13,
+  "imports": [],
+  "top": [
+   [
+    "match",
+    13,
+    33
+   ],
+   [
+    "apply_exceptions",
+    11,
+    9
+   ],
+   [
+    "affects",
+    10,
+    15
+   ]
+  ]
+ },
+ {
+  "file": "cti/render.py",
+  "loc": 116,
+  "functions": 5,
+  "decisions": 22,
+  "max_fn": "md_to_html",
+  "max_cc": 17,
+  "imports": [
+   "paths"
+  ],
+  "top": [
+   [
+    "md_to_html",
+    17,
+    29
+   ],
+   [
+    "write_page",
+    4,
+    9
+   ],
+   [
+    "to_pdf",
+    3,
+    11
+   ]
+  ]
+ },
+ {
+  "file": "cti/vault.py",
+  "loc": 15,
+  "functions": 1,
+  "decisions": 2,
+  "max_fn": "secret",
+  "max_cc": 3,
+  "imports": [],
+  "top": [
+   [
+    "secret",
+    3,
+    9
+   ]
+  ]
+ }
+]

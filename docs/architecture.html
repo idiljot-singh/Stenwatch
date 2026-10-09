@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stenwatch architecture</title>
+  <meta name="author" content="Diljot Singh Johal">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper: #060a11;
+      --color-ink:   #e6edf6;
+      --color-muted: #8d9bb0;
+      --font-sans:   'Geist', system-ui, sans-serif;
+      --font-serif:  'Instrument Serif', serif;
+      --font-mono:   'Geist Mono', ui-monospace, monospace;
+    }
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-paper);
+      color: var(--color-ink);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
+    }
+    .frame { max-width: 1200px; width: 100%; }
+    .diagram-container { width: 100%; overflow-x: auto; }
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin-bottom: 0.5rem;
+    }
+    h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin-bottom: 1.5rem;
+    }
+    svg { width: 100%; min-width: 960px; display: block; }
+    @media print {
+      .diagram-container { overflow-x: visible; }
+      svg { min-width: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Architecture · Stenwatch</p>
+    <h1>From every CVE in the world to the few that matter</h1>
+
+    <div class="diagram-container">
+      <svg viewBox="0 0 960 460" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="stenwatch-architecture-title stenwatch-architecture-desc">
+        <title id="stenwatch-architecture-title">Stenwatch architecture</title>
+        <desc id="stenwatch-architecture-desc">Public feeds and the organisation's own files flow through five run.py stages into a SQLite store and five outputs, driven by a local console.</desc>
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#8d9bb0"/></marker>
+          <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#5aa9ff"/></marker>
+        </defs>
+
+        <rect width="100%" height="100%" fill="#060a11"/>
+
+        <!-- Zone: run.py pipeline -->
+        <rect x="24" y="144" width="912" height="128" rx="8" fill="rgba(230,237,246,0.02)" stroke="rgba(230,237,246,0.14)" stroke-width="0.8"/>
+        <rect x="428" y="148" width="104" height="12" rx="2" fill="#060a11"/>
+        <text x="480" y="157" fill="rgba(230,237,246,0.5)" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.14em">PIPELINE · RUN.PY</text>
+
+        <!-- Arrows (drawn before nodes) -->
+        <line x1="104" y1="108" x2="104" y2="144" stroke="#8d9bb0" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="112" y="118" width="32" height="14" fill="#060a11"/>
+        <text x="128" y="128" fill="#8d9bb0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">RUNS</text>
+
+        <line x1="104" y1="316" x2="104" y2="248" stroke="#5aa9ff" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+        <rect x="112" y="288" width="36" height="14" fill="#060a11"/>
+        <text x="130" y="298" fill="#5aa9ff" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">HTTPS</text>
+
+        <line x1="172" y1="212" x2="224" y2="212" stroke="#8d9bb0" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="360" y1="212" x2="412" y2="212" stroke="#8d9bb0" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="548" y1="212" x2="600" y2="212" stroke="#8d9bb0" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="736" y1="212" x2="788" y2="212" stroke="#8d9bb0" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+        <line x1="480" y1="316" x2="480" y2="248" stroke="#8d9bb0" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="488" y="288" width="64" height="14" fill="#060a11"/>
+        <text x="520" y="298" fill="#8d9bb0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">CSV · YAML</text>
+
+        <line x1="856" y1="248" x2="856" y2="316" stroke="#8d9bb0" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="864" y="288" width="52" height="14" fill="#060a11"/>
+        <text x="890" y="298" fill="#8d9bb0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">WRITES</text>
+
+        <!-- Console (36,36) -->
+        <rect x="36" y="36" width="136" height="72" rx="6" fill="#060a11"/>
+        <rect x="36" y="36" width="136" height="72" rx="6" fill="#0e1624" stroke="#e6edf6" stroke-width="1"/>
+        <text x="48" y="54" fill="#7886a0" font-size="7" font-family="'Geist Mono', monospace" letter-spacing="0.18em">LOCAL UI</text>
+        <text x="48" y="76" fill="#e6edf6" font-size="12" font-weight="600" font-family="'Geist', sans-serif">Console</text>
+        <text x="48" y="94" fill="#8d9bb0" font-size="9" font-family="'Geist Mono', monospace">app.py · :8765</text>
+
+        <!-- Collection (36,176) -->
+        <rect x="36" y="176" width="136" height="72" rx="6" fill="#060a11"/>
+        <rect x="36" y="176" width="136" height="72" rx="6" fill="#0e1624" stroke="#e6edf6" stroke-width="1"/>
+        <text x="48" y="194" fill="#7886a0" font-size="7" font-family="'Geist Mono', monospace" letter-spacing="0.18em">COLLECTION</text>
+        <text x="48" y="216" fill="#e6edf6" font-size="12" font-weight="600" font-family="'Geist', sans-serif">collect.py</text>
+        <text x="48" y="234" fill="#8d9bb0" font-size="9" font-family="'Geist Mono', monospace">incremental sync</text>
+
+        <!-- Store (224,176) -->
+        <rect x="224" y="176" width="136" height="72" rx="6" fill="#060a11"/>
+        <rect x="224" y="176" width="136" height="72" rx="6" fill="rgba(230,237,246,0.05)" stroke="#8d9bb0" stroke-width="1"/>
+        <text x="236" y="194" fill="#7886a0" font-size="7" font-family="'Geist Mono', monospace" letter-spacing="0.18em">STORE</text>
+        <text x="236" y="216" fill="#e6edf6" font-size="12" font-weight="600" font-family="'Geist', sans-serif">cve.db</text>
+        <text x="236" y="234" fill="#8d9bb0" font-size="9" font-family="'Geist Mono', monospace">SQLite</text>
+
+        <!-- Processing (412,176) -->
+        <rect x="412" y="176" width="136" height="72" rx="6" fill="#060a11"/>
+        <rect x="412" y="176" width="136" height="72" rx="6" fill="#0e1624" stroke="#e6edf6" stroke-width="1"/>
+        <text x="424" y="194" fill="#7886a0" font-size="7" font-family="'Geist Mono', monospace" letter-spacing="0.18em">PROCESSING</text>
+        <text x="424" y="216" fill="#e6edf6" font-size="12" font-weight="600" font-family="'Geist', sans-serif">process.py</text>
+        <text x="424" y="234" fill="#8d9bb0" font-size="9" font-family="'Geist Mono', monospace">CPE + version match</text>
+
+        <!-- Analysis, focal (600,176) -->
+        <rect x="600" y="176" width="136" height="72" rx="6" fill="#060a11"/>
+        <rect x="600" y="176" width="136" height="72" rx="6" fill="rgba(62,230,168,0.10)" stroke="#3ee6a8" stroke-width="1.2"/>
+        <text x="612" y="194" fill="#3ee6a8" font-size="7" font-family="'Geist Mono', monospace" letter-spacing="0.18em">ANALYSIS</text>
+        <text x="612" y="216" fill="#e6edf6" font-size="12" font-weight="600" font-family="'Geist', sans-serif">analyse.py</text>
+        <text x="612" y="234" fill="#8d9bb0" font-size="9" font-family="'Geist Mono', monospace">risk · SSVC tier</text>
+
+        <!-- Dissemination (788,176) -->
+        <rect x="788" y="176" width="136" height="72" rx="6" fill="#060a11"/>
+        <rect x="788" y="176" width="136" height="72" rx="6" fill="#0e1624" stroke="#e6edf6" stroke-width="1"/>
+        <text x="800" y="194" fill="#7886a0" font-size="7" font-family="'Geist Mono', monospace" letter-spacing="0.18em">DISSEMINATION</text>
+        <text x="800" y="216" fill="#e6edf6" font-size="12" font-weight="600" font-family="'Geist', sans-serif">disseminate.py</text>
+        <text x="800" y="234" fill="#8d9bb0" font-size="9" font-family="'Geist Mono', monospace">+ optional LLM brief</text>
+
+        <!-- Public feeds (36,316) -->
+        <rect x="36" y="316" width="136" height="72" rx="6" fill="#060a11"/>
+        <rect x="36" y="316" width="136" height="72" rx="6" fill="rgba(230,237,246,0.03)" stroke="rgba(230,237,246,0.30)" stroke-width="1"/>
+        <text x="48" y="334" fill="#7886a0" font-size="7" font-family="'Geist Mono', monospace" letter-spacing="0.18em">EXTERNAL</text>
+        <text x="48" y="356" fill="#e6edf6" font-size="12" font-weight="600" font-family="'Geist', sans-serif">Public feeds</text>
+        <text x="48" y="374" fill="#8d9bb0" font-size="9" font-family="'Geist Mono', monospace">6 open sources</text>
+
+        <!-- Your inputs (412,316) -->
+        <rect x="412" y="316" width="136" height="72" rx="6" fill="#060a11"/>
+        <rect x="412" y="316" width="136" height="72" rx="6" fill="rgba(141,155,176,0.10)" stroke="#5d6c83" stroke-width="1"/>
+        <text x="424" y="334" fill="#7886a0" font-size="7" font-family="'Geist Mono', monospace" letter-spacing="0.18em">DIRECTION</text>
+        <text x="424" y="356" fill="#e6edf6" font-size="12" font-weight="600" font-family="'Geist', sans-serif">Your inputs</text>
+        <text x="424" y="374" fill="#8d9bb0" font-size="9" font-family="'Geist Mono', monospace">yaml + 3 csv</text>
+
+        <!-- Outputs (788,316) -->
+        <rect x="788" y="316" width="136" height="72" rx="6" fill="#060a11"/>
+        <rect x="788" y="316" width="136" height="72" rx="6" fill="#0e1624" stroke="#e6edf6" stroke-width="1"/>
+        <text x="800" y="334" fill="#7886a0" font-size="7" font-family="'Geist Mono', monospace" letter-spacing="0.18em">OUTPUT</text>
+        <text x="800" y="356" fill="#e6edf6" font-size="12" font-weight="600" font-family="'Geist', sans-serif">5 outputs</text>
+        <text x="800" y="374" fill="#8d9bb0" font-size="9" font-family="'Geist Mono', monospace">md csv html stix</text>
+
+        <!-- Legend strip -->
+        <line x1="36" y1="416" x2="924" y2="416" stroke="rgba(230,237,246,0.14)" stroke-width="0.8"/>
+        <rect x="36" y="430" width="14" height="10" rx="2" fill="rgba(62,230,168,0.10)" stroke="#3ee6a8" stroke-width="1"/>
+        <text x="58" y="439" fill="#8d9bb0" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.06em">SCORING CORE</text>
+        <rect x="176" y="430" width="14" height="10" rx="2" fill="#0e1624" stroke="#e6edf6" stroke-width="1"/>
+        <text x="198" y="439" fill="#8d9bb0" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.06em">MODULE</text>
+        <rect x="288" y="430" width="14" height="10" rx="2" fill="rgba(230,237,246,0.05)" stroke="#8d9bb0" stroke-width="1"/>
+        <text x="310" y="439" fill="#8d9bb0" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.06em">STORE</text>
+        <rect x="396" y="430" width="14" height="10" rx="2" fill="rgba(230,237,246,0.03)" stroke="rgba(230,237,246,0.30)" stroke-width="1"/>
+        <text x="418" y="439" fill="#8d9bb0" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.06em">PUBLIC FEED</text>
+        <rect x="528" y="430" width="14" height="10" rx="2" fill="rgba(141,155,176,0.10)" stroke="#5d6c83" stroke-width="1"/>
+        <text x="550" y="439" fill="#8d9bb0" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.06em">YOUR DATA</text>
+        <line x1="656" y1="435" x2="678" y2="435" stroke="#5aa9ff" stroke-width="1.2"/>
+        <text x="686" y="439" fill="#8d9bb0" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.06em">HTTPS CALL</text>
+      </svg>
+    </div>
+  </div>
+</body>
+</html>
