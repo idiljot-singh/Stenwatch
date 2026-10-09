@@ -1,33 +1,20 @@
-# Backtest: do Stenwatch's signals find the CVEs that later get exploited?
+# Backtest summary
 
-Run: `python tools/backtest.py` (reads `cve.db`, downloads the dated EPSS file for each origin date).
+Does Stenwatch's ranking find the CVEs that attackers go on to use? Six non-overlapping six-month windows, using only data available on each start day, scored against CISA's Known Exploited Vulnerabilities (KEV) additions. Full method, statistics and limits: [report.html](backtest/report.html) ([PDF](backtest/report.pdf)). Raw numbers: [results.json](backtest/results.json).
 
-**Method.** At an origin date T0 we use only what was knowable then: that day's EPSS file and CVSS. The population is every CVE published by T0 that was **not yet** in CISA KEV (about 218,000). The positives are the ones added to KEV in the next 180 days (22 to 30 per window). We compare how much work each approach needs to find them.
+**257 later-exploited CVEs** among 1,588,223 CVE-windows (base rate 0.016%).
 
-## Results (three windows)
-
-| Origin | New KEV adds | CVSS-only: reviews for 50% | EPSS x CVSS: reviews for 50% | Hits in top 1,000 (CVSS / Stenwatch) |
-|---|---|---|---|---|
-| 2025-10-01 | 30 | 38,136 | 4,512 | 0 / 7 |
-| 2026-01-01 | 27 | 37,758 | 5,942 | 1 / 8 |
-| 2026-04-01 | 22 | 49,264 | 6,321 | 0 / 5 |
-
-Queues (share of later-exploited CVEs each would have caught):
-
-| Queue | Size | Recall across the three windows |
+| Queue | Share of CVEs | Later-exploited CVEs found (95% interval) |
 |---|---|---|
-| CVSS >= 9 ("critical") | about 30,600 | 33%, 22%, 14% |
-| Stenwatch **Attend** (EPSS >= 0.1) | about 19,000 | 70%, 67%, 73% |
-| CVSS >= 7 | about 108,700 | 90%, 93%, 100% |
-| Stenwatch Attend + Track | about 130,000 | 97%, 100%, 100% |
+| Stenwatch Attend (EPSS >= 0.1) | 6.1% | 40% (34% to 46%) |
+| Stenwatch Attend + Track (EPSS >= 0.01 or CVSS >= 7.0) | 54.9% | 90% (86% to 93%) |
+| CVSS >= 9 (critical) | 13.0% | 36% (30% to 42%) |
+| CVSS >= 7 (high and critical) | 48.2% | 86% (81% to 89%) |
 
-## What it shows
-- Ranking by exploitation probability finds half of the later-exploited CVEs after roughly **5,000 reviews, against 38,000 to 49,000** for severity alone.
-- The **Attend** tier is the clear win: a smaller queue than "CVSS >= 9" with about **70% recall against 14% to 33%**.
+- Attend found 40% from a queue 2.1 times smaller than the CVSS 9+ list, which found 36%. The difference in what they found is not significant (p = 0.329); the size difference is the gain.
+- At the same queue size the Stenwatch ranking is clearly better than severity (reading as many CVEs as the CVSS 9+ list holds: 50% against 36%). It is better at small review budgets and worse in the long tail: a CVSS ranking reaches 80% after 42.5% of the list, the Stenwatch score after 58.2%.
+- 62% of CISA additions concerned CVEs not yet published at the start of the window, so no ranking could have found them.
 
-## What it does not show
-- **Track is not selective.** Attend + Track is no better than "CVSS >= 7" and is larger. Treat Track as a watch list, not a work queue.
-- **The tail is hard.** To reach 80% recall, EPSS ranking needs 41,000 to 102,000 reviews; it is no better than severity there.
-- **Small samples.** 22 to 30 positives per window, three overlapping windows. Directional, not a precise rate.
-- **Population-wide.** Stenwatch first filters to your own assets (cutting this queue by orders of magnitude); this test measures only the scoring signals.
-- **Not testable here:** the KEV flag itself, ransomware use, threat-group overlap and asset context have no point-in-time data. CVSS values are today's NVD values.
+> **Correction.** An earlier version of this page said the Attend queue caught about 70% of later-exploited CVEs against about a third for the critical list. That was wrong: it came from a local database missing most 2024 and 2025 CVEs. The figures above replace it.
+
+Reproduce: `python tools/backtest.py` then `python tools/backtest_report.py` (see section 9 of the report).

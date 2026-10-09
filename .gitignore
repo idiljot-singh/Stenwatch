@@ -39,3 +39,12 @@ video/duck/duck_*.png
 video/vendor/
 video/duck/*.png
 docs/agents/
+tools/.cache/
+
+# Working files, not part of the product
+video/
+CONTEXT.md
+docs/architecture.html
+docs/diagrams/*.png
+tools/diagrams.py
+tools/make_fake_fleet.py
