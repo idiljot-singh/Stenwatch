@@ -5,32 +5,40 @@ python app.py --pdf  WALKTHROUGH.md -> WALKTHROUGH.pdf (needs pandoc + Edge or C
 
 The page never runs arbitrary commands: only the fixed actions in ACTIONS, one at a time.
 """
-import csv, json, os, re, secrets, shutil, sqlite3, subprocess, sys, tempfile, threading, webbrowser
+import csv, json, os, re, secrets, shutil, sqlite3, subprocess, sys, tempfile, threading, time, webbrowser
 from datetime import date
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
+from urllib.request import urlopen
 
 import yaml
 
 from cti import process
+from cti.paths import APP, DATA, FROZEN, VERSION, find_browser
 
-ROOT = Path(__file__).resolve().parent
-PORT = 8765
+ROOT = DATA  # organisation files; APP holds Stenwatch's own files
+PORT = 8765  # first free port from here is used
 TOKEN = secrets.token_urlsafe(24)  # new per start; a hostile web page can't read or send it
 EDITABLE = {"profile.yaml", "assets.csv", "third_parties.csv", "exceptions.csv"}
-OUTPUTS = {"dashboard.html": "text/html", "report.md": "text/plain", "brief.md": "text/plain",
+OUTPUTS = {"dashboard.html": "text/html", "report.html": "text/html", "brief.html": "text/html", "report.pdf": "application/pdf",
+           "brief.pdf": "application/pdf", "report.md": "text/plain", "brief.md": "text/plain",
            "report.csv": "text/csv", "bundle.json": "application/json"}
-PY = [sys.executable, "-u"]
+CLI = [str(Path(sys.executable).with_name("stenwatch-cli.exe"))] if FROZEN else [sys.executable, "-u"]  # console-less exe can't pipe output
+
+
+def py(script, *args):
+    return CLI + [str(APP / script), *args]
 
 job = {"lines": [], "running": False, "code": None, "name": ""}
 lock = threading.Lock()
 
 
 def stream(argv, log):
-    log("> " + " ".join(Path(argv[0]).stem if i == 0 else x for i, x in enumerate(argv) if x != "-u"))
+    log("> " + " ".join(Path(argv[0]).stem if i == 0 else Path(x).name if x.endswith(".py") else x for i, x in enumerate(argv) if x != "-u"))
     p = subprocess.Popen(argv, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                         text=True, encoding="utf-8", errors="replace", env={**os.environ, "PYTHONIOENCODING": "utf-8"})
+                         text=True, encoding="utf-8", errors="replace", env={**os.environ, "PYTHONIOENCODING": "utf-8"},
+                         creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     for line in p.stdout:
         log(line.rstrip())
     return p.wait()
@@ -52,10 +60,28 @@ a{color:#2e6fb7;text-decoration:none}
 """
 
 
+def open_window(url):
+    """Show the console as an app window (Edge/Chrome, no tabs or address bar), or in the default browser if neither exists."""
+    browser = find_browser()
+    if browser:
+        subprocess.Popen([browser, f"--app={url}", "--window-size=1360,900"])
+    else:
+        webbrowser.open(url)
+
+
+IDLE = 150  # seconds without a heartbeat from the page: the window is gone, so quit
+last_seen = time.time()
+
+
+def watch(server, idle=IDLE, every=5):
+    """Quit when no page is open any more. Browser-agnostic: it never depends on which process shows the window."""
+    while time.time() - last_seen < idle:
+        time.sleep(every)
+    server.shutdown()
+
+
 def build_pdf(log):
-    browser = next((b for b in (shutil.which("msedge"), shutil.which("chrome"),
-                                r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
-                                r"C:\Program Files\Google\Chrome\Application\chrome.exe") if b and Path(b).exists()), None)
+    browser = find_browser()
     if not shutil.which("pandoc") or not browser:
         log("Needs pandoc (pandoc.org) and Microsoft Edge or Chrome on this machine.")
         return 1
@@ -63,7 +89,7 @@ def build_pdf(log):
         page, css = Path(tmp) / "walkthrough.html", Path(tmp) / "print.html"
         css.write_text(f"<style>{PRINT_CSS}</style>", encoding="utf-8")
         # shift -1: the document's own H1 becomes the title page, phases become chapters
-        code = stream(["pandoc", str(ROOT / "WALKTHROUGH.md"), "-f", "gfm", "-s", "--toc", "--toc-depth=1",
+        code = stream(["pandoc", str(APP / "WALKTHROUGH.md"), "-f", "gfm", "-s", "--toc", "--toc-depth=1",
                        "--shift-heading-level-by=-1", "--metadata", f"date={date.today()}",
                        "-H", str(css), "-o", str(page)], log)
         if code:
@@ -72,23 +98,32 @@ def build_pdf(log):
         html = page.read_text(encoding="utf-8")
         page.write_text(re.sub(r'<a\s+href="(?!https?:|mailto:|#)[^"]*"', "<a", html), encoding="utf-8")
         stream([browser, "--headless", "--disable-gpu", "--log-level=3", "--no-pdf-header-footer",
-                f"--user-data-dir={tmp}", f"--print-to-pdf={ROOT / 'WALKTHROUGH.pdf'}", page.as_uri()],
+                f"--user-data-dir={tmp}", f"--print-to-pdf={APP / 'WALKTHROUGH.pdf'}", page.as_uri()],
                lambda line: ":ERROR:" in line or log(line))  # drop Chromium's internal log noise
-    ok = (ROOT / "WALKTHROUGH.pdf").exists()
+    ok = (APP / "WALKTHROUGH.pdf").exists()
     log(f"WALKTHROUGH.pdf {'written' if ok else 'NOT written'}")
     return 0 if ok else 1
 
 
 ACTIONS = {  # name -> (label, function(log, arg))
-    "test":  lambda log, _: stream(PY + ["test_pipeline.py"], log),
-    "rank":  lambda log, _: stream(PY + ["run.py", "--skip-collect"], log),
-    "since": lambda log, d: stream(PY + ["run.py", "--since", date.fromisoformat(d).isoformat()], log),
-    "full":  lambda log, _: stream(PY + ["run.py"], log),
+    "test":  lambda log, _: stream(py("test_pipeline.py"), log),
+    "rank":  lambda log, _: stream(py("run.py", "--skip-collect"), log),
+    "since": lambda log, d: stream(py("run.py", "--since", date.fromisoformat(d).isoformat()), log),
+    "full":  lambda log, _: stream(py("run.py"), log),
     "pdf":   lambda log, _: build_pdf(log),
 }
 
 
+def starter():
+    """First run: begin with the Example Organisation's files so no step needs a hand-made CSV."""
+    for n in EDITABLE:
+        if not (ROOT / n).exists():
+            shutil.copy2(APP / n.replace(".", ".example.", 1), ROOT / n)
+
+
 def start(name, arg):
+    if name in ("rank", "since", "full"):
+        starter()
     with lock:
         if job["running"]:
             return False
@@ -129,8 +164,9 @@ def state():
         s["top"] = rows[:10]
         for r in rows:
             s["tiers"][r["tier"]] = s["tiers"].get(r["tier"], 0) + 1
-    s["pdf"] = (ROOT / "WALKTHROUGH.pdf").exists()
-    prof = ROOT / "profile.yaml" if (ROOT / "profile.yaml").exists() else ROOT / "profile.example.yaml"
+    s["pdf"] = (APP / "WALKTHROUGH.pdf").exists()
+    s["version"], s["frozen"], s["tour"] = VERSION, FROZEN, (ROOT / "tour.done").exists()
+    prof = ROOT / "profile.yaml" if (ROOT / "profile.yaml").exists() else APP / "profile.example.yaml"
     s["profile"] = yaml.safe_load(prof.read_text(encoding="utf-8"))
     return s
 
@@ -185,7 +221,7 @@ class Handler(BaseHTTPRequestHandler):
         q = parse_qs(url.query)
         if url.path == "/":
             if self.allowed(need_token=False):
-                self.send(200, (ROOT / "cti" / "app.html").read_text(encoding="utf-8").replace("__TOKEN__", TOKEN), "text/html")
+                self.send(200, (APP / "cti" / "app.html").read_text(encoding="utf-8").replace("__TOKEN__", TOKEN), "text/html")
         elif url.path.startswith("/out/") or url.path == "/WALKTHROUGH.pdf":
             # outputs open in new tabs, so they carry the token in the URL instead of a header
             if not self.allowed(need_token=False):
@@ -193,11 +229,14 @@ class Handler(BaseHTTPRequestHandler):
             if not secrets.compare_digest(q.get("t", [""])[0], TOKEN):
                 return self.send(403, {"error": "bad token"})
             name = url.path.rsplit("/", 1)[1]
-            f = ROOT / "WALKTHROUGH.pdf" if name == "WALKTHROUGH.pdf" else ROOT / "out" / name
+            f = APP / "WALKTHROUGH.pdf" if name == "WALKTHROUGH.pdf" else ROOT / "out" / name
             if (name in OUTPUTS or name == "WALKTHROUGH.pdf") and f.exists():
                 self.send(200, f.read_bytes(), OUTPUTS.get(name, "application/pdf"))
             else:
                 self.send(404, {"error": "not found"})
+        elif url.path == "/ping":  # lets a second launch find this one
+            if self.allowed(need_token=False):
+                self.send(200, "stenwatch", "text/plain")
         elif not self.allowed():
             return
         elif url.path == "/api/state":
@@ -210,8 +249,19 @@ class Handler(BaseHTTPRequestHandler):
             if name not in EDITABLE:
                 return self.send(404, {"error": "not editable"})
             f = ROOT / name
-            src = f if f.exists() else ROOT / name.replace(".", ".example.", 1)
+            src = f if f.exists() else APP / name.replace(".", ".example.", 1)
             self.send(200, {"text": src.read_text(encoding="utf-8") if src.exists() else "", "exists": f.exists()})
+        elif url.path == "/api/decisions":
+            self.send(200, {"rows": process.load_exceptions(ROOT / "exceptions.csv")})
+        elif url.path == "/api/findings":  # find a finding to record a decision about: newest ranking, best risk first
+            term = q.get("q", [""])[0].strip().lower()
+            f = ROOT / "out" / "report.csv"
+            rows = []
+            if f.exists():
+                with open(f, newline="", encoding="utf-8") as fh:
+                    rows = list(csv.DictReader(fh))
+            hits = [r for r in rows if term in r["cve"].lower() or term in r["asset"].lower()][:15]
+            self.send(200, {"rows": [{k: r[k] for k in ("tier", "risk", "cve", "asset")} for r in hits]})
         elif url.path == "/api/cpe":
             term = q.get("term", [""])[0].strip()
             if len(term) < 3:
@@ -223,6 +273,15 @@ class Handler(BaseHTTPRequestHandler):
             self.send(404, {"error": "not found"})
 
     def do_POST(self):
+        global last_seen
+        url = urlparse(self.path)
+        if url.path == "/api/closing":  # sent by the page as it closes (sendBeacon can't set a header, so the token is in the URL)
+            if self.allowed(need_token=False):
+                if not secrets.compare_digest(parse_qs(url.query).get("t", [""])[0], TOKEN):
+                    return self.send(403, {"error": "bad token"})
+                last_seen = time.time() - IDLE + 30  # quit in 30 s unless a reload sends a heartbeat first
+                self.send(200, {"ok": True})
+            return
         if not self.allowed():
             return
         body = json.loads(self.rfile.read(int(self.headers.get("Content-Length", 0))) or b"{}")
@@ -237,6 +296,29 @@ class Handler(BaseHTTPRequestHandler):
                     return self.send(400, {"error": "date must be YYYY-MM-DD"})
             ok = start(name, arg)
             self.send(200 if ok else 409, {"started": ok} if ok else {"error": f"'{job['name']}' is still running"})
+        elif self.path in ("/api/decision", "/api/decision/delete"):
+            f = ROOT / "exceptions.csv"
+            try:
+                if self.path.endswith("delete"):
+                    process.remove_exception(f, body.get("cve", ""), body.get("asset", ""))
+                else:
+                    process.record_exception(f, body.get("cve", "").strip().upper(), body.get("asset", ""), body.get("status", ""),
+                                             body.get("until", ""), body.get("note", ""))
+            except ValueError as e:
+                return self.send(400, {"error": str(e)})
+            self.send(200, {"ok": True})
+        elif self.path == "/api/starter":  # first run: start from the Example Organisation's files
+            starter()
+            self.send(200, {"ok": True})
+        elif self.path == "/api/tour":
+            (ROOT / "tour.done").write_text("1")
+            self.send(200, {"ok": True})
+        elif self.path == "/api/alive":
+            last_seen = time.time()
+            self.send(200, {"ok": True})
+        elif self.path == "/api/quit":
+            self.send(200, {"quit": True})
+            threading.Thread(target=server.shutdown).start()
         elif self.path == "/api/file":
             name, text = body.get("name"), body.get("text", "")
             if name not in EDITABLE:
@@ -257,10 +339,29 @@ class Handler(BaseHTTPRequestHandler):
 if __name__ == "__main__":
     if "--pdf" in sys.argv:
         raise SystemExit(build_pdf(print))
-    server = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)  # never 0.0.0.0: this tool maps our weak spots
+    PORTFILE = DATA / "console.port"
+    try:
+        old = int(PORTFILE.read_text())
+        running = urlopen(f"http://127.0.0.1:{old}/ping", timeout=1).read() == b"stenwatch"
+    except (OSError, ValueError):
+        running = False
+    if running:  # already started: just show it again
+        open_window(f"http://127.0.0.1:{old}")
+        raise SystemExit
+    for PORT in range(8765, 8785):
+        try:
+            server = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)  # never 0.0.0.0: this tool maps our weak spots
+            break
+        except OSError:
+            pass
+    else:
+        raise SystemExit("No free port between 8765 and 8784")
+    PORTFILE.write_text(str(PORT))
     print(f"Stenwatch console: http://127.0.0.1:{PORT}  (Ctrl+C to stop)")
-    webbrowser.open(f"http://127.0.0.1:{PORT}")
+    open_window(f"http://127.0.0.1:{PORT}")
+    threading.Thread(target=watch, args=(server,), daemon=True).start()
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         pass
+    PORTFILE.unlink(missing_ok=True)

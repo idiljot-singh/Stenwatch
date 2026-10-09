@@ -198,4 +198,25 @@ os.environ["CTI_TEST_SECRET"] = "from-env"
 assert vault.secret("CTI_TEST_SECRET") == "from-env"  # nothing in Credential Manager -> environment fallback
 assert vault.secret("CTI_TEST_MISSING_SECRET") is None
 
+# --- decisions recorded from the console: validated, one per CVE + asset, replaced not duplicated ---
+with tempfile.TemporaryDirectory() as tmp:
+    ex = Path(tmp) / "exceptions.csv"
+    process.record_exception(ex, "CVE-2024-12345", "Web server", "patched", "", "fixed, tested")
+    process.record_exception(ex, "CVE-2024-12345", "Web server", "accepted", "2030-01-01")
+    rows = process.load_exceptions(ex)
+    assert len(rows) == 1 and rows[0]["status"] == "accepted" and rows[0]["until"] == "2030-01-01"
+    for bad in (("not-a-cve", "x", "patched", ""), ("CVE-2024-12345", "x", "nonsense", ""), ("CVE-2024-12345", "x", "patched", "01/01/2030")):
+        try:
+            process.record_exception(ex, *bad)
+            raise AssertionError(f"accepted {bad}")
+        except ValueError:
+            pass
+    process.remove_exception(ex, "CVE-2024-12345", "Web server")
+    assert process.load_exceptions(ex) == []
+
+# --- report pages: feed text can't inject markup, and only https links survive ---
+from cti import render
+h = render.md_to_html("## <script>alert(1)</script>\n[x](javascript:alert(1)) [ok](https://nvd.nist.gov/)\n| A |\n|---|\n| Act |")
+assert "<script" not in h and '<a href="javascript' not in h
+assert '<a href="https://nvd.nist.gov/"' in h and 'class="pill act"' in h
 print("ok")

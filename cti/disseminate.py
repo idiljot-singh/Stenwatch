@@ -5,7 +5,7 @@ from pathlib import Path
 
 import stix2
 
-from cti import analyse
+from cti import analyse, render
 from cti.analyse import ACTION as TIER_ACTION
 
 BANNER = "**TLP:AMBER**: limited disclosure, organisation and clients on a need-to-know basis only."
@@ -100,6 +100,8 @@ def write_reports(ranked, out_dir, profile, top=50, suppressed=(), expired=()):
         md += ["", f"**{len(expired)} exception(s) expired; those findings are back in the ranking for review:** "
                + ", ".join(f"{e['cve']} ({e['asset']}, until {e['until']})" for e in expired)]
     (out / "report.md").write_text("\n".join(md) + "\n", encoding="utf-8")
+    render.write_page("\n".join(md), out / "report.html", "Intelligence report", org["name"], date.today(),
+                      cards=[(t, tiers[t], TIER_ACTION[t]) for t in TIERS])
 
 
 def write_brief(text, source, out_dir, profile):
@@ -108,6 +110,7 @@ def write_brief(text, source, out_dir, profile):
              else f"**AI-generated draft ({source}). Verify against report.md before sending.**")
     md = [f"# Weekly CVE Brief: {profile['organisation']['name']}, {date.today()}", "", BANNER, "", label, "", text, ""]
     (Path(out_dir) / "brief.md").write_text("\n".join(md), encoding="utf-8")
+    render.write_page(text, Path(out_dir) / "brief.html", "Weekly management brief", profile["organisation"]["name"], date.today(), note=label)
 
 
 # --- STIX 2.1 ---------------------------------------------------------------

@@ -12,12 +12,13 @@ from pathlib import Path
 
 import yaml
 
-from cti import analyse, collect, disseminate, llm, process
+from cti import analyse, collect, disseminate, llm, process, render
 
-ROOT = Path(__file__).parent  # files live next to run.py, wherever it's launched from
-DB, OUT, LOG = ROOT / "cve.db", ROOT / "out", ROOT / "run.log"
-ASSETS, THIRD, PROFILE = ROOT / "assets.csv", ROOT / "third_parties.csv", ROOT / "profile.yaml"
-EXCEPTIONS = ROOT / "exceptions.csv"
+from cti.paths import APP, DATA  # organisation files live in DATA, wherever it's launched from
+
+DB, OUT, LOG = DATA / "cve.db", DATA / "out", DATA / "run.log"
+ASSETS, THIRD, PROFILE = DATA / "assets.csv", DATA / "third_parties.csv", DATA / "profile.yaml"
+EXCEPTIONS = DATA / "exceptions.csv"
 
 
 def audit(line):
@@ -63,7 +64,9 @@ def pipeline(args):
     text, source = llm.brief(ranked, profile.get("llm", {}), names=[a["name"] for a in assets] + [o["name"]],
                              org=f"a {o['sector']} organisation in {o['country']}")
     disseminate.write_brief(text, source, OUT, profile)
-    print(f"Report: {len(ranked)} findings -> {OUT}: report.md, report.csv, dashboard.html, bundle.json, brief.md")
+    pdfs = [render.to_pdf(OUT / f"{n}.html") for n in ("report", "brief")]
+    print("PDF: " + (", ".join(p.name for p in pdfs if p) or "skipped (needs Microsoft Edge or Chrome)"))
+    print(f"Report: {len(ranked)} findings -> {OUT}: report.html/.pdf, brief.html/.pdf, report.csv, dashboard.html, bundle.json")
 
     count = lambda t: db.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0]
     tiers = collections.Counter(r["tier"] for r in ranked)
@@ -82,7 +85,7 @@ p.add_argument("--example", action="store_true")
 p.add_argument("--assets", help="assets CSV to use instead of assets.csv; reports go next to it (use with --example)")
 args = p.parse_args()
 if args.example:
-    ASSETS, THIRD, PROFILE, EXCEPTIONS = (f.with_name(f.name.replace(".", ".example.", 1)) for f in (ASSETS, THIRD, PROFILE, EXCEPTIONS))
+    ASSETS, THIRD, PROFILE, EXCEPTIONS = (APP / f.name.replace(".", ".example.", 1) for f in (ASSETS, THIRD, PROFILE, EXCEPTIONS))
     OUT = OUT / "example"
 if args.assets:
     ASSETS = Path(args.assets)

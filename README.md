@@ -47,10 +47,14 @@ The result is a ranked, explainable list in four SSVC decision tiers: **Act** (w
 | **Deterministic** | The same inputs give a byte-identical ranking. An optional LLM only writes the management brief and never scores |
 | **Defend and model** | Every finding lists MITRE **D3FEND** countermeasures and ATT&CK mitigations for its techniques, and a projected **Diamond Model** (adversary, capability, infrastructure, victim) of the intrusion it would enable |
 | **Third-party risk** | Supplier CVEs are weighted by data access and privileged access |
-| **Five outputs** | Analyst dashboard, Markdown report, management brief, CSV, and a **STIX 2.1** bundle for MISP, OpenCTI or Sentinel |
+| **Designed outputs** | Analyst dashboard, intelligence report and management brief (styled HTML plus PDF), CSV, and a **STIX 2.1** bundle for MISP, OpenCTI or Sentinel |
 | **Console** | A local web interface that walks through each stage, runs the real code and streams its output |
 | **Secure by design** | Localhost-only console with CSRF and DNS-rebinding protection, secrets in the OS credential store, hash-pinned dependencies, TLP:AMBER marking, feed-poisoning guards |
 | **Small** | About 1,100 lines of plain Python, 4 dependencies, SQLite, no servers |
+
+## Install (Windows beta)
+
+Download `Stenwatch-Setup-0.1.0-beta.exe` from the Releases page and run it. No admin rights are needed. Windows will show a blue "unknown publisher" screen because the beta is unsigned: choose **More info → Run anyway**, or ask IT to allow-list the file by its SHA-256 (printed next to the download). A short tour opens on first launch. Your data lives in `%APPDATA%\Stenwatch` and survives updates; uninstalling asks whether to delete it. To update, run the newer Setup over the old one.
 
 ## Setup from zero (Windows)
 
@@ -102,7 +106,7 @@ python run.py --suggest-cpe exchange    # find the NVD product name for the cpe 
 | Collection | `cti/collect.py` | NVD (every CVE), CISA KEV, FIRST EPSS, MITRE ATT&CK + D3FEND, CTID KEV→ATT&CK into `cve.db` |
 | Processing | `cti/process.py` | Owned assets and suppliers → CPE + version matching; optional Microsoft Defender inventory |
 | Analysis | `cti/analyse.py` | Risk score, threat-profile overlap, ATT&CK techniques, SSVC tier |
-| Dissemination | `cti/disseminate.py` | `report.md`, `report.csv`, `dashboard.html`, `brief.md`, STIX 2.1 `bundle.json` |
+| Dissemination | `cti/disseminate.py` | `report.html`/`.pdf`, `brief.html`/`.pdf`, `report.csv`, `dashboard.html`, STIX 2.1 `bundle.json` (plus the Markdown sources `report.md`, `brief.md`) |
 | Feedback | `exceptions.csv` | Patched, mitigated or accepted decisions that expire and come back for review |
 
 ```
@@ -110,6 +114,10 @@ likelihood = 0.4·EPSS + 0.3·inKEV + 0.1·ransomware + 0.2·threat_overlap
 impact     = CVSS/10 · criticality (or supplier blast radius) · 1.5 if internet-facing
 risk       = likelihood · impact
 ```
+
+## Architecture diagrams
+
+Four diagrams, generated from the real code by `python tools/diagrams.py`: the [code map](docs/diagrams/code-map.html) (modules, size, complexity), [one click, step by step](docs/diagrams/one-click.html) (sequence), [the installed app](docs/diagrams/installed-app.html) (what runs where) and [where the complexity lives](docs/diagrams/complexity.html). A [backtest](docs/backtest.md) shows how well the scoring finds later-exploited CVEs.
 
 ## Your data stays yours
 

@@ -42,6 +42,30 @@ def load_exceptions(path):
     return rows
 
 
+def write_exceptions(path, rows):
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, ["cve", "asset", "status", "until", "note"], extrasaction="ignore")
+        w.writeheader()
+        w.writerows(rows)
+
+
+def record_exception(path, cve, asset, status, until="", note=""):
+    """Console form -> exceptions.csv. One decision per CVE + asset: recording again replaces it."""
+    if not re.fullmatch(r"CVE-\d{4}-\d{4,}", cve):
+        raise ValueError("CVE ids look like CVE-2024-12345")
+    if status not in EXCEPTION_STATUS:
+        raise ValueError(f"status must be one of {', '.join(EXCEPTION_STATUS)}")
+    if until:
+        date.fromisoformat(until)  # ValueError if not YYYY-MM-DD
+    row = {"cve": cve, "asset": asset.strip() or "*", "status": status, "until": until, "note": " ".join(note.split())[:300]}
+    write_exceptions(path, [e for e in load_exceptions(path) if (e["cve"], e["asset"]) != (row["cve"], row["asset"])] + [row])
+    return row
+
+
+def remove_exception(path, cve, asset):
+    write_exceptions(path, [e for e in load_exceptions(path) if (e["cve"], e["asset"]) != (cve, asset)])
+
+
 def apply_exceptions(ranked, exceptions, today=None):
     """-> (kept, suppressed). An exception past its `until` date stops applying: risk comes back for review."""
     today = (today or date.today()).isoformat()
