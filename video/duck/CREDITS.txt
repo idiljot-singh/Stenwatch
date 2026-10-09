@@ -1,0 +1,3 @@
+Mascot artwork: "Pilot Duck Adventurer" by SPLYGON on Meshy (Meshy 6), licensed CC0 (public domain).
+Source: https://www.meshy.ai/3d-models/Pilot-Duck-Adventurer-019d5dfb-791a-722b-87db-cd6b5a296b38
+The 16 cut_NN.png files are renders of that model from its public viewer, cut out by video/cutout_duck.py.

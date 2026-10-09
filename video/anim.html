@@ -1,0 +1,404 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><style>
+*{box-sizing:border-box;margin:0}
+html,body{width:1920px;height:1080px;overflow:hidden;background:#050505}
+body{color:#f2f2f2;font:400 34px/1.35 "Segoe UI",system-ui,sans-serif;position:relative}
+.mono{font-family:"Cascadia Mono",Consolas,monospace}
+.abs{position:absolute}
+.grid{position:absolute;inset:0;background-image:linear-gradient(#ffffff09 1px,transparent 1px),linear-gradient(90deg,#ffffff09 1px,transparent 1px);background-size:80px 80px;mask-image:radial-gradient(ellipse at 50% 35%,#000 12%,transparent 75%)}
+#orb{position:absolute;inset:0}
+.scene{position:absolute;inset:0;opacity:0;will-change:opacity,transform}
+.eyebrow{font:700 26px "Cascadia Mono",Consolas,monospace;letter-spacing:.28em;color:#3ee6a8;text-transform:uppercase}
+.mute{color:#9a9a9a}.accent{color:#3ee6a8}
+.act{--c:#ff4d5e}.attend{--c:#ff9f43}.track{--c:#4ea3ff}.ignore{--c:#7a8699}
+.brand{position:absolute;left:90px;top:56px;display:flex;gap:18px;align-items:center;font:700 26px "Cascadia Mono",Consolas,monospace;letter-spacing:.3em}
+.brand svg{width:54px;height:54px}
+.foot{position:absolute;left:90px;right:90px;bottom:44px;display:flex;justify-content:space-between;color:#5e5e5e;font:21px "Cascadia Mono",Consolas,monospace;letter-spacing:.08em}
+#prog{position:absolute;left:0;bottom:0;height:5px;background:#3ee6a8;width:0}
+.shot{border:1px solid #2a2a2a;border-radius:14px;box-shadow:0 30px 80px -30px #000;overflow:hidden;position:relative;background:#000}
+.shot img{position:absolute;left:0;top:0;display:block}
+.tier{flex:1;border:1px solid #2a2a2a;border-left:8px solid var(--c);border-radius:12px;padding:22px 28px;background:#0b0b0b}
+.tier b{display:block;color:var(--c);font:700 38px "Cascadia Mono",Consolas,monospace;letter-spacing:.1em}
+.tier span{color:#9a9a9a;font-size:28px}
+.q{border:1px solid #2a2a2a;border-radius:14px;padding:22px 30px;background:#0b0b0b;display:flex;gap:26px;align-items:center;margin-bottom:22px}
+.q i{font:700 34px "Cascadia Mono",Consolas,monospace;color:#3ee6a8;font-style:normal}
+.q b{display:block;font-size:42px;font-weight:600}.q small{display:block;color:#8a8a8a;font-size:25px}
+.chip{border:1px solid #333;border-radius:999px;padding:14px 30px;font:28px "Cascadia Mono",Consolas,monospace;color:#d6d6d6;background:#0b0b0b}
+.bar{height:58px;background:#151515;border-radius:8px;overflow:hidden;width:1000px}
+.bar>div{height:100%;width:0}
+.dot{position:absolute;width:20px;height:20px;border-radius:5px;background:#222}
+</style></head><body>
+<div class="grid"></div>
+<canvas id="orb" width="1920" height="1080"></canvas>
+
+<!-- ============ SCENE 1: what a vulnerability is, then the numbers ============ -->
+<section class="scene" id="sc0">
+  <div id="s0a">
+    <div class="abs" id="s0e" style="left:90px;top:200px"><div class="eyebrow">What is a vulnerability?</div></div>
+    <div class="abs" id="s0t1" style="left:90px;top:262px;font-size:92px;font-weight:600;letter-spacing:-.03em;line-height:1.05">A flaw<br>in software.</div>
+    <div class="abs" id="s0t2" style="left:90px;top:560px;font-size:62px;color:#ff4d5e;font-weight:600">An unlocked door.</div>
+    <div class="abs" id="s0t3" style="left:90px;top:660px;width:760px;font-size:36px;color:#b8b8b8">Anyone who finds it can walk in.<br><span class="mute" style="font-size:30px">Every flaw gets a public ID, called a CVE.</span></div>
+    <svg class="abs" id="door" style="left:1000px;top:150px;overflow:visible" width="720" height="760" viewBox="0 0 400 520">
+      <defs><radialGradient id="spill" cx="50%" cy="50%" r="60%"><stop offset="0" stop-color="#ff4d5e" stop-opacity=".55"/><stop offset="1" stop-color="#ff4d5e" stop-opacity="0"/></radialGradient></defs>
+      <ellipse id="glow" cx="200" cy="270" rx="210" ry="250" fill="url(#spill)" opacity="0"/>
+      <rect x="60" y="30" width="280" height="440" rx="14" fill="#0a0a0a" stroke="#3a3a3a" stroke-width="4"/>
+      <g id="panel"><rect x="76" y="46" width="248" height="408" rx="8" fill="#161616" stroke="#2c2c2c" stroke-width="3"/><circle cx="294" cy="260" r="13" fill="#3ee6a8"/></g>
+      <g id="lock" transform="translate(150 262)">
+        <path id="shackle" d="M-34 -40 V-76 a34 34 0 0 1 68 0 V-40" fill="none" stroke="#9a9a9a" stroke-width="12" stroke-linecap="round"/>
+        <rect id="lockbody" x="-52" y="-40" width="104" height="86" rx="12" fill="#1a1a1a" stroke="#9a9a9a" stroke-width="6"/><circle cx="0" cy="2" r="9" fill="#9a9a9a"/>
+      </g>
+      <g id="man" opacity="0"><circle cx="0" cy="0" r="17" fill="#ff4d5e"/><path d="M-20 24 q20 -12 40 0 v70 h-14 v-48 h-12 v48 h-14z" fill="#ff4d5e"/></g>
+    </svg>
+  </div>
+  <div id="s0b" style="opacity:0">
+    <div class="abs" id="n40" style="left:90px;top:210px"><div class="eyebrow">Every year</div><div class="mono" id="n40v" style="font-size:240px;font-weight:700;letter-spacing:-.04em;line-height:1.1">0</div>
+      <div style="font-size:50px;margin-top:6px">new vulnerabilities</div></div>
+    <div class="abs" id="dots" style="left:1040px;top:260px;width:790px;height:480px"></div>
+    <div class="abs" id="n40q" style="left:1040px;top:770px;width:790px;font-size:40px"><span class="mute">Severity scores can’t say</span> <span style="color:#ff4d5e;font-weight:600">which will be used against us.</span></div>
+  </div>
+  <div id="s0c" class="abs" style="inset:0;display:flex;align-items:center;justify-content:center;opacity:0"><div style="text-align:center"><div class="mono" style="font-size:150px;font-weight:700;letter-spacing:.1em;color:#3ee6a8">STENWATCH</div><div style="font-size:70px;margin-top:6px">can.</div></div></div>
+</section>
+
+<!-- ============ SCENE 2: the flood becomes a short list ============ -->
+<section class="scene" id="sc1">
+  <div class="abs" style="left:90px;top:170px"><div class="eyebrow">Stenwatch narrows it</div>
+    <div style="font-size:66px;font-weight:600;letter-spacing:-.03em;margin:14px 0 40px;line-height:1.08">From a flood<br>to a short list</div></div>
+  <div class="abs" id="fun" style="left:90px;top:470px;width:900px"></div>
+  <div class="abs" id="qs" style="left:1080px;top:200px;width:750px">
+    <div class="q" id="q0"><i>01</i><div><b>Do we run it?</b><small>Our own software, matched by product and version</small></div></div>
+    <div class="q" id="q1"><i>02</i><div><b>Do our suppliers?</b><small>Weighted by the data and access they hold</small></div></div>
+    <div class="q" id="q2"><i>03</i><div><b>Are our attackers using it?</b><small>Known exploitation, ransomware, threat groups</small></div></div>
+  </div>
+  <div class="abs mono" id="s1note" style="left:90px;top:930px;font-size:22px;color:#6a6a6a">Figures from the bundled example organisation.</div>
+</section>
+
+<!-- ============ SCENE 3: four tiers and the backtest ============ -->
+<section class="scene" id="sc2">
+  <div class="abs" style="left:90px;right:90px;top:165px"><div class="eyebrow" id="s2e">Four decision tiers</div>
+    <div style="display:flex;gap:24px;margin-top:24px" id="tiers">
+      <div class="tier act"><b>ACT</b><span>within 48 hours</span></div><div class="tier attend"><b>ATTEND</b><span>next patch cycle</span></div>
+      <div class="tier track"><b>TRACK</b><span>watch</span></div><div class="tier ignore"><b>IGNORE</b><span>no action</span></div></div></div>
+  <div class="abs" id="bt" style="left:90px;top:470px;width:1740px">
+    <div class="eyebrow" style="color:#9a9a9a">Backtest · six months of real attacks</div>
+    <div id="r0" style="margin-top:34px"><div style="font-size:34px;margin-bottom:10px">Stenwatch <span class="accent">Attend</span> tier <span class="mute" style="font-size:28px">· about 19,000 CVEs to review</span></div>
+      <div style="display:flex;align-items:center;gap:26px"><div class="bar"><div id="b0" style="background:#3ee6a8"></div></div><div class="mono" id="v0" style="font-size:48px;font-weight:700;color:#3ee6a8;min-width:260px">0%</div></div></div>
+    <div id="r1" style="margin-top:34px"><div style="font-size:34px;margin-bottom:10px">Usual critical list <span class="mute" style="font-size:28px">· CVSS 9 and up · about 31,000 CVEs</span></div>
+      <div style="display:flex;align-items:center;gap:26px"><div class="bar"><div id="b1" style="background:repeating-linear-gradient(135deg,#ff9f43 0 14px,#ff9f4399 14px 28px)"></div></div><div class="mono" id="v1" style="font-size:48px;font-weight:700;color:#ff9f43;min-width:260px">0%</div></div></div>
+    <div class="mono mute" id="s2note" style="font-size:22px;margin-top:26px">Share of later-confirmed exploited vulnerabilities caught · three six-month windows · EPSS as of each start date</div>
+  </div>
+</section>
+
+<!-- ============ SCENE 4: dashboard and reports ============ -->
+<section class="scene" id="sc3">
+  <div class="abs" id="l0" style="left:90px;top:150px"><div class="eyebrow"><span id="live" style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#ff4d5e;margin-right:14px"></span>Analysts · live dashboard</div></div>
+  <div class="abs" id="dwrap" style="left:90px;top:210px;width:1040px;height:660px;perspective:1800px">
+    <div class="shot" id="dash" style="width:1040px;height:660px;transform-origin:20% 50%"><img src="__DASH__" style="width:1040px"></div></div>
+  <div class="abs" id="l1" style="left:1180px;top:150px"><div class="eyebrow">Management · PDF</div></div>
+  <div class="abs" id="rwrap" style="left:1180px;top:210px;width:650px;perspective:1800px">
+    <div class="shot" id="rep" style="width:650px;height:340px"><img src="__REP__" style="width:650px"></div>
+    <div class="shot" id="bri" style="width:650px;height:200px;margin-top:24px"><img src="__BRI__" style="width:650px"></div></div>
+  <div class="abs mono" id="pdfb" style="left:1700px;top:222px;background:#3ee6a8;color:#04110b;font-weight:700;font-size:26px;padding:6px 18px;border-radius:8px;letter-spacing:.12em">PDF</div>
+</section>
+
+<!-- ============ SCENE 5: close ============ -->
+<section class="scene" id="sc4">
+  <div class="abs" style="inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
+    <svg id="logo" width="230" height="230" viewBox="0 0 40 40" fill="none" stroke-linecap="round">
+      <path id="lg0" pathLength="1" d="M20 2.5l15 8.7v17.6L20 37.5 5 28.8V11.2z" stroke="#3ee6a8" stroke-width="1.3"/>
+      <circle id="lg1" pathLength="1" cx="20" cy="20" r="9" stroke="#5aa9ff" stroke-width="1.1"/>
+      <circle id="lg2" cx="20" cy="20" r="3.2" fill="#3ee6a8"/>
+      <path id="lg3" pathLength="1" d="M20 7v6M20 27v6M7 20h6M27 20h6" stroke="#3ee6a8" stroke-width="1.3"/></svg>
+    <div class="mono" id="s4n" style="font-size:96px;font-weight:700;letter-spacing:.2em;margin:26px 0 6px">STENWATCH</div>
+    <div class="eyebrow" id="s4b" style="font-size:34px">In beta today</div>
+    <div id="s4w" style="font-size:66px;margin:26px 0 46px;font-weight:600"></div>
+    <div style="display:flex;gap:24px"><span class="chip" id="c0">Runs on our own machines</span><span class="chip" id="c1">Our data never leaves</span><span class="chip" id="c2">Windows installer</span></div>
+  </div>
+</section>
+
+<canvas id="fx" width="1920" height="1080" style="position:absolute;left:0;top:0;pointer-events:none"></canvas>
+<svg id="mascot" class="abs" style="overflow:visible;opacity:0;pointer-events:none" width="188" height="243" viewBox="0 0 220 284">
+  <defs><linearGradient id="hg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d2f4d"/><stop offset="1" stop-color="#0a121f"/></linearGradient></defs>
+  <ellipse id="mshadow" cx="110" cy="272" rx="58" ry="9" fill="#000" opacity=".55"/>
+  <g id="mbody">
+    <g id="footL"><rect x="58" y="238" width="46" height="30" rx="14" fill="#0e1624" stroke="#3ee6a8" stroke-width="3.5"/><rect x="66" y="256" width="30" height="5" rx="2.5" fill="#3ee6a8" opacity=".5"/></g>
+    <g id="footR"><rect x="116" y="238" width="46" height="30" rx="14" fill="#0e1624" stroke="#3ee6a8" stroke-width="3.5"/><rect x="124" y="256" width="30" height="5" rx="2.5" fill="#3ee6a8" opacity=".5"/></g>
+    <g id="armL"><rect x="56" y="196" width="20" height="50" rx="10" fill="#0e1624" stroke="#3ee6a8" stroke-width="3.5"/><circle cx="66" cy="247" r="11" fill="#3ee6a8"/></g>
+    <g id="armR"><rect x="144" y="196" width="20" height="50" rx="10" fill="#0e1624" stroke="#3ee6a8" stroke-width="3.5"/><circle cx="154" cy="247" r="11" fill="#3ee6a8"/></g>
+    <rect x="72" y="180" width="76" height="66" rx="26" fill="url(#hg)" stroke="#3ee6a8" stroke-width="3.5"/>
+    <circle id="chestglow" cx="110" cy="214" r="16" fill="#3ee6a8" opacity=".15"/><circle id="chest" cx="110" cy="214" r="8" fill="#3ee6a8"/>
+    <g id="head">
+      <g id="ant"><line x1="110" y1="44" x2="110" y2="24" stroke="#3ee6a8" stroke-width="4.5" stroke-linecap="round"/><circle id="mlight" cx="110" cy="17" r="8" fill="#3ee6a8"/></g>
+      <path d="M110 42 L178 80 V158 L110 196 L42 158 V80 Z" fill="url(#hg)" stroke="#3ee6a8" stroke-width="4.5" stroke-linejoin="round"/>
+      <path d="M50 78 Q110 62 170 78" stroke="#6b4c22" stroke-width="9" fill="none" stroke-linecap="round"/>
+      <circle cx="84" cy="70" r="16" fill="rgba(90,169,255,.30)" stroke="#c8964a" stroke-width="5.5"/><circle cx="136" cy="70" r="16" fill="rgba(90,169,255,.30)" stroke="#c8964a" stroke-width="5.5"/>
+      <path d="M74 64 Q80 58 88 60" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".7"/><path d="M126 64 Q132 58 140 60" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".7"/>
+      <rect x="58" y="92" width="104" height="72" rx="26" fill="#05080d" stroke="#1d3d33" stroke-width="2"/>
+      <g id="eyeL" transform="translate(86 122)"><circle r="19" fill="#eafff6"/><g class="pup"><circle r="10.5" fill="#3ee6a8"/><circle r="4.2" fill="#04110b"/><circle cx="3.8" cy="-3.8" r="2.4" fill="#fff"/></g></g>
+      <g id="eyeR" transform="translate(134 122)"><circle r="19" fill="#eafff6"/><g class="pup"><circle r="10.5" fill="#3ee6a8"/><circle r="4.2" fill="#04110b"/><circle cx="3.8" cy="-3.8" r="2.4" fill="#fff"/></g></g>
+      <path id="browL" d="M70 98 L100 98" stroke="#3ee6a8" stroke-width="4.5" stroke-linecap="round"/><path id="browR" d="M120 98 L150 98" stroke="#3ee6a8" stroke-width="4.5" stroke-linecap="round"/>
+      <circle id="chkL" cx="68" cy="147" r="8" fill="#3ee6a8" opacity=".28"/><circle id="chkR" cx="152" cy="147" r="8" fill="#3ee6a8" opacity=".28"/>
+      <path id="smile" d="M94 146 Q110 158 126 146" stroke="#3ee6a8" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <ellipse id="mouth" cx="110" cy="149" rx="9" ry="3" fill="#05080d" stroke="#3ee6a8" stroke-width="3" opacity="0"/>
+    </g>
+    <g id="scarf"><rect x="74" y="178" width="72" height="14" rx="7" fill="#3ee6a8"/><path id="stail" d="M138 186 Q158 192 172 208 Q164 212 150 202 Z" fill="#2fc593"/></g>
+  </g></svg>
+<div class="brand" id="brand"><svg viewBox="0 0 40 40" fill="none" stroke-linecap="round"><path d="M20 2.5l15 8.7v17.6L20 37.5 5 28.8V11.2z" stroke="#3ee6a8" stroke-width="1.6"/><circle cx="20" cy="20" r="9" stroke="#5aa9ff" stroke-width="1.2" opacity=".8"/><circle cx="20" cy="20" r="3.2" fill="#3ee6a8"/><path d="M20 7v6M20 27v6M7 20h6M27 20h6" stroke="#3ee6a8" stroke-width="1.4"/></svg>STENWATCH</div>
+<div class="foot"><span>THREAT-INFORMED CVE PRIORITISATION</span><span>TLP:AMBER · BETA 0.1.0</span></div>
+<div id="prog"></div>
+
+<script>
+const SC = __SC__, TR = __TR__, TOTAL = __TOTAL__, ENV = __ENV__;
+const $ = id => document.getElementById(id);
+const cl = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const pr = (u, a, b) => cl((u - a) / (b - a));
+const lerp = (a, b, p) => a + (b - a) * p;
+const E = {out: x => 1 - Math.pow(1 - x, 3), io: x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2,
+           back: x => { const c = 1.70158; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); }};
+const fmt = n => Math.round(n).toLocaleString("en-US");
+// entrance (pin) and optional exit (pout) of one element
+function put(el, pin, pout = 0, o = {}) {
+  const e = (o.ease || E.out)(pin), x = o.x || 0, y = o.y === undefined ? 34 : o.y, s = o.s === undefined ? 1 : o.s;
+  el.style.opacity = e * (1 - E.io(pout));
+  el.style.transform = `translate(${x * (1 - e)}px,${y * (1 - e)}px) scale(${1 - (1 - s) * (1 - e)})`;
+}
+
+// ---- background: the Stenwatch dotted sphere; it scrambles and clicks back into place at every scene change ----
+const octx = $("orb").getContext("2d"), BANDS = 14, PER = 28;
+const offs = Array.from({length: BANDS}, (_, i) => Math.sin(i * 12.9898) * 1.2);
+const snap = t => 1 + 2.7 * Math.pow(t - 1, 3) + 1.7 * Math.pow(t - 1, 2);
+function orb(t) {
+  let amt = 0;
+  for (const s of TR) { const k = (t - s) / 1.4; if (k >= 0 && k <= 1) amt = k < .35 ? E.io(k / .35) : k < .5 ? 1 : 1 - snap((k - .5) / .5); }
+  const cx = 1500 + 60 * Math.sin(t * .2), cy = 600, r = 360, dots = [];
+  for (let b = 0; b < BANDS; b++) { const lat = -Math.PI / 2 + Math.PI * (b + .5) / BANDS;
+    for (let d = 0; d < PER; d++) { const lon = d * 2 * Math.PI / PER + t * .28 + offs[b] * amt;
+      const x = Math.cos(lat) * Math.sin(lon), y = Math.sin(lat), z = Math.cos(lat) * Math.cos(lon);
+      dots.push([x, y * .99 + z * .15, z, Math.cos(lat)]); } }
+  octx.clearRect(0, 0, 1920, 1080);
+  dots.sort((a, b) => a[2] - b[2]).forEach(([x, y, z, w]) => { const dp = (z + 1) / 2;
+    octx.globalAlpha = .05 + .2 * dp; octx.fillStyle = "#e6edf6";
+    octx.beginPath(); octx.arc(cx + x * r, cy + y * r, 2.5 + 5 * dp * w, 0, 7); octx.fill(); });
+}
+
+// ---- build the dot grid (each dot = 200 CVEs) and funnel bars once ----
+const dotsEl = $("dots"), DOTS = [];
+for (let i = 0; i < 200; i++) { const d = document.createElement("div"); d.className = "dot";
+  d.style.left = (i % 20) * 39 + "px"; d.style.top = Math.floor(i / 20) * 48 + "px"; dotsEl.append(d); DOTS.push(d); }
+const FUN = [["Published CVEs, worldwide", 240502, "#6b7a90"], ["Affect our assets or suppliers", 3505, "#4ea3ff"], ["Exploited, or likely to be", 7, "#ff9f43"], ["Act within 48 hours", 6, "#ff4d5e"]];
+const funEl = $("fun"), FB = FUN.map(([label, n, c]) => { const row = document.createElement("div"); row.style.cssText = "display:grid;grid-template-columns:1fr 220px;gap:18px;align-items:center;margin-bottom:16px";
+  row.innerHTML = `<div class="bar" style="width:100%;height:62px;background:#111"><div style="background:linear-gradient(90deg,${c}66,${c}22);border-left:6px solid ${c};display:flex;align-items:center;padding-left:18px;font-size:27px;white-space:nowrap">${label}</div></div><div class="mono" style="font-size:42px;font-weight:700;text-align:right;color:${c}">0</div>`;
+  funEl.append(row); return [row.children[0].firstChild, row.children[1], n]; });
+const W = n => 22 + 78 * Math.log10(Math.max(n, 1)) / Math.log10(240502);
+const words = "Let’s pilot it with the team".split(" ").map(w => { const s = document.createElement("span"); s.textContent = w; s.style.display = "inline-block"; s.style.margin = "0 .14em"; s.style.opacity = 0; $("s4w").append(s); return s; });
+
+function scene0(u, A) {   // A = narration length; sentence boundaries estimated from text length
+  const b1 = 6.1, b2 = 14.1;   // pauses measured in the narration
+  const outA = pr(u, b1 - .5, b1 + .1), inB = pr(u, b1 + .1, b1 + .8), outB = pr(u, b2 - .55, b2 - .05), inC = pr(u, b2 - .05, b2 + .45);
+  $("s0a").style.opacity = 1 - E.io(outA); $("s0a").style.display = outA >= 1 ? "none" : "block";
+  put($("s0e"), pr(u, .1, .6)); put($("s0t1"), pr(u, .3, 1.0));
+  put($("s0t2"), pr(u, 3.0, 3.6), 0, {x: -30, y: 0}); put($("s0t3"), pr(u, 4.4, 5.1));
+  // door: the lock opens, the door swings, an attacker walks in
+  const op = E.out(pr(u, 3.0, 3.7)), sw = E.io(pr(u, 3.6, 4.6)), walk = pr(u, 4.3, 6.0);
+  $("door").style.opacity = E.out(pr(u, .2, .9));
+  $("shackle").setAttribute("transform", `rotate(${-34 * op} 34 -40) translate(0 ${-16 * op})`);
+  const col = op > .3 ? "#ff4d5e" : "#9a9a9a"; $("shackle").setAttribute("stroke", col); $("lockbody").setAttribute("stroke", col);
+  $("panel").setAttribute("transform", `translate(76 0) scale(${1 - .62 * sw} 1) translate(-76 0)`);
+  $("glow").setAttribute("opacity", .9 * sw); $("lock").setAttribute("opacity", 1 - pr(u, 3.8, 4.3));
+  const man = $("man"); man.setAttribute("opacity", walk > 0 ? Math.min(1, walk * 6) * (1 - E.io(pr(walk, .86, 1))) : 0);
+  man.setAttribute("transform", `translate(${lerp(-70, 180, E.io(walk))} ${420 - 94}) scale(${lerp(1, .8, walk)})`);
+  // B: the numbers
+  $("s0b").style.opacity = E.io(inB) * (1 - E.io(outB));
+  const cnt = E.out(pr(u, b1 + .3, b1 + 3.0)); $("n40v").textContent = fmt(40000 * cnt);
+  const lit = Math.floor(200 * cnt);
+  DOTS.forEach((d, i) => { const hot = (i === 61 || i === 143) && pr(u, 12.2, 12.8) > 0; d.style.background = hot ? "#ff4d5e" : i < lit ? "#4a5568" : "#1e1e1e";
+    d.style.transform = hot ? `scale(${1.6 + .35 * Math.sin(u * 7)})` : "none"; d.style.boxShadow = hot ? "0 0 22px #ff4d5e" : "none"; });
+  put($("n40q"), pr(u, b1 + 3.6, b1 + 4.3), outB);
+  // C: Stenwatch can.
+  $("s0c").style.opacity = E.io(inC); $("s0c").style.transform = `scale(${lerp(.94, 1, E.out(inC))})`;
+}
+function scene1(u, A) {
+  const mv = i => E.io(pr(u, .8 + (i - 1) * 1.35, 2.3 + (i - 1) * 1.35));
+  FB.forEach(([bar, num, n], i) => { const p = i ? mv(i) : 1, rise = pr(u, .1 + i * .08, .6 + i * .08);
+    bar.style.width = lerp(100, W(n), p) + "%"; num.textContent = fmt(lerp(240502, n, p)); bar.parentElement.parentElement.style.opacity = E.out(rise); });
+  const qin = pr(u, 4.8, 5.5); $("qs").style.opacity = 1;
+  [5.2, 5.45, 5.7].forEach((t, i) => put($("q" + i), pr(u, t, t + .6), 0, {x: 60, y: 0}));
+  const hi = [pr(u, 6.2, 6.5), pr(u, 7.4, 7.7), pr(u, 8.85, 9.15)];
+  hi.forEach((h, i) => { const q = $("q" + i); q.style.borderColor = h > 0 ? "#3ee6a8" : "#2a2a2a"; q.style.boxShadow = h > 0 ? `0 0 ${34 * h}px -6px #3ee6a8` : "none"; q.style.background = h > 0 ? "#0e1c17" : "#0b0b0b"; });
+}
+function scene2(u, A) {
+  [0, 1, 2, 3].forEach(i => { const p = pr(u, .2 + i * .3, .75 + i * .3); const c = $("tiers").children[i];
+    c.style.opacity = p > 0 ? 1 : 0; c.style.transform = `scale(${lerp(.7, 1, E.back(p))}) translateY(${(1 - E.out(p)) * 40}px)`; });
+  put($("bt"), pr(u, 3.3, 4.1), 0, {y: 40});
+  const g0 = E.io(pr(u, 6.4, 9.0)), g1 = E.io(pr(u, 11.8, 13.6));
+  $("b0").style.width = 70 * g0 + "%"; $("v0").textContent = g0 > .98 ? "≈ 70%" : Math.round(70 * g0) + "%";
+  $("b1").style.width = 33 * g1 + "%"; $("v1").textContent = g1 > .98 ? "14–33%" : Math.round(33 * g1) + "%";
+  $("r0").style.opacity = E.out(pr(u, 5.8, 6.4)); $("r1").style.opacity = E.out(pr(u, 11.5, 12.0));
+  $("s2note").style.opacity = E.out(pr(u, 12.8, 13.4));
+  $("v0").style.textShadow = g0 > .98 ? `0 0 ${24 + 12 * Math.sin(u * 5)}px #3ee6a8` : "none";
+}
+function scene3(u, A) {
+  const tilt = 1 - E.out(pr(u, .1, 1.3));
+  $("dash").style.transform = `rotateY(${14 * tilt}deg) translateX(${-60 * tilt}px) scale(${1 + .035 * pr(u, 0, A + 1)})`;
+  $("dwrap").style.opacity = E.out(pr(u, .1, .8)); put($("l0"), pr(u, .1, .7));
+  $("live").style.opacity = .55 + .45 * Math.sin(u * 5);
+  const b = 2.55;
+  put($("l1"), pr(u, b, b + .6)); put($("rep"), pr(u, b, b + .8), 0, {x: 120, y: 0}); put($("bri"), pr(u, b + .35, b + 1.15), 0, {x: 120, y: 0});
+  put($("pdfb"), pr(u, 5.9, 6.4), 0, {y: 0, s: .4, ease: E.back});
+}
+function scene4(u, A) {
+  const draw = (id, a, b) => $(id).style.strokeDasharray = 1, f = (id, a, b) => $(id).style.strokeDashoffset = 1 - E.io(pr(u, a, b));
+  ["lg0", "lg1", "lg3"].forEach(i => $(i).style.strokeDasharray = 1);
+  f("lg0", 0, 1.2); f("lg1", .4, 1.5); f("lg3", .8, 1.8); $("lg2").style.opacity = pr(u, 1, 1.6);
+  $("logo").style.transform = `rotate(${(1 - E.out(pr(u, 0, 2))) * -40}deg) scale(${1 + .04 * Math.sin(u * 2)})`;
+  put($("s4n"), pr(u, .3, 1.0)); [0, 1, 2].forEach(i => put($("c" + i), pr(u, .9 + i * .45, 1.5 + i * .45), 0, {y: 24}));
+  const b1 = 3.95;
+  put($("s4b"), pr(u, b1, b1 + .6)); const b2 = 5.6;
+  words.forEach((w, i) => { const p = pr(u, b2 + i * .16, b2 + i * .16 + .5); w.style.opacity = E.out(p); w.style.transform = `translateY(${(1 - E.out(p)) * 24}px)`; });
+}
+
+// ---- Sten, the mascot: breathes, blinks, looks at what is being talked about, waves, and moves its mouth with the narration ----
+const GZ = [[[0, 960, 500], [3, 1300, 500], [4.6, 1400, 500], [6.3, 700, 420], [9.5, 1300, 450], [12.5, 1400, 450], [14.3, 960, 520]],
+            [[0, 500, 600], [5.2, 1400, 350], [6.3, 1450, 260], [7.5, 1450, 420], [8.9, 1450, 570], [10, 960, 520]],
+            [[0, 700, 300], [3.3, 700, 560], [7, 700, 620], [11.8, 700, 720], [14, 960, 520]],
+            [[0, 600, 540], [2.6, 1500, 400], [6, 960, 520]],
+            [[0, 960, 400], [3.9, 960, 360], [5.6, 960, 720], [8, 960, 520]]];
+function gaze(u, keys) {
+  if (u <= keys[0][0]) return keys[0].slice(1);
+  for (let i = 1; i < keys.length; i++) if (u <= keys[i][0]) { const p = E.io(pr(u, keys[i - 1][0], keys[i][0]));
+    return [lerp(keys[i - 1][1], keys[i][1], p), lerp(keys[i - 1][2], keys[i][2], p)]; }
+  return keys[keys.length - 1].slice(1);
+}
+// ---- Sten v2: a character with real parts. Stateless: everything is a function of time, so any frame can be rendered alone. ----
+const K = 188 / 220;                       // screen pixels per drawing unit at scale 1
+const WP = [[0.3, 1660, 760, 1],
+  [8.0, 90, 760, 1],                        // numbers scene: stands bottom-left
+  [14.9, 800, 745, 1.05],                   // "Stenwatch can." : cheers in the middle
+  [17.6, 1060, 750, 1], [22.4, 1060, 750, 1],    // funnel
+  [23.4, 1650, 690, 1],                     // the three questions: next to the cards
+  [28.0, 1590, 595, 1], [43.4, 1590, 595, 1],    // tiers and backtest
+  [44.0, 1230, 780, .92],                   // dashboard
+  [46.8, 1480, 768, .92],                   // reports
+  [50.9, 1650, 770, 1],                     // closing scene
+  [56.4, 1440, 540, 1.1], [58.6, 1440, 540, 1.1]];  // final line
+// where it points, and when: [from, to, x, y]  (screen coordinates of the thing being described)
+const PT = [[5.2, 6.4, 1330, 520], [7.3, 9.8, 520, 420], [12.3, 14.4, 1400, 470],
+  [17.9, 22.0, 500, 620], [22.9, 23.9, 1450, 270], [24.1, 25.2, 1450, 430], [25.55, 26.9, 1450, 585],
+  [28.1, 30.4, 960, 290], [34.2, 37.6, 700, 620], [39.4, 41.9, 500, 780],
+  [43.9, 46.3, 600, 520], [46.9, 49.8, 1500, 400], [52.8, 55.3, 960, 836]];
+const WAVES = [[0.7, 3.4], [56.5, 58.6]], WOW = [3.55, 4.7], CHEER = [14.5, 16.3], BURSTS = [14.95, 36.9, 41.5, 57.0], BOUNCE = [36.9, 41.4];
+const rnd = i => { const v = Math.sin(i * 91.7 + 3.1) * 43758.5453; return v - Math.floor(v); };
+
+function mpos(t) {
+  let i = 0; while (i < WP.length - 1 && t >= WP[i + 1][0]) i++;
+  const a = WP[i], b = WP[Math.min(i + 1, WP.length - 1)], dur = Math.min(1.6, b[0] - a[0]);
+  const f = b === a ? 1 : pr(t, b[0] - dur, b[0]), p = E.io(f);
+  return {x: lerp(a[1], b[1], p), y: lerp(a[2], b[2], p) - 12 * Math.sin(Math.PI * f) * (f > 0 && f < 1 ? 1 : 0), s: lerp(a[3], b[3], p)};
+}
+// squash and stretch: a little crouch before it sets off, a springy settle when it arrives
+function squash(t) {
+  let q = 0;
+  WP.forEach((w, i) => {
+    const tau = t - w[0]; if (tau > 0 && tau < .9) q += Math.exp(-7 * tau) * Math.sin(26 * tau) * .12;
+    if (i) { const prev = WP[i - 1], dur = Math.min(1.6, w[0] - prev[0]), ts = w[0] - dur;
+      if (Math.hypot(w[1] - prev[1], w[2] - prev[2]) > 40 && ts - t > 0 && ts - t < .22) q -= .09 * Math.sin(Math.PI * .5 * (1 - (ts - t) / .22)); }
+  });
+  return q;
+}
+function pointing(t) {
+  const w = PT.find(p => t >= p[0] - .3 && t <= p[1] + .3);
+  if (!w) return null;
+  return {x: w[2], y: w[3], t0: w[0], k: Math.min(E.out(pr(t, w[0] - .3, w[0])), 1 - E.io(pr(t, w[1], w[1] + .3)))};
+}
+const within = (t, w) => t > w[0] && t < w[1];
+const deg = Math.PI / 180;
+
+function mascot(t, si) {
+  const m = $("mascot"), q = mpos(t), q0 = mpos(t - 1 / 30), vx = (q.x - q0.x) * 30, sp = Math.hypot(vx, (q.y - q0.y) * 30);
+  const walk = cl(sp / 110), ph = t * 13, k = K * q.s, pt = pointing(t), sq = squash(t);
+  const hx = q.x + 110 * k, hy = q.y + 119 * k;
+  // body: hop arcs, bob, lean
+  let jump = 0; SC.forEach(sc => { const x = (t - sc.s - LEAD) / .45; if (x > 0 && x < 1) jump += 22 * Math.sin(Math.PI * x); });
+  BOUNCE.forEach(b => { const x = (t - b) / .55; if (x > 0 && x < 1) jump += 34 * Math.sin(Math.PI * x); });
+  if (within(t, CHEER)) jump += 28 * Math.abs(Math.sin((t - CHEER[0]) * 9)) * (1 - pr(t, 15.8, 16.3));
+  const wow = within(t, WOW); if (wow) jump += 12 * Math.sin(Math.PI * pr(t, WOW[0], WOW[0] + .35));
+  const bob = Math.sin(t * 2.2) * 3 * (1 - walk) - Math.abs(Math.sin(ph / 2)) * 11 * walk;
+  const pop = E.back(pr(t, .3, 1.1)), fade = si === 4 ? 1 - E.io(pr(t, TOTAL - .5, TOTAL)) : 1;
+  const sx = 1 + sq * .7, sy = 1 - sq;
+  m.style.left = q.x + "px"; m.style.top = q.y + "px"; m.style.opacity = pr(t, .3, .7) * fade; m.style.transformOrigin = "50% 100%";
+  m.style.transform = `translateY(${-jump + bob}px) scale(${pop * q.s * sx}, ${pop * q.s * sy}) rotate(${cl(vx / 450, -1, 1) * 9 + (wow ? Math.sin(t * 45) * 2.5 : 0)}deg)`;
+  $("mshadow").setAttribute("rx", 58 - jump * .7); $("mshadow").setAttribute("opacity", .55 - jump / 140);
+  // legs
+  const lift = 13 * walk;
+  $("footL").setAttribute("transform", `translate(${5 * walk * Math.sin(ph)} ${-lift * Math.max(0, Math.sin(ph))})`);
+  $("footR").setAttribute("transform", `translate(${-5 * walk * Math.sin(ph)} ${-lift * Math.max(0, -Math.sin(ph))})`);
+  // gaze and head: the head turns toward what it looks at, a beat behind the body
+  const [gx0, gy0] = gaze(Math.max(0, t - SC[si].s - LEAD), GZ[si]);
+  const gk = pt ? pt.k : 0, gx = lerp(gx0, pt ? pt.x : gx0, gk), gy = lerp(gy0, pt ? pt.y : gy0, gk);
+  const dx = 8 * cl((gx - hx) / 600, -1, 1), dy = 7 * cl((gy - hy) / 450, -1, 1);
+  document.querySelectorAll("#mascot .pup").forEach(g => g.setAttribute("transform", `translate(${dx} ${dy})`));
+  const tilt = cl((gx - hx) / 1100, -1, 1) * 6 + Math.sin(t * 1.7) * 1.4 + cl((q.x - mpos(t - .07).x) / 30, -1, 1) * -3;
+  $("head").setAttribute("transform", `rotate(${tilt} 110 182) translate(0 ${Math.sin(t * 2.2 - .5) * 1.5 + sq * 6})`);
+  // face
+  const cheer = within(t, CHEER), final = t > 56.4, happy = cheer || final;
+  const bp = (t % 3.3) / 3.3, bl = bp > .94 ? Math.sin((bp - .94) / .06 * Math.PI) : 0, dbp = ((t + 1.1) % 7.1) / 7.1, dbl = dbp > .96 ? Math.sin((dbp - .96) / .04 * Math.PI) : 0;
+  const z = wow ? 1.25 : 1, b = happy ? .3 : 1 - .93 * Math.max(bl, dbl);
+  $("eyeL").setAttribute("transform", `translate(86 ${happy ? 128 : 122}) scale(${z} ${b * z})`); $("eyeR").setAttribute("transform", `translate(134 ${happy ? 128 : 122}) scale(${z} ${b * z})`);
+  const open = wow ? .85 : ENV[Math.min(ENV.length - 1, Math.max(0, Math.round(t * 30)))] || 0, show = cl(open * 6);
+  $("mouth").setAttribute("ry", 3 + 11 * open); $("mouth").setAttribute("rx", wow ? 7 : 9 + 2 * open); $("mouth").setAttribute("opacity", show);
+  $("smile").setAttribute("opacity", 1 - show); $("smile").setAttribute("d", happy ? "M90 144 Q110 166 130 144" : "M94 146 Q110 158 126 146");
+  const lift2 = (wow ? 9 : 0) + 4 * open + (pt ? 2 * pt.k : 0), worry = su => (wow || (si === 0 && t > 4.4 && t < 6.6)) ? su : 0;
+  $("browL").setAttribute("transform", `translate(0 ${-lift2}) rotate(${worry(-10) + (happy ? 6 : 0)} 85 98)`); $("browR").setAttribute("transform", `translate(0 ${-lift2}) rotate(${worry(10) + (happy ? -6 : 0)} 135 98)`);
+  const blush = happy ? .6 : .28 + .1 * open; $("chkL").setAttribute("opacity", blush); $("chkR").setAttribute("opacity", blush);
+  // antenna, scarf, chest light: loose parts that lag and swing
+  $("ant").setAttribute("transform", `rotate(${-vx * .03 + Math.sin(t * 5) * 3 + (wow ? Math.sin(t * 40) * 8 : 0)} 110 44)`);
+  $("mlight").setAttribute("fill", wow ? "#ff4d5e" : "#3ee6a8"); $("mlight").setAttribute("opacity", .6 + .4 * Math.sin(t * 4));
+  const fl = 6 * Math.sin(t * 9) + vx * .025;
+  $("stail").setAttribute("d", `M138 186 Q${158 + fl} ${192 + Math.sin(t * 7)} ${172 + fl * 1.6} ${208 + 3 * Math.sin(t * 7)} Q${164 + fl} ${212} 150 202 Z`);
+  $("chest").setAttribute("r", 8 + 2.5 * open); $("chestglow").setAttribute("r", 16 + 8 * open); $("chestglow").setAttribute("opacity", .15 + .2 * open);
+  // arms: swing when walking, point at the thing being described, wave, cheer
+  const pL = {x: q.x + 66 * k, y: q.y + 196 * k}, pR = {x: q.x + 154 * k, y: q.y + 196 * k};
+  let aL = -5 + 3 * Math.sin(t * 2 + 1) - 28 * walk * Math.sin(ph), aR = 5 + 3 * Math.sin(t * 2) + 28 * walk * Math.sin(ph);
+  if (pt) { const left = pt.x < hx, pv = left ? pL : pR, ang = Math.atan2(-(pt.x - pv.x), pt.y - pv.y) / deg;
+    if (left) aL = lerp(aL, cl(ang, 8, 178), pt.k); else aR = lerp(aR, cl(ang, -178, -8), pt.k); }
+  const wv = WAVES.some(w => within(t, w)) ? E.out(pr(t, WAVES.find(w => within(t, w))[0], WAVES.find(w => within(t, w))[0] + .3)) : 0;
+  aR = lerp(aR, -145 + 22 * Math.sin(t * 12), wv);
+  if (cheer) { const c = E.io(pr(t, CHEER[0], CHEER[0] + .25)) * (1 - E.io(pr(t, 15.9, 16.3))); aL = lerp(aL, 160 + 12 * Math.sin(t * 11), c); aR = lerp(aR, -160 - 12 * Math.sin(t * 11), c); }
+  if (wow) { aL = 125 + 8 * Math.sin(t * 40); aR = -125 - 8 * Math.sin(t * 40); }
+  $("armL").setAttribute("transform", `rotate(${aL} 66 196)`); $("armR").setAttribute("transform", `rotate(${aR} 154 196)`);
+}
+
+// ---- effects on top of the scene: a pulsing ring on whatever it points at, and confetti at the big moments ----
+const fxc = $("fx").getContext("2d"), CONF = ["#3ee6a8", "#5aa9ff", "#ffc233", "#ff4d5e", "#f2f2f2"];
+function effects(t) {
+  fxc.clearRect(0, 0, 1920, 1080);
+  const pt = pointing(t);
+  if (pt && pt.k > .02) { const ph2 = (((t - pt.t0) * 1.1) % 1 + 1) % 1;
+    for (let r = 0; r < 2; r++) { const f = (ph2 + r * .5) % 1; fxc.globalAlpha = (1 - f) * .85 * pt.k; fxc.strokeStyle = "#3ee6a8"; fxc.lineWidth = 3;
+      fxc.beginPath(); fxc.arc(pt.x, pt.y, 12 + 44 * f, 0, 7); fxc.stroke(); }
+    fxc.globalAlpha = pt.k; fxc.fillStyle = "#3ee6a8"; fxc.beginPath(); fxc.arc(pt.x, pt.y, 5 + 1.5 * Math.sin(t * 8), 0, 7); fxc.fill(); }
+  BURSTS.forEach((tb, n) => { const tau = t - tb; if (tau < 0 || tau > 1.8) return; const o = mpos(tb);
+    for (let i = 0; i < 30; i++) { const a = (-90 + (rnd(i + n * 40) - .5) * 150) * deg, v = 240 + 330 * rnd(i + 7 + n * 40);
+      const x = o.x + 94 * o.s * K + Math.cos(a) * v * tau, y = o.y + 40 + Math.sin(a) * v * tau + 520 * tau * tau;
+      fxc.globalAlpha = Math.max(0, 1 - tau / 1.8); fxc.fillStyle = CONF[i % 5]; fxc.save(); fxc.translate(x, y); fxc.rotate(tau * (4 + 8 * rnd(i + 3)));
+      fxc.fillRect(-5, -3, 10 + 6 * rnd(i + 11), 6); fxc.restore(); } });
+  fxc.globalAlpha = 1;
+}
+const FN = [scene0, scene1, scene2, scene3, scene4];
+
+window.setT = t => {
+  SC.forEach((s, i) => {
+    const el = $("sc" + i), end = s.s + s.L, pin = i ? pr(t, s.s, s.s + TRN) : pr(t, 0, .6), pout = pr(t, end - TRN, end);
+    const vis = E.io(pin) * (1 - E.io(pout));
+    el.style.opacity = vis; el.style.display = vis > 0 ? "block" : "none";
+    el.style.transform = `translateY(${(1 - E.io(pin)) * 36 - E.io(pout) * 28}px) scale(${1 + .012 * (E.io(pout) - (1 - E.io(pin)))})`;
+    if (vis > 0) FN[i](t - s.s - LEAD, s.a);
+  });
+  let cur = 0; SC.forEach((sc, i) => { if (t >= sc.s + TRN / 2) cur = i; });
+  effects(t);
+  mascot(t, cur);
+  const g = Math.min(1, t / .8); $("brand").style.opacity = g; $("prog").style.width = (100 * t / TOTAL) + "%";
+  orb(t);
+};
+const TRN = __TRN__, LEAD = __LEAD__;
+setT(0);
+</script></body></html>
