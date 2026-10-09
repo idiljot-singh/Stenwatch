@@ -205,140 +205,147 @@ cross_txt = (f"The two gain curves cross at about {pct(cross)} of the list: read
 A_size, C9_size = pct(A["share"], 1), pct(C9["share"], 1)
 
 BODY = f"""
-<h1>Does Stenwatch's scoring find the vulnerabilities attackers actually use?</h1>
-<p class="sub">A point-in-time backtest against CISA's Known Exploited Vulnerabilities catalogue &middot; Stenwatch {e(R['code_commit'])} &middot; run {e(R['generated'])} &middot; Diljot Singh Johal</p>
+<h1>Does a probability-led ranking find the vulnerabilities attackers later use? A point-in-time backtest of Stenwatch</h1>
+<p class="sub">Diljot Singh Johal &middot; Stenwatch {e(R['code_commit'])} &middot; run {e(R['generated'])}</p>
 
-<h2>1. Summary</h2>
-<p><b>What was tested.</b> On six start dates, six months apart, we ranked every CVE that was not yet known to be exploited, using only what was knowable that day. Then we counted how many were added to CISA's known-exploited list over the next six months ({P['positives']} in all) and how much reading each method needed to find them.</p>
-<ul>
-<li><b>The Attend queue is small and efficient, but it is not more complete than the critical list.</b> Attend (EPSS at or above {R['tiers']['attend_epss']}) holds {A_size} of all CVEs and found <b>{pct(A['recall'])}</b> of the later-exploited ones (95% interval {ci(A)}). The usual CVSS 9 and above list holds {C9_size} and found <b>{pct(C9['recall'])}</b> ({ci(C9)}). The difference in what they found is not statistically significant (p {ptxt(pair9['p'])}), but Attend does it from a queue {shrink(A['share'], C9['share'])} times smaller, so each CVE read is {hit_ratio:.1f} times as likely to be a hit.</li>
-<li><b>At the same queue size the Stenwatch ranking is clearly better.</b> Reading down the Stenwatch score for as many CVEs as the critical list holds finds {pct(EQ['cvss9']['stenwatch']['recall'])} of the exploited CVEs, against {pct(EQ['cvss9']['cvss']['recall'])} for the critical list itself. For a queue the size of Attend, a severity ranking finds only {pct(EQ['attend']['cvss']['recall'])} against Attend's {pct(A['recall'])}.</li>
-<li><b>The advantage is at small review budgets, and it reverses in the long tail.</b> After reading the first 1% of the list the Stenwatch score has found {pct(rb('stenwatch', 0.01))} against {pct(rb('cvss', 0.01))} for CVSS; after 10%, {pct(rb('stenwatch', 0.1))} against {pct(rb('cvss', 0.1))}. To reach 80% of the exploited CVEs, CVSS needs {pct(CV['reviews80_share'], 1)} of the list and the Stenwatch score {pct(ST['reviews80_share'], 1)}. {cross_txt} Overall AUC is {CV['auc_mean']:.3f} for CVSS and {ST['auc_mean']:.3f} for the Stenwatch score. {pct(low_epss)} of the later-exploited CVEs had an EPSS below 0.01 on the origin day, and no probability-led ranking can place them early.</li>
-<li><b>Most CISA additions cannot be predicted six months ahead.</b> {pct(late_share)} of the {num(adds)} CVEs CISA added during the windows had not even been published on the origin day. They are out of reach of any ranking; they are caught once CISA lists them, which is what Stenwatch's KEV feed is for.</li>
-</ul>
-<p class="note"><b>A correction.</b> An earlier exploratory run reported that the Attend queue caught about 70% against about a third for the critical list. That result is withdrawn. It came from a local database that was missing most CVEs published in 2024 and 2025, which silently removed the hardest-to-find exploited CVEs from the test. This report uses a complete database and replaces it. Please do not quote the 70% figure.</p>
-<p class="note"><b>Read this before quoting the numbers.</b> {P['positives']} positives are enough to separate large differences but not to give tight percentages; the intervals show the uncertainty. The test measures the global scoring signals only. It does not test the KEV flag, ransomware use, threat-group matching or your asset list, which have no point-in-time history. See section 7.</p>
+<h2>Abstract</h2>
+<p>Teams that patch from a CVSS list work through severity, and severity says how bad a flaw could be, not whether anyone is using it (Jacobs et al., 2019, p. 2). This report asks whether the scoring in Stenwatch, which leans on EPSS, points a team at the right vulnerabilities earlier. Six non-overlapping windows of {R['horizon_days']} days were rebuilt from the data that existed on each start day, and the rankings were scored against the additions that CISA later made to its Known Exploited Vulnerabilities catalogue, {P['positives']} in all. The Attend queue held {A_size} of all CVEs and found {pct(A['recall'])} of the later-exploited ones, while the CVSS 9 and above list held {C9_size} and found {pct(C9['recall'])}. That difference is not statistically significant (p {ptxt(pair9['p'])}). At equal queue size the Stenwatch ranking found clearly more, but it fell behind the CVSS ranking in the long tail. About {pct(late_share)} of CISA's additions concerned CVEs that were published after the window began, so no ranking could have found them early. An earlier result of about 70 percent was wrong and is withdrawn.</p>
 
-<h2>2. Terms used</h2>
-{table(["Term", "Meaning"], [
-    ["CVE", "A public identifier for one software vulnerability, such as CVE-2024-12345."],
-    ["CVSS", "A 0 to 10 severity score for how bad a flaw could be. It says nothing about whether anyone is using it."],
-    ["EPSS", "A 0 to 1 probability, published daily by FIRST, that a CVE will be exploited in the next 30 days."],
-    ["KEV", "CISA's catalogue of vulnerabilities known to be exploited in the wild. Used here as the answer key."],
-    ["Queue", "The CVEs a rule selects for attention, for example every CVE with EPSS at or above 0.1."],
-    ["Recall", "Of the CVEs that were later exploited, the share a queue contained."],
-    ["Hit rate", "Of the CVEs in a queue, the share that were later exploited. Lift is the hit rate divided by the base rate."],
-    ["Review budget", "How far down a ranked list a team can read, as a share of all CVEs."],
-], "small")}
+<h2>1. Introduction</h2>
+<p>Every year brings tens of thousands of new CVEs, and a security team can patch only a fraction of them. So the real question is never whether to prioritise but how. Consider a team that gets a list of several thousand "critical" findings on a Monday morning. Nobody reads that list, they read the top of it, and whatever sits there decides where the week goes.</p>
+<p>The practice most teams know is to sort by CVSS. But how well does that sorting match what attackers really do? Jacobs et al. (2023, p. 1) report that only about 5 percent of known vulnerabilities are exploited in the wild, and they argue that strategies built on severity alone are poor predictors of exploitation. Stenwatch tries another route. It ranks by likelihood times impact, where likelihood comes from EPSS and impact from CVSS, and it adds context that a global score cannot hold, such as the organisation's own assets, CISA's catalogue and the threat groups it follows.</p>
+<p>This report tests the part of that ranking that can be tested honestly, which is the global scoring signal. It does not test the asset list, the KEV flag or the threat-group matching, because none of them has a history that can be rebuilt for a past date. The study is a backtest and nothing more; it does not show that Stenwatch lowers real incident numbers, and it should not be read that way.</p>
+<p>Section 2 gives the background, section 3 states the questions, and sections 4 and 5 describe the data and the method. Results follow in section 6, and the discussion, limits and threshold sensitivity in sections 7 to 9. Section 10 explains how to rerun everything, and section 11 concludes.</p>
 
-<h2>3. Questions and hypotheses</h2>
-<p>Stenwatch ranks vulnerabilities by risk = likelihood &times; impact, where likelihood leans on EPSS and impact on CVSS. The question is whether that ranking would have pointed a team at vulnerabilities attackers went on to use, better than the common practice of working down the CVSS list. Two hypotheses were written before the complete-data run:</p>
-<ul><li><b>H1.</b> A ranking by EPSS &times; CVSS finds later-exploited CVEs with less review effort than a ranking by CVSS alone. <b>Verdict: {h1}.</b> {'It holds at small review budgets (the first 1%, 5% and 10% of the list) but not over the whole list: CVSS reaches 80% sooner and has the higher AUC.' if small_ok and not tail_ok else ''}</li>
-<li><b>H2.</b> The Attend queue catches more later-exploited CVEs than a critical-severity queue (CVSS 9 and above) of similar or smaller size. <b>Verdict: {h2}.</b> {'Attend caught ' + pct(A['recall']) + ' against ' + pct(C9['recall']) + ' (not a significant difference) from a queue ' + shrink(A['share'], C9['share']) + ' times smaller. "Catches more" is not shown; "catches as many from far less" is.' if h2 == 'Partly supported' else ''}</li></ul>
-<p>The first exploratory run suggested stronger results than these (section 1, correction). The windows, thresholds and measures below were fixed before the complete-data run and were not changed afterwards. The thresholds are the product's own defaults (profile.example.yaml), not values tuned on this data. The equal-size comparison (6.5) was added after seeing the first results, because comparing queues of different sizes is unfair to both; treat it as exploratory.</p>
+<h2>2. Background</h2>
+<p>CVSS describes the severity of a flaw from its characteristics and its effect on confidentiality, integrity and availability. Its own specification is clear that the base score is not meant to reflect overall risk, and so it does not measure the probability that a flaw will be used in an attack (Jacobs et al., 2019, p. 2). Still, it became the common yardstick, and some rules lean on it directly, for example the payment card standard that requires flaws above 4.0 to be fixed (Jacobs et al., 2019, p. 2).</p>
+<p>EPSS answers the other half of the question. The first version estimated the probability that a flaw would be exploited in the wild within twelve months of disclosure (Jacobs et al., 2019, p. 1). The third version estimates the probability of exploitation activity in the next 30 days, and scores are produced daily (Jacobs et al., 2023, pp. 2, 6). That daily file is what makes a backtest possible, because the score of any past day can be downloaded again.</p>
+<p>The evidence for the answer key comes from CISA. Its Known Exploited Vulnerabilities catalogue is described by CISA as "the authoritative source of vulnerabilities that have been exploited in the wild" (CISA, n.d.), and each entry carries the date it was added. Jacobs et al. (2023, p. 3) themselves use the catalogue as one input among several exploitation sources, and they saw exploitation activity for 6.4 percent of 192,035 published vulnerabilities between 2016 and 2022.</p>
+<p>Two earlier results frame what to expect. First, Jacobs et al. (2019, p. 14) compared the effort needed to reach the same coverage as a CVSS strategy and found that EPSS needed far less, for instance 181 vulnerabilities against 813 to match the coverage of CVSS 9 and above, a reduction of 77.7 percent. Second, they define efficiency as the share of prioritised vulnerabilities that were exploited, and coverage as the share of exploited vulnerabilities that were prioritised (Jacobs et al., 2023, p. 6). This report uses the same two ideas under the names hit rate and recall.</p>
+<table class="small"><thead><tr><th>Term</th><th>Meaning</th></tr></thead><tbody>
+<tr><td>CVE</td><td>A public identifier for one software vulnerability, such as CVE-2024-12345.</td></tr>
+<tr><td>CVSS</td><td>A 0 to 10 severity score for how bad a flaw could be. It says nothing about whether anyone is using it.</td></tr>
+<tr><td>EPSS</td><td>A 0 to 1 probability, published daily by FIRST, that a CVE will be exploited in the next 30 days.</td></tr>
+<tr><td>KEV</td><td>CISA's catalogue of vulnerabilities known to be exploited in the wild. Used here as the answer key.</td></tr>
+<tr><td>Queue</td><td>The CVEs a rule selects for attention, for example every CVE with EPSS at or above 0.1.</td></tr>
+<tr><td>Recall</td><td>Of the CVEs that were later exploited, the share a queue contained (coverage in Jacobs et al., 2023).</td></tr>
+<tr><td>Hit rate</td><td>Of the CVEs in a queue, the share that were later exploited (efficiency in Jacobs et al., 2023). Lift is the hit rate divided by the base rate.</td></tr>
+<tr><td>Review budget</td><td>How far down a ranked list a team can read, as a share of all CVEs.</td></tr>
+</tbody></table>
+
+<h2>3. Research questions and hypotheses</h2>
+<p>The main question is whether the Stenwatch ranking would have pointed a team at vulnerabilities attackers went on to use, with less reading than the usual CVSS list needs. Two hypotheses were written down before the run on complete data.</p>
+<p>H1 says that a ranking by EPSS times CVSS finds later-exploited CVEs with less review effort than a ranking by CVSS alone. The verdict is <b>{h1}</b>. {'It holds at small review budgets, meaning the first 1, 5 and 10 percent of the list, but not over the whole list, because CVSS reaches 80 percent sooner and has the higher AUC.' if small_ok and not tail_ok else ''}</p>
+<p>H2 says that the Attend queue catches more later-exploited CVEs than a critical-severity queue of similar or smaller size. The verdict is <b>{h2}</b>. {'Attend caught ' + pct(A['recall']) + ' against ' + pct(C9['recall']) + ', which is not a significant difference, from a queue ' + shrink(A['share'], C9['share']) + ' times smaller. So "catches more" is not shown, but "catches as many from far less" is.' if h2 == 'Partly supported' else ''}</p>
+<p>The first, exploratory run suggested stronger results than these (see the correction in section 4). The windows, thresholds and measures were fixed before the complete-data run and were not changed afterwards, and the thresholds are the product's own defaults from profile.example.yaml, not values tuned on this data. The equal-size comparison in section 6.5 is the exception. It was added after the first results, because comparing queues of different size is unfair to both, so it is exploratory.</p>
 
 <h2>4. Data and provenance</h2>
-{table(["Data", "What it is", "Used for", "Point in time?"], [
-    ["EPSS daily files", f"FIRST's exploit-probability score for every CVE, one file per day from epss.empiricalsecurity.com. Six snapshots, one per window start (SHA-256 of each in section 9).", "Ranking score", "Yes: the file of the origin day"],
-    ["CISA KEV catalogue", f"{num(R['database']['kev_rows'])} entries, first added {R['database']['kev_first']}, latest {R['database']['kev_last']}, with the date each CVE was added.", "Labels (what counts as exploited, and when)", "Yes: the date added decides the window"],
-    ["NVD CVE records", f"{num(R['database']['cves'])} CVEs, latest published {R['database']['latest_published']}. CVSS is the first available of v4.0, v3.1, v3.0, v2 as stored by Stenwatch.", "Severity, publication date", "Publication date yes; CVSS is today's value"],
-])}
-<p>All feeds are public and were downloaded with Stenwatch's own collector (cti/collect.py; the gap fill used tools/nvd_fill.py, which uses the same parser). CVEs with no CVSS score ({num(sum(w['missing_cvss'] for w in W))} across all windows, {pct(sum(w['missing_cvss'] for w in W) / P['population'], 1)}) are treated as severity 0, which only hurts the CVSS baselines.</p>
-<p><b>Data audit.</b> Before the final run the database was checked against NVD's yearly volumes and found to be missing most of 2024 and 2025 (26 and 869 records). It was completed, and the self-check in section 9 now refuses to run if either year has fewer than 30,000 CVEs. Records per year in the database used: {", ".join(f"{y}: {num(n)}" for y, n in R['database']['per_year'].items() if int(y) >= 2022)}.</p>
+<table><thead><tr><th>Data</th><th>What it is</th><th>Used for</th><th>Point in time</th></tr></thead><tbody>
+<tr><td>EPSS daily files</td><td>FIRST's exploit-probability score for every CVE, one file per day from epss.empiricalsecurity.com. Six snapshots, one per window start, with the SHA-256 of each in section 10.</td><td>Ranking score</td><td>Yes, the file of the origin day</td></tr>
+<tr><td>CISA KEV catalogue</td><td>{num(R['database']['kev_rows'])} entries, first added {R['database']['kev_first']}, latest {R['database']['kev_last']}, with the date each CVE was added.</td><td>Labels, meaning what counts as exploited and when</td><td>Yes, the date added decides the window</td></tr>
+<tr><td>NVD CVE records</td><td>{num(R['database']['cves'])} CVEs, latest published {R['database']['latest_published']}. CVSS is the first available of v4.0, v3.1, v3.0 and v2 as stored by Stenwatch.</td><td>Severity and publication date</td><td>Publication date yes, CVSS is today's value</td></tr>
+</tbody></table>
+<p>All three feeds are public and were downloaded with Stenwatch's own collector (cti/collect.py). The gap fill described below used tools/nvd_fill.py, which calls the same parser. CVEs with no CVSS score, {num(sum(w['missing_cvss'] for w in W))} across all windows or {pct(sum(w['missing_cvss'] for w in W) / P['population'], 1)}, are treated as severity 0, which can only hurt the CVSS baselines.</p>
+<p><b>A correction and a data audit.</b> An earlier exploratory run reported that the Attend queue caught about 70 percent of later-exploited CVEs against about a third for the critical list. That result is withdrawn. It came from a local database that was missing most CVEs published in 2024 and 2025, only 26 and 869 records, which silently removed the hardest-to-find exploited CVEs from the test. The database was then completed, and the self-check in section 10 now refuses to run if either year holds fewer than 30,000 CVEs. Records per year in the database used were {", ".join(f"{y} with {num(n)}" for y, n in R['database']['per_year'].items() if int(y) >= 2022)}. Please do not quote the 70 percent figure anywhere.</p>
 
 <h2>5. Method</h2>
 <h3>5.1 Design</h3>
-<p>Six consecutive, non-overlapping windows of {R['horizon_days']} days (figure 1). At each origin date T0 we rebuild the situation of a team on that day: which CVEs existed, how severe they looked, what EPSS said, and which were already known to be exploited. We then look forward {R['horizon_days']} days and see which CVEs were added to KEV. Non-overlapping windows keep one exploited CVE from being counted twice.</p>
-<figure>{fig_design()}<figcaption><b>Figure 1.</b> Backtest design. Grey: history available at T0. Green: the {R['horizon_days']} days used to label outcomes.</figcaption></figure>
+<p>The test uses six consecutive windows of {R['horizon_days']} days that do not overlap (figure 1), so that one exploited CVE is never counted twice. At each origin date T0 the situation of a team on that day is rebuilt, which means which CVEs existed, how severe they looked, what EPSS said and which were already known to be exploited. Then the next {R['horizon_days']} days are read to see which CVEs CISA added.</p>
+<figure>{fig_design()}<figcaption><b>Figure 1.</b> Backtest design. Grey is the history available at T0, green the {R['horizon_days']} days used to label outcomes.</figcaption></figure>
 <h3>5.2 Population and labels</h3>
-<ul><li><b>Population at T0:</b> every CVE published on or before T0, with an EPSS score on T0, and <i>not yet in KEV on T0</i>. Already-exploited CVEs are excluded because ranking them is not a prediction.</li>
-<li><b>Positive:</b> a member of that population added to KEV during the next {R['horizon_days']} days. Everything else in the population is a negative.</li></ul>
-<p>Of the {num(adds)} CVEs added to KEV during the six windows, <b>{num(in_scope)}</b> ({pct(in_scope / adds)}) are in scope. The rest cannot be scored on the origin day: {num(late)} were published after T0, {num(nodb)} are not in the NVD copy, and {num(other)} had no EPSS score on T0.</p>
+<p>The population at T0 is every CVE published on or before T0 that has an EPSS score on that day and is not yet in KEV. Already-exploited CVEs are left out, since ranking something already known is not a prediction; a positive is a member of that population that CISA added during the next {R['horizon_days']} days; every other member is a negative.</p>
+<p>Of the {num(adds)} CVEs added to KEV during the six windows, {num(in_scope)} ({pct(in_scope / adds)}) are in scope; the rest could not be scored on the origin day, because {num(late)} were published after T0, {num(nodb)} are missing from the NVD copy and {num(other)} had no EPSS score on T0.</p>
 <h3>5.3 What is compared</h3>
-{table(["Name", "How it works"], [
-    ["Stenwatch score", "EPSS &times; CVSS: the part of the product's risk formula (likelihood &times; impact) that can be reproduced without KEV, threat-group or asset information. The weights are constants and do not change the order."],
-    ["EPSS alone", "Rank by exploit probability."],
-    ["CVSS alone", "Rank by severity: what most vulnerability lists do."],
-    ["Attend queue", f"EPSS at or above {R['tiers']['attend_epss']} (the product's Attend threshold for CVEs not yet known to be exploited)."],
-    ["Attend + Track queue", f"EPSS at or above {R['tiers']['track_epss']}, or CVSS at or above {R['tiers']['track_cvss']}."],
-    ["CVSS 9 and above, CVSS 7 and above", "The two severity lists teams commonly work from."],
-], "small")}
+<table class="small"><thead><tr><th>Name</th><th>How it works</th></tr></thead><tbody>
+<tr><td>Stenwatch score</td><td>EPSS times CVSS, the part of the product's risk formula that can be reproduced without KEV, threat-group or asset information. The weights are constants and do not change the order.</td></tr>
+<tr><td>EPSS alone</td><td>Rank by exploit probability.</td></tr>
+<tr><td>CVSS alone</td><td>Rank by severity, which is what most vulnerability lists do.</td></tr>
+<tr><td>Attend queue</td><td>EPSS at or above {R['tiers']['attend_epss']}, the product's Attend threshold for CVEs not yet known to be exploited.</td></tr>
+<tr><td>Attend and Track queue</td><td>EPSS at or above {R['tiers']['track_epss']}, or CVSS at or above {R['tiers']['track_cvss']}.</td></tr>
+<tr><td>CVSS 9 and above, CVSS 7 and above</td><td>The two severity lists that teams commonly work from.</td></tr>
+</tbody></table>
 <h3>5.4 Measures and statistics</h3>
-<ul><li><b>Recall</b> of a queue and its <b>size</b> (the review cost); <b>hit rate</b> and <b>lift</b>.</li>
-<li><b>Gain curve</b> (figure 3): recall against share reviewed while reading down a ranking. <b>Reviews to find 50% and 80%</b> of the positives (median of the six windows). <b>ROC AUC</b>: the chance that a random positive is ranked above a random negative (0.5 is no skill, 1 is perfect).</li>
-<li><b>Ties.</b> CVSS has few distinct values, so many CVEs tie. Ties are resolved by their expected value under random order (exact, no random seed); AUC gives half credit to ties.</li>
-<li><b>Intervals.</b> Pooled recall uses 95% Wilson score intervals.</li>
-<li><b>Paired comparison.</b> Two queues are judged on the same positives, so the difference is tested on the positives only one of them caught, with an exact two-sided binomial (sign) test.</li>
-<li><b>Across windows.</b> AUC is the mean &plusmn; standard deviation of six windows. No test is applied across windows; six is too few.</li></ul>
+<p>Each queue is judged on its recall and its size, since size is the review cost, and on its hit rate and lift. Each ranking is judged on a gain curve (figure 3), which plots recall against the share of the list read, on the reviews needed to find 50 and 80 percent of the positives, and on ROC AUC, the chance that a random positive is ranked above a random negative, where 0.5 means no skill and 1 means a perfect ranking.</p>
+<p>CVSS has few distinct values, so many CVEs tie. Ties are resolved by their expected value under random order, which is exact and needs no random seed; the AUC gives half credit to ties. Pooled recall carries 95 percent Wilson score intervals, chosen because the Wilson interval keeps its coverage better than the simple textbook interval when counts are small (Brown et al., 2001, p. 101). Two queues are compared on the same positives, so the difference is tested only on the positives that one of them caught and the other missed, with an exact two-sided binomial test, also known as the sign test. Across windows the AUC is reported as mean and standard deviation, and no test is applied there because six windows are too few.</p>
 <h3>5.5 Safeguards against looking ahead</h3>
-{table(["Risk", "What we did"], [
-    ["Using today's EPSS", "Each window uses that origin day's own EPSS file."],
-    ["Using later KEV knowledge", "CVEs already in KEV on T0 are removed; only the date added decides outcomes. The KEV flag is never used as a feature."],
-    ["Using CVEs that did not exist", "Only CVEs published on or before T0."],
-    ["Tuning on the answer", "Thresholds are the product's defaults, fixed before the run; section 8 shows how results move if they change."],
-    ["CVSS revisions", "CVSS is today's NVD value, because scores at T0 are not stored. Possible effect: section 7."],
-], "small")}
+<table class="small"><thead><tr><th>Risk</th><th>What was done</th></tr></thead><tbody>
+<tr><td>Using today's EPSS</td><td>Each window uses that origin day's own EPSS file.</td></tr>
+<tr><td>Using later KEV knowledge</td><td>CVEs already in KEV on T0 are removed, and only the date added decides outcomes. The KEV flag is never used as a feature.</td></tr>
+<tr><td>Using CVEs that did not exist</td><td>Only CVEs published on or before T0.</td></tr>
+<tr><td>Tuning on the answer</td><td>Thresholds are the product's defaults, fixed before the run, and section 9 shows how results move if they change.</td></tr>
+<tr><td>CVSS revisions</td><td>CVSS is today's NVD value, because scores at T0 are not stored. The possible effect is discussed in section 8.</td></tr>
+</tbody></table>
 
 <h2>6. Results</h2>
 <h3>6.1 The windows</h3>
 {table(["Origin", "Population", "Positives", "KEV additions", "Base rate"],
        [[w['origin'], num(w['population']), str(w['positives']), str(w['kev_adds_in_window']), pct(w['base_rate'], 3)] for w in W] +
        [[f"<b>Pooled</b>", f"<b>{num(P['population'])}</b>", f"<b>{P['positives']}</b>", f"<b>{adds}</b>", f"<b>{pct(P['base_rate'], 3)}</b>"]])}
-<p>The base rate is the chance that a random not-yet-exploited CVE is added to KEV within six months: about {pct(P['base_rate'], 3)}. Reading CVEs in random order would find 1% of the positives per 1% of effort.</p>
+<p>The base rate is the chance that a random, not-yet-exploited CVE is added to KEV within six months, and it is about {pct(P['base_rate'], 3)}. Reading in random order would find 1 percent of the positives per 1 percent of effort; every result below is measured against that.</p>
 <h3>6.2 Queues</h3>
 {table(["Queue", "Size (share of CVEs)", "Positives caught", "Recall (95% interval)", "Hit rate", "Lift over random"],
        [[e(L['queues'][q]), pct(Q[q]['share'], 1), f"{Q[q]['hits']} of {P['positives']}", f"<b>{pct(Q[q]['recall'])}</b> ({ci(Q[q])})", pct(Q[q]['precision'], 3), f"{Q[q]['lift']:.1f}x"] for q in ("attend", "attend_track", "cvss9", "cvss7")])}
-<figure>{fig_queues()}<figcaption><b>Figure 2.</b> Recall of each queue, pooled over six windows, with 95% intervals.</figcaption></figure>
-<p><b>Paired comparison.</b> Attend against CVSS 9 and above, on the same {P['positives']} positives:</p>
+<figure>{fig_queues()}<figcaption><b>Figure 2.</b> Recall of each queue, pooled over six windows, with 95 percent intervals.</figcaption></figure>
+<p>The Attend queue is small and efficient, but it is not more complete than the critical list; it holds {A_size} of all CVEs and found {pct(A['recall'])} of the later-exploited ones (95% interval {ci(A)}). The CVSS 9 and above list holds {C9_size} and found {pct(C9['recall'])} ({ci(C9)}). That makes Attend {shrink(A['share'], C9['share'])} times smaller; each CVE read is {hit_ratio:.1f} times as likely to be a hit.</p>
+<p>The paired comparison on the same {P['positives']} positives shows why the difference is not significant.</p>
 {table(["", "Caught by CVSS 9+", "Missed by CVSS 9+"], [["Caught by Attend", str(pair9['both']), f"<b>{pair9['only_a']}</b>"], ["Missed by Attend", f"<b>{pair9['only_b']}</b>", str(pair9['neither'])]], "small")}
-<p>Attend found {pair9['only_a']} exploited CVEs the critical list missed; the critical list found {pair9['only_b']} that Attend missed (exact test p {ptxt(pair9['p'])}). So the two queues largely catch different CVEs, and neither contains the other. Against the much larger CVSS 7 and above list, Attend found {pair7['only_a']} that list missed and missed {pair7['only_b']} it found (p {ptxt(pair7['p'])}); that list is {shrink(A['share'], C7['share'])} times the size of the Attend queue.</p>
+<p>Attend found {pair9['only_a']} exploited CVEs that the critical list missed, and the critical list found {pair9['only_b']} that Attend missed (exact test, p {ptxt(pair9['p'])}). The two queues largely catch different CVEs; neither contains the other. Against the much larger CVSS 7 and above list, Attend found {pair7['only_a']} that the list missed and missed {pair7['only_b']} that it found (p {ptxt(pair7['p'])}), and that list is {shrink(A['share'], C7['share'])} times the size of the Attend queue.</p>
 <h3>6.3 Rankings</h3>
 {table(["Ranking", "AUC (mean ± SD, 6 windows)", "Reviews to find 50%", "Reviews to find 80%", "Found in the first 1%", "Found in the first 5%", "Found in the first 10%"],
        [[e(L['rankings'][r]), f"{RK[r]['auc_mean']:.3f} &plusmn; {RK[r]['auc_sd']:.3f}", pct(RK[r]['reviews50_share'], 1), pct(RK[r]['reviews80_share'], 1), pct(rb(r, 0.01)), pct(rb(r, 0.05)), pct(rb(r, 0.1))] for r in ("stenwatch", "epss", "cvss")])}
 <figure>{fig_gain()}<figcaption><b>Figure 3.</b> Gain chart. A curve that rises sooner means less work to find the same share of exploited CVEs. The four marked points are the queues of section 6.2.</figcaption></figure>
+<p>After the first 1 percent of the list the Stenwatch score has found {pct(rb('stenwatch', 0.01))} of the exploited CVEs against {pct(rb('cvss', 0.01))} for CVSS, and after 10 percent it is {pct(rb('stenwatch', 0.1))} against {pct(rb('cvss', 0.1))}. But to reach 80 percent, CVSS needs {pct(CV['reviews80_share'], 1)} of the list and the Stenwatch score {pct(ST['reviews80_share'], 1)}. {cross_txt} The overall AUC is {CV['auc_mean']:.3f} for CVSS and {ST['auc_mean']:.3f} for the Stenwatch score.</p>
 <h3>6.4 Consistency across windows</h3>
-<figure>{fig_windows()}<figcaption><b>Figure 4.</b> Recall of the Attend queue against the CVSS 9+ queue in each window (n is the number of positives). Attend was higher in {wins_better} of 6 windows.</figcaption></figure>
+<figure>{fig_windows()}<figcaption><b>Figure 4.</b> Recall of the Attend queue against the CVSS 9+ queue in each window, where n is the number of positives. Attend was higher in {wins_better} of 6 windows.</figcaption></figure>
 <h3>6.5 At equal queue size (exploratory)</h3>
-<p>Queues of different sizes are hard to compare, so here every ranking is read down to exactly the size of each queue and its recall is shown beside the queue's own.</p>
+<p>Queues of different size are hard to compare. So here every ranking is read down to exactly the size of each queue, and its recall is shown beside the queue's own.</p>
 {table(["Queue size set by", "Share of CVEs", "Stenwatch score ranking", "EPSS ranking", "CVSS ranking", "The queue itself"],
        [[e(short(q)), pct(Q[q]['share'], 1), pct(EQ[q]['stenwatch']['recall']), pct(EQ[q]['epss']['recall']), pct(EQ[q]['cvss']['recall']), f"<b>{pct(Q[q]['recall'])}</b>"] for q in ("attend", "cvss9", "cvss7", "attend_track")])}
-<p>Up to a queue the size of the critical list, a probability-led ranking finds many more exploited CVEs than a severity ranking. At the size of the large lists, the CVSS ranking is ahead: {pct(EQ['cvss7']['cvss']['recall'])} against {pct(EQ['cvss7']['stenwatch']['recall'])} at the size of the CVSS 7+ list. The Attend + Track queue ({pct(AT['recall'])}) is no better than simply reading the CVSS ranking to the same size ({pct(EQ['attend_track']['cvss']['recall'])}).</p>
+<p>Up to a queue the size of the critical list, a probability-led ranking finds many more exploited CVEs than a severity ranking, {pct(EQ['cvss9']['stenwatch']['recall'])} against {pct(EQ['cvss9']['cvss']['recall'])}. At the size of the large lists the CVSS ranking is ahead, with {pct(EQ['cvss7']['cvss']['recall'])} against {pct(EQ['cvss7']['stenwatch']['recall'])} at the size of the CVSS 7+ list. The Attend and Track queue, at {pct(AT['recall'])}, is no better than simply reading the CVSS ranking to the same size, which gives {pct(EQ['attend_track']['cvss']['recall'])}.</p>
 <h3>6.6 Why severity wins in the tail</h3>
-<p>{pct(low_epss)} of the later-exploited CVEs had an EPSS score under 0.01 on the origin day, so they sit in the bottom of any probability ranking and are reached only by reading very far down it. Severity does not depend on prior exploitation signals, which is why it recovers them late. This is the argument for keeping a severity-based second pass behind the Attend queue.</p>
+<p>{pct(low_epss)} of the later-exploited CVEs had an EPSS score under 0.01 on the origin day. They sit at the bottom of any probability ranking and are reached only by reading very far down it; severity does not depend on earlier exploitation signals, which is why it recovers them late. This is the argument for keeping a severity-based second pass behind the Attend queue.</p>
 
-<h2>7. Threats to validity and limits</h2>
-<ol>
-<li><b>KEV is a proxy for "exploited".</b> CISA lists vulnerabilities with evidence of exploitation that are relevant to its mission and have remediation guidance. Exploited CVEs it never lists count here as negatives. The test measures agreement with CISA's list.</li>
-<li><b>Only CVEs that existed on T0 can be scored.</b> {pct(late_share)} of KEV additions in these windows were published after T0; no ranking could have found them in advance.</li>
-<li><b>Few positives.</b> {P['positives']} in total, between {min(w['positives'] for w in W)} and {max(w['positives'] for w in W)} per window. Single-window figures are noisy. Pooled intervals assume positives are independent, but exploited CVEs often cluster in one product, so the true uncertainty is somewhat larger than shown.</li>
-<li><b>EPSS changed model version</b> during the period, so scores are not perfectly comparable across windows; section 8 shows sensitivity to the threshold.</li>
-<li><b>CVSS is today's value.</b> NVD revises scores after publication. If revisions are more likely for CVEs that later prove important, severity is slightly flattered; the bias would favour the CVSS baselines, not Stenwatch.</li>
-<li><b>Not tested here:</b> the KEV flag, ransomware use, threat-group overlap, asset criticality, internet exposure and supplier context. They have no point-in-time history. In use they act on top of the ranking, so this report tests the part that can be tested and nothing more.</li>
-<li><b>Global, not local.</b> The queues cover all CVEs. In use, Stenwatch first filters to your own assets, which shrinks the queue by orders of magnitude; the ranking quality measured here carries over, the percentages do not.</li>
-<li><b>An earlier result was wrong.</b> See the correction in section 1. The self-check on database coverage was added because of it.</li>
-</ol>
+<h2>7. Discussion</h2>
+<p>What does this mean for a team that today works down a CVSS list? The first answer is about effort. Jacobs et al. (2019, p. 14) found that EPSS matched the coverage of CVSS 9 and above with 77.7 percent less effort. This backtest, on later data and with the product's own thresholds, agrees on the direction but not on the size. At the size of the critical list the Stenwatch ranking found {pct(EQ['cvss9']['stenwatch']['recall'])} against {pct(EQ['cvss9']['cvss']['recall'])}, which is a clear gain, and the Attend queue matched the critical list's coverage from a queue {shrink(A['share'], C9['share'])} times smaller. That is a real saving, but nowhere near a free lunch.</p>
+<p>The second answer is about what the ranking cannot do. About {pct(late_share)} of the {num(adds)} CVEs that CISA added during the windows had not even been published on the origin day, so they are out of reach of any ranking and are caught only once CISA lists them. This report therefore reads the result in two parts. The probability ranking decides where to look first, and the KEV feed, which drives the Act tier, covers what nobody could predict.</p>
+<p>The third answer is a warning. {pct(1 - A['recall'])} of later-exploited CVEs sit outside the Attend queue, and many of them are the ones with a very low EPSS on the day. A team that reads Attend and stops will miss them. Hence the Track tier exists; the result of section 6.5 shows it is only as good as a plain severity list of the same size, so its value is that it is cheap to keep, not that it is clever.</p>
+<p>Stenwatch should be treated as a way to start the reading in the right place. It is not a replacement for the second pass.</p>
 
-<h2>8. Sensitivity to the thresholds</h2>
-<p>Moving the EPSS threshold trades queue size against recall along one curve (figure 5). Lowering the default of {R['tiers']['attend_epss']} to 0.05 would add {pct(sw[0.05]['size_share'] - A['share'], 1)} of all CVEs to the queue and {100 * (sw[0.05]['recall'] - A['recall']):.0f} points of recall; raising it to 0.2 would remove {pct(A['share'] - sw[0.2]['size_share'], 1)} of CVEs and {100 * (A['recall'] - sw[0.2]['recall']):.0f} points of recall.</p>
+<h2>8. Threats to validity and limits</h2>
+<p>KEV is a proxy for exploited. CISA lists vulnerabilities with evidence of exploitation that are relevant to its mission and carry remediation guidance, so exploited CVEs it never lists count here as negatives, and the test measures agreement with CISA's list and nothing wider.</p>
+<p>Only CVEs that existed on T0 can be scored; as said above, {pct(late_share)} of KEV additions in these windows were published after T0.</p>
+<p>The positives are few, {P['positives']} in total and between {min(w['positives'] for w in W)} and {max(w['positives'] for w in W)} per window, so single-window figures are noisy; the pooled intervals assume positives are independent. But exploited CVEs often cluster in one product, so the true uncertainty is somewhat larger than the intervals show.</p>
+<p>EPSS changed model version during the period, so scores are not perfectly comparable across windows, and section 9 shows the sensitivity to the threshold. CVSS is also today's value, and NVD revises scores after publication. If revisions are more likely for CVEs that later prove important, severity is slightly flattered, and that bias would favour the CVSS baselines, not Stenwatch.</p>
+<p>Several things are not tested here. The KEV flag, ransomware use, threat-group overlap, asset criticality, internet exposure and supplier context have no point-in-time history, and in use they act on top of the ranking. This report tests the part that can be tested; finally, the queues cover all CVEs. In use, Stenwatch first filters to the organisation's own assets, which shrinks the queue by orders of magnitude, so the ranking quality measured here carries over but the percentages do not.</p>
+
+<h2>9. Sensitivity to the thresholds</h2>
+<p>Moving the EPSS threshold trades queue size against recall along one curve (figure 5). Lowering the default of {R['tiers']['attend_epss']} to 0.05 would add {pct(sw[0.05]['size_share'] - A['share'], 1)} of all CVEs to the queue and {100 * (sw[0.05]['recall'] - A['recall']):.0f} points of recall, and raising it to 0.2 would remove {pct(A['share'] - sw[0.2]['size_share'], 1)} of CVEs and {100 * (A['recall'] - sw[0.2]['recall']):.0f} points of recall.</p>
 {table(["EPSS at or above", "Queue (share of CVEs)", "Recall"], [[f"{s['t']:g}" + (" (default)" if s['t'] == R['tiers']['attend_epss'] else ""), pct(s['size_share'], 2), pct(s['recall'])] for s in P['sweep_epss']], "small")}
 {table(["CVSS at or above", "Queue (share of CVEs)", "Recall"], [[f"{s['t']:g}", pct(s['size_share'], 1), pct(s['recall'])] for s in P['sweep_cvss']], "small")}
 <figure>{fig_sweep()}<figcaption><b>Figure 5.</b> Recall against queue size as each threshold moves. Ringed points are the thresholds used in this report.</figcaption></figure>
 
-<h2>9. Reproducibility and checks</h2>
-<p>Everything is regenerated by commands run from the repository root: <code>python tools/backtest.py</code> (downloads six EPSS files, writes docs/backtest/results.json; about a minute once the database is complete), then <code>python tools/backtest_report.py</code> (writes this report). The statistics have unit tests with hand-worked answers (<code>python tools/test_backtest.py</code>). To complete a database that is missing years, <code>python tools/nvd_fill.py 2024-01-01 2026-10-09</code>.</p>
+<h2>10. Reproducibility and checks</h2>
+<p>Everything is regenerated by commands run from the repository root. The command <code>python tools/backtest.py</code> downloads six EPSS files and writes docs/backtest/results.json, which takes about a minute once the database is complete, and <code>python tools/backtest_report.py</code> then writes this report. The statistics have unit tests with hand-worked answers, run with <code>python tools/test_backtest.py</code>. A database that is missing years can be completed with <code>python tools/nvd_fill.py 2024-01-01 2026-10-09</code>.</p>
 {table(["Check", "Result"], [[e(c['check']), '<b style="color:#0f9d73">passed</b>' if c['passed'] else '<b style="color:#c8344a">FAILED</b>'] for c in R['checks']], "small")}
 {table(["Window origin", "EPSS file SHA-256", "Rows"], [[w['origin'], f"<code>{w['epss_sha256'][:24]}&hellip;</code>", num(w['epss_rows'])] for w in W], "small")}
-<p>Software: Python {e(R['python'])}, NumPy {e(R['numpy'])}; code revision {e(R['code_commit'])}.</p>
+<p>Software used was Python {e(R['python'])} and NumPy {e(R['numpy'])}, at code revision {e(R['code_commit'])}.</p>
 
-<h2>10. Conclusions and next steps</h2>
-<ol><li><b>Use Attend as the first-pass queue.</b> It is {shrink(A['share'], C9['share'])} times smaller than the critical list, finds about as many later-exploited CVEs, and each CVE read is {hit_ratio:.1f} times as likely to matter.</li>
-<li><b>Do not stop at Attend.</b> About {pct(1 - A['recall'])} of later-exploited CVEs sit outside it. Keep a severity-ordered second pass behind it for as long as capacity allows; the Track tier is that pass, and it is large.</li>
-<li><b>Keep the KEV feed fresh.</b> {pct(late_share)} of CISA additions concern CVEs that did not exist six months earlier; the Act tier, which reacts to KEV, is what covers them.</li>
-<li><b>Re-run every quarter.</b> New windows add positives and show whether EPSS model changes move the thresholds; the commands above take minutes.</li>
-<li><b>Add labels that do not depend on CISA</b> (public exploit code, vendor advisories noting exploitation) to reduce the proxy problem.</li>
-<li><b>Test the local part separately.</b> Asset context cannot be backtested globally; measure it on your own incidents and patch decisions.</li></ol>
+<h2>11. Conclusion and next steps</h2>
+<p>Use Attend as the first-pass queue. It is {shrink(A['share'], C9['share'])} times smaller than the critical list, it finds about as many later-exploited CVEs, and each CVE read is {hit_ratio:.1f} times as likely to matter. But do not stop there, because about {pct(1 - A['recall'])} of later-exploited CVEs sit outside it, and a severity-ordered second pass should stay behind it for as long as capacity allows.</p>
+<p>The KEV feed has to stay fresh, since {pct(late_share)} of CISA additions concern CVEs that did not exist six months earlier; the backtest should be rerun every quarter, because new windows add positives and show whether EPSS model changes move the thresholds, and the commands in section 10 take minutes. Labels that do not depend on CISA, such as public exploit code or vendor advisories that note exploitation, would reduce the proxy problem. The local part, meaning asset context, cannot be backtested globally and has to be measured on the organisation's own incidents and patch decisions.</p>
 
-<h2>Appendix: per-window detail</h2>
+<h2>Declaration</h2>
+<p>The analysis code, the runs and the figures are the author's own. An AI assistant was used during drafting and code review, and every number in this report is generated from results.json by tools/backtest_report.py, so the text cannot disagree with the data.</p>
+
+<h2>References</h2>
+<p class="ref">Brown, L. D., Cai, T. T. and DasGupta, A. (2001). Interval estimation for a binomial proportion. <i>Statistical Science</i>, 16(2), 101 to 133. https://doi.org/10.1214/ss/1009213286</p>
+<p class="ref">CISA (n.d.). Known Exploited Vulnerabilities Catalog. Cybersecurity and Infrastructure Security Agency. https://www.cisa.gov/known-exploited-vulnerabilities-catalog (accessed 9 October 2026).</p>
+<p class="ref">FIRST (n.d.). Exploit Prediction Scoring System, daily score files. https://epss.empiricalsecurity.com/ (daily snapshots as listed in section 10).</p>
+<p class="ref">Jacobs, J., Romanosky, S., Edwards, B., Roytman, M. and Adjerid, I. (2019). Exploit Prediction Scoring System (EPSS). arXiv:1908.04856. Page numbers refer to the arXiv PDF.</p>
+<p class="ref">Jacobs, J., Romanosky, S., Suciu, O., Edwards, B. and Sarabi, A. (2023). Enhancing vulnerability prioritization, data-driven exploit predictions with community-driven insights. arXiv:2302.14172v2. Page numbers refer to the arXiv PDF.</p>
+<p class="ref">NIST (n.d.). National Vulnerability Database, CVE records and CVSS scores. https://nvd.nist.gov/</p>
+
+<h2>Appendix. Per-window detail</h2>
 {table(["Origin", "Queue", "Size", "Positives caught", "Recall"],
        [[w['origin'], e(short(q)), num(w['queues'][q]['size']), f"{w['queues'][q]['hits']} of {w['positives']}", pct(w['queues'][q]['hits'] / w['positives'])] for w in W for q in ("attend", "cvss9")], "small")}
 <p class="foot">Stenwatch by Diljot Singh Johal &middot; MIT licence &middot; feed data belongs to FIRST, CISA and NIST.</p>
@@ -354,7 +361,7 @@ p,li{max-width:78ch}li{margin:4px 0}code{font:12.5px 'Cascadia Mono',Consolas,mo
 .wrap{overflow-x:auto;margin:10px 0 14px}table{border-collapse:collapse;width:100%;font-size:13.5px}
 th,td{border:1px solid #d9dee6;padding:6px 9px;text-align:left;vertical-align:top}th{background:#eef1f5;font-size:12px}
 table.small{width:auto;min-width:60%}figure{margin:14px 0}figure svg{width:100%;height:auto;border:1px solid #e3e7ee}
-figcaption{font-size:12.5px;color:#5b6678;margin-top:4px}.foot{margin-top:36px;color:#5b6678;font-size:12px}
+figcaption{font-size:12.5px;color:#5b6678;margin-top:4px}.ref{padding-left:2em;text-indent:-2em;font-size:13.5px}.foot{margin-top:36px;color:#5b6678;font-size:12px}
 @media print{body{background:#fff}main{padding:0;max-width:none}@page{size:A4;margin:14mm 13mm}h2,h3{break-after:avoid}figure,table,tr{break-inside:avoid}body{font-size:10.5pt}}
 """
 
@@ -375,7 +382,7 @@ def summary_md():
         f"- At the same queue size the Stenwatch ranking is clearly better than severity (reading as many CVEs as the CVSS 9+ list holds: {pct(EQ['cvss9']['stenwatch']['recall'])} against {pct(EQ['cvss9']['cvss']['recall'])}). It is better at small review budgets and worse in the long tail: a CVSS ranking reaches 80% after {pct(CV['reviews80_share'], 1)} of the list, the Stenwatch score after {pct(ST['reviews80_share'], 1)}.",
         f"- {pct(late_share)} of CISA additions concerned CVEs not yet published at the start of the window, so no ranking could have found them.", "",
         "> **Correction.** An earlier version of this page said the Attend queue caught about 70% of later-exploited CVEs against about a third for the critical list. That was wrong: it came from a local database missing most 2024 and 2025 CVEs. The figures above replace it.", "",
-        "Reproduce: `python tools/backtest.py` then `python tools/backtest_report.py` (see section 9 of the report).", ""]
+        "Reproduce: `python tools/backtest.py` then `python tools/backtest_report.py` (see section 10 of the report).", ""]
     (ROOT / "docs" / "backtest.md").write_text(chr(10).join(lines), encoding="utf-8")
 
 

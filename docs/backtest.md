@@ -17,4 +17,4 @@ Does Stenwatch's ranking find the CVEs that attackers go on to use? Six non-over
 
 > **Correction.** An earlier version of this page said the Attend queue caught about 70% of later-exploited CVEs against about a third for the critical list. That was wrong: it came from a local database missing most 2024 and 2025 CVEs. The figures above replace it.
 
-Reproduce: `python tools/backtest.py` then `python tools/backtest_report.py` (see section 9 of the report).
+Reproduce: `python tools/backtest.py` then `python tools/backtest_report.py` (see section 10 of the report).
