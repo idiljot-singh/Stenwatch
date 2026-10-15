@@ -54,7 +54,7 @@ The result is a ranked, explainable list in four SSVC decision tiers: **Act** (w
 
 ## Install (Windows beta)
 
-Watch the two short films first if you want the overview: [how it works, step by step](https://idiljot-singh.github.io/Stenwatch/video.html) and why it is threat intelligence rather than a scanner (same page). Both use the bundled Example Organisation.
+Watch the short film first if you want the overview: [how it works, step by step](https://idiljot-singh.github.io/Stenwatch/video.html). It uses the bundled Example Organisation.
 
 Download `Stenwatch-Setup-0.1.0-beta.exe` from the Releases page and run it. No admin rights are needed. Windows will show a blue "unknown publisher" screen because the beta is unsigned: choose **More info → Run anyway**, or ask IT to allow-list the file by its SHA-256 (printed next to the download). A short tour opens on first launch. Your data lives in `%APPDATA%\Stenwatch` and survives updates; uninstalling asks whether to delete it. To update, run the newer Setup over the old one.
 
@@ -116,17 +116,6 @@ likelihood = 0.4·EPSS + 0.3·inKEV + 0.1·ransomware + 0.2·threat_overlap
 impact     = CVSS/10 · criticality (or supplier blast radius) · 1.5 if internet-facing
 risk       = likelihood · impact
 ```
-
-## Does the ranking work?
-
-A point-in-time backtest rebuilt six 180-day periods from the data that existed on each start day and scored the rankings against what CISA later added to its Known Exploited Vulnerabilities catalogue (257 later-exploited CVEs).
-
-| Queue | Share of all CVEs | Later-exploited CVEs found (95% interval) |
-|---|---|---|
-| Stenwatch Attend (EPSS 0.1 or above) | 6.1% | 40% (34 to 46%) |
-| CVSS 9 and above | 13.0% | 36% (30 to 42%) |
-
-Attend finds about as many exploited CVEs from a queue less than half the size, but the difference in what they find is **not statistically significant** (p = 0.33). At equal queue size the Stenwatch ranking finds more (50% against 36%); in the long tail severity catches up and passes it, and about 62% of CISA's additions concerned CVEs not yet published when each period began, so no ranking could find them early. An earlier figure of about 70% was wrong (incomplete data) and is withdrawn. Read the full method, statistics and limits in the [backtest report](https://idiljot-singh.github.io/Stenwatch/backtest/report.html) ([PDF](https://idiljot-singh.github.io/Stenwatch/backtest/report.pdf), [summary](docs/backtest.md)). Regenerate it with `python tools/backtest.py` then `python tools/backtest_report.py`.
 
 ## Architecture diagrams
 

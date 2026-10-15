@@ -138,7 +138,6 @@ h1 .w{display:inline-block;opacity:0;translate:0 .5em;filter:blur(6px);animation
   <a class="nav" href="#how">How</a>
   <a class="nav" href="#decide">Decide</a>
   <a class="nav" href="#see">See</a>
-  <a class="nav" href="#proof">Proof</a>
   <span class="term" aria-hidden="true">agent@stenwatch ~ $ <b id="tty">online</b><i></i></span>
   <a class="gh" href="https://github.com/idiljot-singh/Stenwatch" aria-label="Stenwatch on GitHub">GH</a>
 </nav>
@@ -173,7 +172,6 @@ h1 .w{display:inline-block;opacity:0;translate:0 .5em;filter:blur(6px);animation
   <div class="cell" style="padding:12px;margin-bottom:14px"><video controls playsinline preload="metadata" poster="img/poster-intro.jpg" src="stenwatch.mp4" style="width:100%;display:block;background:#000" aria-label="Stenwatch intro film"></video><h3 style="margin:14px 4px 2px">Intro</h3><p style="margin:0 4px 6px">Stenwatch in one minute.</p></div>
   <div class="films">
     <div class="cell" style="padding:12px"><video controls playsinline preload="metadata" poster="img/poster-demo.jpg" src="stenwatch-demo.mp4" style="width:100%;display:block;background:#000" aria-label="Stenwatch demo film: how it works, step by step"></video><h3 style="margin:14px 4px 2px">How it works</h3><p style="margin:0 4px 6px">Profile to feedback, with the real scoring formula. 1 min 27 s.</p></div>
-    <div class="cell" style="padding:12px"><video controls playsinline preload="metadata" poster="img/poster-cti.jpg" src="stenwatch-cti.mp4" style="width:100%;display:block;background:#000" aria-label="Stenwatch film: threat intelligence, not a scanner"></video><h3 style="margin:14px 4px 2px">Intelligence, not a scanner</h3><p style="margin:0 4px 6px">What makes it different and what it could change. 1 min 26 s.</p></div>
   </div>
 </div></section>
 
@@ -214,23 +212,6 @@ h1 .w{display:inline-block;opacity:0;translate:0 .5em;filter:blur(6px);animation
     <figure class="cell wide"><img src="img/console.jpg" alt="Stenwatch console: a funnel of steps from broad to precise with live counts" loading="lazy"><figcaption>Console / the funnel, step by step</figcaption></figure>
     <figure class="cell"><img src="img/dashboard.jpg" alt="Analyst dashboard with tier cards and ranked findings" loading="lazy"><figcaption>Dashboard / ranked findings</figcaption></figure>
     <figure class="cell"><img src="img/landing.jpg" alt="Stenwatch landing page with the particle sphere" loading="lazy"><figcaption>Landing page / this site</figcaption></figure>
-  </div>
-</div></section>
-
-<section id="proof"><div class="wrap">
-  <div class="rv idx mono"><span>Proof</span></div>
-  <h2 class="rv">Tested against real attacks</h2>
-  <p style="max-width:760px">We rebuilt six 180-day periods from the data that existed on each start day, then checked which flaws CISA later added to its Known Exploited Vulnerabilities catalogue. That gave 257 later-exploited CVEs to look for. Nothing from the future was used to rank, and the full method, statistics and limits are in a referenced report.</p>
-  <div class="rv grid" style="margin-top:22px">
-    <div class="cell"><div class="n"><span>Stenwatch Attend queue</span></div><h3>40% found</h3><p>From 6.1% of all CVEs (95% interval 34 to 46%).</p></div>
-    <div class="cell"><div class="n"><span>CVSS 9 and above list</span></div><h3>36% found</h3><p>From 13.0% of all CVEs (95% interval 30 to 42%).</p></div>
-    <div class="cell"><div class="n"><span>Same queue size</span></div><h3>50% against 36%</h3><p>Reading the Stenwatch ranking as far as the critical list is long.</p></div>
-  </div>
-  <p style="max-width:760px;margin-top:22px">So Attend finds about as many exploited flaws from a queue less than half the size, and each CVE read is about twice as likely to matter. The difference in what the two found is not statistically significant (p = 0.33), so this is an efficiency result, not a claim that Stenwatch catches more.</p>
-  <p style="max-width:760px">The report is also plain about the limits. Severity wins in the long tail, because it reaches 80% of exploited CVEs after 43% of its list against 58% for the Stenwatch score. About 62% of CISA's additions concerned CVEs not yet published when each period began, so no ranking could find them early, and that is what the KEV feed is for. An earlier figure of about 70% was wrong, came from incomplete data, and is withdrawn.</p>
-  <div class="rv btns" style="margin-top:18px">
-    <a class="btn go" href="backtest/report.html">Read the backtest report</a>
-    <a class="btn" href="backtest/report.pdf">PDF</a>
   </div>
 </div></section>
 
