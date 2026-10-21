@@ -22,8 +22,10 @@ A monochrome, terminal-style interface: the console is a funnel that narrows eve
 
 ![Stenwatch console: the step rail is a funnel from broad to precise, with live counts per stage](docs/img/console.jpg)
 
-| Analyst dashboard | Public landing page |
+| Rank the risk | Record decisions |
 |---|---|
+| ![Console step 4: the scoring formula, the four decision tiers and the top ten findings](docs/img/console-rank.jpg) | ![Console step 6: record a decision on a finding, with a review date](docs/img/console-record.jpg) |
+| **Analyst dashboard** | **Public landing page** |
 | ![Analyst dashboard with tier cards and the ranked findings table](docs/img/dashboard.jpg) | ![Landing page with the particle sphere in the hero](docs/img/landing.jpg) |
 
 <sub>Screenshots use the bundled Example Organisation, not real data.</sub>
