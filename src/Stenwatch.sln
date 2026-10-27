@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stenwatch.Core", "Stenwatch.Core\Stenwatch.Core.csproj", "{4665A53E-8707-4BBC-B868-ED24C65D255A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stenwatch.Cli", "Stenwatch.Cli\Stenwatch.Cli.csproj", "{D6E20C83-D638-483A-9D75-7D00461FB2BC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stenwatch.Tests", "Stenwatch.Tests\Stenwatch.Tests.csproj", "{94D62DF6-C1E1-4F0A-A647-8B6E5BEFA1F3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stenwatch.App", "Stenwatch.App\Stenwatch.App.csproj", "{5A821FAB-DC8A-4CA0-AA15-58D1A10E9F84}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4665A53E-8707-4BBC-B868-ED24C65D255A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4665A53E-8707-4BBC-B868-ED24C65D255A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4665A53E-8707-4BBC-B868-ED24C65D255A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4665A53E-8707-4BBC-B868-ED24C65D255A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D6E20C83-D638-483A-9D75-7D00461FB2BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6E20C83-D638-483A-9D75-7D00461FB2BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D6E20C83-D638-483A-9D75-7D00461FB2BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D6E20C83-D638-483A-9D75-7D00461FB2BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94D62DF6-C1E1-4F0A-A647-8B6E5BEFA1F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94D62DF6-C1E1-4F0A-A647-8B6E5BEFA1F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94D62DF6-C1E1-4F0A-A647-8B6E5BEFA1F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94D62DF6-C1E1-4F0A-A647-8B6E5BEFA1F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A821FAB-DC8A-4CA0-AA15-58D1A10E9F84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A821FAB-DC8A-4CA0-AA15-58D1A10E9F84}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A821FAB-DC8A-4CA0-AA15-58D1A10E9F84}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A821FAB-DC8A-4CA0-AA15-58D1A10E9F84}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

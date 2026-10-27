@@ -1,0 +1,5 @@
+asset,zone,owner,crown_jewel
+Mail server (Exchange 2019),dmz,IT,n
+File server (Windows Server 2019),internal,IT,n
+Project DB (SQL Server 2019),data,Engineering,y
+Intranet (SharePoint Server 2019),internal,Communications,n

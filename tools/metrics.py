@@ -4,7 +4,8 @@ import ast, json, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-FILES = ["run.py", "app.py", "cli.py", *sorted(str(p.relative_to(ROOT)).replace("\\", "/") for p in (ROOT / "cti").glob("*.py"))]
+PY = ROOT / "python"  # the Python edition's code; file names below are relative to it
+FILES = ["run.py", "app.py", "cli.py", *sorted(str(p.relative_to(PY)).replace("\\", "/") for p in (PY / "cti").glob("*.py"))]
 DECISIONS = (ast.If, ast.For, ast.While, ast.ExceptHandler, ast.IfExp, ast.Assert, ast.AsyncFor)
 
 
@@ -21,7 +22,7 @@ def complexity(node):
 
 
 def measure(rel):
-    src = (ROOT / rel).read_text(encoding="utf-8")
+    src = (PY / rel).read_text(encoding="utf-8")
     tree = ast.parse(src)
     loc = sum(1 for l in src.splitlines() if l.strip() and not l.strip().startswith("#"))
     funcs = [(f.name, complexity(f), f.end_lineno - f.lineno + 1) for f in ast.walk(tree) if isinstance(f, (ast.FunctionDef, ast.AsyncFunctionDef))]

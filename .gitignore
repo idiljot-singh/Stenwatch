@@ -1,4 +1,6 @@
 # Organisation data: a map of where you are vulnerable. Never commit it.
+data/*
+!data/README.md
 profile.yaml
 assets.csv
 third_parties.csv
@@ -48,3 +50,8 @@ docs/architecture.html
 docs/diagrams/*.png
 tools/diagrams.py
 tools/make_fake_fleet.py
+
+# C# build output
+src/**/bin/
+src/**/obj/
+.vs/

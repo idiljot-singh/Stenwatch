@@ -30,6 +30,32 @@ A monochrome, terminal-style interface: the console is a funnel that narrows eve
 
 <sub>Screenshots use the bundled Example Organisation, not real data.</sub>
 
+## Repository map
+
+```
+Stenwatch/
+  README.md  LICENSE  CITATION.cff  SECURITY.md
+  src/         C# edition 0.2 (Core, App, Cli, Tests)      -> src/README.md
+  python/      Python edition 0.1 (pipeline, console)      -> python/README.md
+  examples/    the fictional Example Organisation          -> examples/README.md
+  data/        YOUR files: profile, assets, cve.db, out/   -> data/README.md  (git-ignored)
+  docs/        pillars, evaluation, ADRs, guides, public site -> docs/README.md
+  installer/   Windows installers and build scripts        -> installer/README.md
+  tools/       diagram and metrics generators
+  cloud/ saas/ the hosted-demo experiment (hybrid SaaS, ADR 0001)
+```
+
+## Version 0.2: C# desktop edition (in progress)
+
+A rewrite in C# (WPF, .NET 8) lives in [`src/`](src). It reproduces the Python pipeline's output for the Example Organisation exactly (a test), and adds what the research on CTI-driven vulnerability management calls for: run history and change reasons, evidence and confidence for every priority, business services, possible attack paths, compensating controls with dated evidence, a knowledge graph, remediation tasks that close only when a scan confirms the fix, and a pre-registered test of whether ATT&CK actually improves prioritisation.
+
+* [The 15 pillars and where each stands](docs/pillars.md)
+* [What has and has not been shown to help](docs/evaluation.md)
+* Installer for testing: `installeruild-cs.bat` produces `installer/Output/Stenwatch-Setup-0.2.0-beta.exe` (self-contained, per-user, no admin rights). The app opens on a Guide page; tick the Example Organisation to try every page with fictional data.
+* Build and test: `dotnet test src/Stenwatch.Tests` (needs the .NET 8 SDK). Run: `dotnet run --project src/Stenwatch.App`, or `dotnet run --project src/Stenwatch.Cli -- --example`.
+
+The Python version below still works and is unchanged.
+
 ## Why
 
 About 40,000 CVEs are published every year. Most teams rank them by CVSS, which measures how bad a flaw *could* be, not whether anyone is using it against *you*. Stenwatch answers three questions instead:
@@ -65,41 +91,41 @@ Download `Stenwatch-Setup-0.1.0-beta.exe` from the Releases page and run it. No 
 Nothing installed, no admin rights, no policy changes:
 
 1. Get the code: **Code → Download ZIP** on GitHub and unzip it (or `git clone https://github.com/idiljot-singh/Stenwatch.git`).
-2. Double-click **`start.bat`**.
+2. Double-click **`python\start.bat`**.
 
 If Python is missing, `start.bat` downloads a portable copy (SHA-256 checked) into `.python\`. Nothing is installed system-wide, and deleting the folder removes it. Otherwise it uses your Python in a private `.venv`. Either way it installs the 4 hash-pinned dependencies, runs the bundled Example Organisation and opens its dashboard. Once you have a `profile.yaml` (see below), `start.bat` opens the console instead. It never uses PowerShell scripts, so ExecutionPolicy does not get in the way. On Linux/macOS use `python3 -m venv .venv`, `source .venv/bin/activate` and the commands under Quick start.
 
 ## Quick start
 
 ```bash
-pip install --require-hashes -r requirements.txt
-python test_pipeline.py                         # offline self-check: prints "ok"
-python run.py --example --since 2026-01-01      # try it on the bundled Example Organisation -> out/example/
+pip install --require-hashes -r python/requirements.txt
+python python/test_pipeline.py                         # offline self-check: prints "ok"
+python python/run.py --example --since 2026-01-01      # try it on the bundled Example Organisation -> data/out/example/
 
-copy profile.example.yaml profile.yaml          # your organisation and threat profile
-copy assets.example.csv assets.csv              # the software you run
-copy third_parties.example.csv third_parties.csv   # your suppliers (optional)
-copy exceptions.example.csv exceptions.csv      # analyst decisions (optional)
+copy examples\profile.example.yaml data\profile.yaml          # your organisation and threat profile
+copy examples\assets.example.csv data\assets.csv              # the software you run
+copy examples\third_parties.example.csv data\third_parties.csv   # your suppliers (optional)
+copy examples\exceptions.example.csv data\exceptions.csv      # analyst decisions (optional)
 # Linux/macOS: use cp instead of copy
 
-python app.py                                   # console at http://127.0.0.1:8765
+python python/app.py                                   # console at http://127.0.0.1:8765
 ```
 
 In the console, open **Collection → Quick sync** to download the feeds, then **Analysis → Re-rank**. On the command line:
 
 ```bash
-python run.py --since 2026-01-01        # quick: only CVEs changed since a date
-python run.py                           # full NVD history the first time, then incremental
-python run.py --skip-collect            # re-rank without downloading
-python run.py --suggest-cpe exchange    # find the NVD product name for the cpe column
+python python/run.py --since 2026-01-01        # quick: only CVEs changed since a date
+python python/run.py                           # full NVD history the first time, then incremental
+python python/run.py --skip-collect            # re-rank without downloading
+python python/run.py --suggest-cpe exchange    # find the NVD product name for the cpe column
 ```
 
 ## Documentation
 
 | Document | Read it to… |
 |---|---|
-| [CUSTOMISE.md](CUSTOMISE.md) | Set Stenwatch up for **your** organisation, step by step, with a checklist |
-| [WALKTHROUGH.md](WALKTHROUGH.md) ([PDF](WALKTHROUGH.pdf)) | Understand how every stage works and why |
+| [CUSTOMISE.md](docs/guides/CUSTOMISE.md) | Set Stenwatch up for **your** organisation, step by step, with a checklist |
+| [WALKTHROUGH.md](docs/guides/WALKTHROUGH.md) ([PDF](docs/guides/WALKTHROUGH.pdf)) | Understand how every stage works and why |
 | [SECURITY.md](SECURITY.md) | Report a vulnerability in Stenwatch |
 
 ## How it works
@@ -107,10 +133,10 @@ python run.py --suggest-cpe exchange    # find the NVD product name for the cpe 
 | CTI stage | Module | What it does |
 |---|---|---|
 | Direction | `profile.yaml` | Organisation, Priority Intelligence Requirements, threat groups, weights, tiers |
-| Collection | `cti/collect.py` | NVD (every CVE), CISA KEV, FIRST EPSS, MITRE ATT&CK + D3FEND, CTID KEV→ATT&CK into `cve.db` |
-| Processing | `cti/process.py` | Owned assets and suppliers → CPE + version matching; optional Microsoft Defender inventory |
-| Analysis | `cti/analyse.py` | Risk score, threat-profile overlap, ATT&CK techniques, SSVC tier |
-| Dissemination | `cti/disseminate.py` | `report.html`/`.pdf`, `brief.html`/`.pdf`, `report.csv`, `dashboard.html`, STIX 2.1 `bundle.json` (plus the Markdown sources `report.md`, `brief.md`) |
+| Collection | `python/cti/collect.py` | NVD (every CVE), CISA KEV, FIRST EPSS, MITRE ATT&CK + D3FEND, CTID KEV→ATT&CK into `cve.db` |
+| Processing | `python/cti/process.py` | Owned assets and suppliers → CPE + version matching; optional Microsoft Defender inventory |
+| Analysis | `python/cti/analyse.py` | Risk score, threat-profile overlap, ATT&CK techniques, SSVC tier |
+| Dissemination | `python/cti/disseminate.py` | `report.html`/`.pdf`, `brief.html`/`.pdf`, `report.csv`, `dashboard.html`, STIX 2.1 `bundle.json` (plus the Markdown sources `report.md`, `brief.md`) |
 | Feedback | `exceptions.csv` | Patched, mitigated or accepted decisions that expire and come back for review |
 
 ```
@@ -125,7 +151,7 @@ Four diagrams, generated from the real code: the [code map](https://idiljot-sing
 
 ## Your data stays yours
 
-Stenwatch runs entirely on your machine. `profile.yaml`, the asset, supplier and exception lists, the database and all outputs are **git-ignored**: they describe where your organisation is vulnerable. Only public feeds are downloaded; nothing about your estate is sent anywhere unless you enable a cloud LLM for the brief, and even then the input is redacted.
+Stenwatch runs entirely on your machine. Everything of yours lives in the `data/` folder (profile, asset, supplier and exception lists, the database and all outputs) and is **git-ignored**: they describe where your organisation is vulnerable. Only public feeds are downloaded; nothing about your estate is sent anywhere unless you enable a cloud LLM for the brief, and even then the input is redacted.
 
 ## Author
 

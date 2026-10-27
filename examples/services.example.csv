@@ -1,0 +1,4 @@
+name,owner,criticality,data_class,regulatory,rto_hours,assets
+Project delivery,Engineering,3,confidential,,8,Project DB (SQL Server 2019);File server (Windows Server 2019)
+Staff email,IT,2,internal,,24,Mail server (Exchange 2019)
+Intranet,Communications,1,internal,,72,Intranet (SharePoint Server 2019)

@@ -1,0 +1,2 @@
+id,name,type,scope,counters,effectiveness,evidence,evidence_date,expires
+C1,Exchange WAF,waf,Mail server (Exchange 2019),T1190,partial,Example: penetration test report confirmed the WAF blocks known Exchange exploit patterns,2026-09-15,2027-12-31

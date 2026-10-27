@@ -1,0 +1,12 @@
+# installer/
+
+Windows installers (Inno Setup 6, per-user, no admin rights). Build outputs go to `Output/` (git-ignored).
+
+| File | What |
+|---|---|
+| `stenwatch-cs.iss` | Installer for the C# edition, 0.2.0 beta. Self-contained: the .NET runtime is included. |
+| `build-cs.bat` | Runs the tests, publishes the app and CLI, and builds the installer: `installer\build-cs.bat`. Needs the .NET 8 SDK and Inno Setup 6. |
+| `readme-before.txt` | The "what to expect" page shown by the C# installer. |
+| `stenwatch-python.iss` | Installer for the Python edition 0.1 (built by `python\build.bat`). |
+
+Install location: `%LOCALAPPDATA%\Programs\Stenwatch2`. Your data lives in `%APPDATA%\Stenwatch` and survives updates; uninstalling asks before deleting it.

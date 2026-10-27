@@ -10,5 +10,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.14"
-      - run: pip install --require-hashes -r requirements.txt
-      - run: python test_pipeline.py
+      - run: pip install --require-hashes -r python/requirements.txt
+      - run: python python/test_pipeline.py
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - run: dotnet test src/Stenwatch.Tests

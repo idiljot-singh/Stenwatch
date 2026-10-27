@@ -1,0 +1,4 @@
+src,dst,kind,port,note
+Mail server (Exchange 2019),File server (Windows Server 2019),network,445,mail relay to file shares
+File server (Windows Server 2019),Project DB (SQL Server 2019),network,1433,application to database
+Perimeter firewall (FortiGate),Intranet (SharePoint Server 2019),network,443,reverse proxy
