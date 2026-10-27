@@ -4,3 +4,4 @@ MSP monitoring (N-able N-central),cpe:2.3:a:n-able:n-central,,MSP,internal,y,y
 Backup provider (Acronis Cyber Protect),cpe:2.3:a:acronis:cyber_protect,,Backup,confidential,y,y
 Client file exchange (MOVEit Transfer),cpe:2.3:a:progress:moveit_transfer,,SaaS,confidential,n,y
 Partner remote access (Citrix NetScaler),cpe:2.3:a:citrix:netscaler_application_delivery_controller,,Partner,internal,n,y
+Payroll provider (Workday),cpe:2.3:a:workday:workday,,SaaS,regulated,n,y

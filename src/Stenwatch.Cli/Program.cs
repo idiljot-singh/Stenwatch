@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using Stenwatch.Core;
 
 CultureInfo.DefaultThreadCurrentCulture = CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
@@ -61,8 +61,9 @@ if (a.Contains("--rating-import"))
 if (a.Contains("--convert-inventory")) // inventory export (hostname, vendor, product, os) -> assets.csv
 {
     using var db = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={files.Db};Mode=ReadOnly"); db.Open();
-    var r = Inventory.ConvertFile(files.Assets, db);
-    Console.WriteLine($"{r.Hosts} hosts -> {r.Assets.Count} assets; {r.Unmatched.Sum(u => u.Hosts)} hosts not matched (assets.unmatched.csv); original kept as assets.inventory.csv");
+    var file = Opt("--convert-inventory", ""); // a file given: show what it converts to, write nothing
+    var r = File.Exists(file) ? Inventory.Convert(file, db) : Inventory.ConvertFile(files.Assets, db);
+    Console.WriteLine($"{r.Hosts} hosts -> {r.Assets.Count} assets; {r.Unmatched.Sum(u => u.Hosts)} hosts not matched" + (File.Exists(file) ? "" : " (assets.unmatched.csv); original kept as assets.inventory.csv"));
     foreach (var x in r.Assets) Console.WriteLine($"  {x[0],-45} {x[1]} {x[2]}");
     foreach (var u in r.Unmatched) Console.WriteLine($"  not matched: {u.What} ({u.Hosts})");
     return;

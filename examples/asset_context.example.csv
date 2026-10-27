@@ -1,5 +1,31 @@
 asset,zone,owner,crown_jewel
 Mail server (Exchange 2019),dmz,IT,n
-File server (Windows Server 2019),internal,IT,n
-Project DB (SQL Server 2019),data,Engineering,y
+Perimeter firewall (FortiGate),internet,IT,n
+Reverse proxy (nginx 1.24),dmz,IT,n
+Customer portal web server (Apache 2.4),dmz,Sales,n
+Customer portal runtime (PHP 8.1),dmz,Sales,n
+Customer portal CMS (WordPress 6.2),dmz,Sales,n
+Customer portal TLS (OpenSSL 3.0),dmz,Sales,n
+Customer portal database (MySQL 8.0),internal,Sales,y
+Domain controllers (Windows Server 2019),internal,IT,y
+File server (Windows Server 2019),internal,IT,y
+Project file server (Windows Server 2022),internal,Engineering,y
+Network storage (Synology DSM 7.1),internal,IT,y
+Backup server (Veeam Backup & Replication 12),internal,IT,y
+Virtualisation hosts (VMware ESXi 7.0),internal,IT,n
+Virtualisation management (vCenter 7.0),internal,IT,n
+ERP (SAP NetWeaver AS ABAP 7.54),internal,Finance,y
+Project DB (SQL Server 2019),internal,Engineering,y
 Intranet (SharePoint Server 2019),internal,Communications,n
+Issue tracking (Jira Data Center 9.4),internal,Engineering,n
+Wiki (Confluence Data Center 8.5),internal,Engineering,n
+Source code (GitLab 16.5),internal,R&D,y
+Build server (Jenkins 2.426),internal,R&D,n
+Project app server (Apache Tomcat 9.0),internal,Engineering,n
+Endpoint management (Ivanti EPM 2022),internal,IT,n
+Licence server (FlexNet Publisher 11.18),internal,Design,n
+Core switches (Cisco IOS XE 17.9),internal,IT,n
+Wi-Fi controllers (ArubaOS 8.10),internal,IT,n
+Staff laptops (Windows 11 23H2),internal,IT,n
+Design workstations (Windows 10 22H2),internal,Design,n
+VPN client (FortiClient 7.0),internal,IT,n

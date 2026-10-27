@@ -54,15 +54,23 @@ public static class Engine
             log("PDF: " + (pdfs.Count > 0 ? string.Join(", ", pdfs.Select(Path.GetFileName)) : "skipped (needs Microsoft Edge or Chrome)"));
         }
 
-        long run = 0; var events = new List<ChangeEvent>(); var tasks = new List<RemediationTask>();
+        long run = 0; var events = new List<ChangeEvent>(); var tasks = new List<RemediationTask>(); List<RemediationTask> allTasks;
         if (!o.Example)
         {
             ThreatProfileAuto.Store(db, groups);
             (run, events) = History.Record(db, ranked, suppressed);
             tasks = Remediation.Sync(db, ranked, suppressed, profile, run);
             log($"Feedback: run {run}, {events.Count} change(s), {tasks.Count} task update(s)");
+            allTasks = Remediation.Load(db);
         }
-        FullReport.Write(files, outDir, profile, db, ctx, ranked, o.Example ? new() : Remediation.Load(db), o.Example, o.Pdf);
+        else
+        {
+            var state = Path.Combine(outDir, ExampleHistory.File);
+            (run, events, tasks) = ExampleHistory.Replay(state, db, files, profile, ctx, ranked, suppressed, DateOnly.FromDateTime(DateTime.Today));
+            using (var sdb = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={state}")) { sdb.Open(); allTasks = Remediation.Load(sdb); }
+            log($"Feedback (simulated history of the Example Organisation): run {run}, {events.Count} change(s), {allTasks.Count} task(s)");
+        }
+        FullReport.Write(files, outDir, profile, db, ctx, ranked, allTasks, o.Example, o.Pdf);
         log("Full report: full-report.html" + (o.Pdf ? " and .pdf" : ""));
         return new RunResult(ranked, suppressed, paths, run, events, tasks, ctx, profile, outDir, source);
     }

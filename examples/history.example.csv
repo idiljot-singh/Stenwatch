@@ -1,0 +1,9 @@
+asset,until_days_ago,version
+Perimeter firewall (FortiGate),46,7.0.12
+Wiki (Confluence Data Center 8.5),50,8.5.1
+Build server (Jenkins 2.426),45,2.401.1
+Source code (GitLab 16.5),40,16.1.0
+Backup server (Veeam Backup & Replication 12),35,12.0.0.1420
+Project file server (Windows Server 2022),30,10.0.20348.2461
+Staff browsers (Chrome),25,126.0.6478.126
+Staff laptops (Windows 11 23H2),20,10.0.22631.3737

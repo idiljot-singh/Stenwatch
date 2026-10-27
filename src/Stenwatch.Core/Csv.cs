@@ -15,7 +15,7 @@ public static class Csv
             .Select(r => head.Select((h, i) => (h, v: i < r.Count ? r[i] : "")).ToDictionary(x => x.h, x => x.v)).ToList();
     }
 
-    public static List<List<string>> Parse(string text)
+    public static List<List<string>> Parse(string text, char sep = ',')
     {
         var rows = new List<List<string>>(); var row = new List<string>(); var cell = new StringBuilder();
         bool quoted = false, any = false;
@@ -28,7 +28,7 @@ public static class Csv
                 else cell.Append(c);
             }
             else if (c == '"') { quoted = true; any = true; }
-            else if (c == ',') { row.Add(cell.ToString()); cell.Clear(); any = true; }
+            else if (c == sep) { row.Add(cell.ToString()); cell.Clear(); any = true; }
             else if (c == '\r' || c == '\n')
             {
                 if (c == '\r' && i + 1 < text.Length && text[i + 1] == '\n') i++;

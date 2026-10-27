@@ -1,2 +1,9 @@
 id,name,type,scope,counters,effectiveness,evidence,evidence_date,expires
 C1,Exchange WAF,waf,Mail server (Exchange 2019),T1190,partial,Example: penetration test report confirmed the WAF blocks known Exchange exploit patterns,2026-09-15,2027-12-31
+C2,Portal WAF (managed rules),waf,"Reverse proxy (nginx 1.24),Customer portal web server (Apache 2.4),Customer portal runtime (PHP 8.1),Customer portal CMS (WordPress 6.2)",T1190,partial,Example: WAF rule set reviewed and blocking mode confirmed,2026-08-20,2027-08-31
+C3,MFA on VPN and admin accounts,mfa,"Perimeter firewall (FortiGate),Domain controllers (Windows Server 2019)","T1078,T1110,T1133",strong,Example: conditional access report shows MFA on every VPN and admin sign-in,2026-10-01,2027-10-01
+C4,EDR on laptops and workstations,edr,"Staff laptops (Windows 11 23H2),Design workstations (Windows 10 22H2),Mac laptops (macOS 13)","T1059,T1068,T1203,T1204",partial,Example: EDR coverage report shows 98% of endpoints reporting,2026-09-30,2027-09-30
+C5,Server and user network segmentation,segmentation,zone:internal,"T1210,T1021",partial,Example: firewall rule review signed off by the network team,2026-06-12,2027-06-12
+C6,Email filtering and attachment sandbox,email,Mail server (Exchange 2019),"T1566,T1204",strong,Example: mail gateway configuration export,2026-09-05,2027-09-05
+C7,Immutable backup copies,backup,"Backup server (Veeam Backup & Replication 12),Network storage (Synology DSM 7.1)",T1490,strong,Example: restore test from the immutable repository passed,2026-07-18,2027-07-18
+C8,Privileged access workstations for admins,pam,Domain controllers (Windows Server 2019),"T1078,T1068",partial,Example: evidence older than a year: this control does not count until it is re-tested,2025-03-01,2027-03-01

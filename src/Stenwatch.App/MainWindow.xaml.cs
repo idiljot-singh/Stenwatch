@@ -42,11 +42,13 @@ public partial class MainWindow : Window
         // test hooks: STENWATCH_PAGE=n opens page n; STENWATCH_AUTORUN=1 ranks on start
         if (int.TryParse(Environment.GetEnvironmentVariable("STENWATCH_PAGE"), out var pg)) Go(pg);
         if (Environment.GetEnvironmentVariable("STENWATCH_SYNC") == "quick") Loaded += async (_, _) => await SyncFeeds(DateTimeOffset.UtcNow.AddDays(-2));
-        if (Environment.GetEnvironmentVariable("STENWATCH_AUTORUN") == "1") Loaded += async (_, _) => { await RunEngine(false); if (Environment.GetEnvironmentVariable("STENWATCH_FIRST") == "1") { FindingsGrid.SelectedIndex = 0; PathsGrid.SelectedIndex = 0; } };
+        if (Environment.GetEnvironmentVariable("STENWATCH_AUTORUN") == "1") Loaded += async (_, _) => { await RunEngine(false); if (pg > 0) Go(pg); if (Environment.GetEnvironmentVariable("STENWATCH_FIRST") == "1") { FindingsGrid.SelectedIndex = 0; PathsGrid.SelectedIndex = 0; } };
     }
 
     bool Example => ExampleBox.IsChecked == true;
     string Db => Path.Combine(data, "cve.db");
+    /// <summary>Where the tasks live: the real database, or the Example Organisation's throwaway one with its simulated history.</summary>
+    string TaskDb => Example ? Path.Combine(last?.OutDir ?? Path.Combine(data, "out", "example-cs"), ExampleHistory.File) : Db;
 
     /// <summary>Point at the real organisation's files, or the bundled Example Organisation's.</summary>
     void Configure()
@@ -724,38 +726,63 @@ public partial class MainWindow : Window
     // ---------- dissemination ----------
     void ShowOutputs(RunResult r)
     {
+        ShowReport(Path.Combine(r.OutDir, "full-report.html"));
         OutputButtons.Children.Clear();
-        foreach (var (label, file, who) in Outputs)
+        foreach (var (label, file, pdf, who) in Outputs)
         {
-            var path = System.IO.Path.Combine(r.OutDir, file);
+            var path = Path.Combine(r.OutDir, file);
             if (!File.Exists(path)) continue;
             var open = new Button { Content = "Open", Margin = new Thickness(0, 0, 6, 0) }; open.Click += (_, _) => OpenFile(path);
-            var save = new Button { Content = "Save as...", Margin = new Thickness(0) }; save.Click += (_, _) => SaveCopy(path);
-            var row = new DockPanel { Margin = new Thickness(0, 0, 0, 6) };
-            var btns = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Children = { open, save } };
-            DockPanel.SetDock(btns, Dock.Right); row.Children.Add(btns);
-            row.Children.Add(new StackPanel { Children = {
-                new TextBlock { Text = $"{label}   ({file})", FontWeight = FontWeights.SemiBold },
-                new TextBlock { Text = who, Style = (Style)FindResource("Muted"), FontSize = 12 } } });
-            OutputButtons.Children.Add(new Border { Child = row, BorderBrush = (Brush)FindResource("Line"), BorderThickness = new Thickness(0, 0, 0, 1), Padding = new Thickness(0, 4, 0, 8) });
+            var save = new Button { Content = pdf ? "Export PDF..." : $"Export {Path.GetExtension(path)}...", Margin = new Thickness(0) };
+            save.Click += (_, _) => Export(path, pdf);
+            OutputButtons.Children.Add(new Border { BorderBrush = (Brush)FindResource("Line"), BorderThickness = new Thickness(0, 0, 0, 1), Padding = new Thickness(0, 4, 0, 8),
+                Child = new StackPanel { Children = {
+                    new TextBlock { Text = label, FontWeight = FontWeights.SemiBold },
+                    new TextBlock { Text = who, Style = (Style)FindResource("Muted"), FontSize = 11, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 4) },
+                    new StackPanel { Orientation = Orientation.Horizontal, Children = { open, save } } } } });
         }
-        OutputText.Text = $"Written to {r.OutDir}. Brief: {(r.BriefSource.StartsWith("template") ? "fixed template, no AI" : "AI draft (" + r.BriefSource + "), verify before sending")}. The ATT&CK layer opens in the ATT&CK Navigator.";
+        OutputText.Text = $"Brief: {(r.BriefSource.StartsWith("template") ? "fixed template, no AI" : "AI draft (" + r.BriefSource + "), verify before sending")}. All outputs are in {r.OutDir}.";
     }
 
-    static readonly (string Label, string File, string Who)[] Outputs =
+    /// <summary>The intelligence report inside the page (WebView2, part of Windows 10 and 11). Without the runtime, say where the report is.</summary>
+    async void ShowReport(string html)
     {
-        ("Full intelligence report (PDF)", "full-report.pdf", "Everything in one printable document. For the security lead, auditors and the archive."),
-        ("Findings report", "report.html", "IT and patch teams: Act and Attend findings with the evidence and what to do."),
-        ("Findings report (PDF)", "report.pdf", "The same, printable."),
-        ("Management brief", "brief.html", "Management: one page in plain language, what is urgent and why."),
-        ("Management brief (PDF)", "brief.pdf", "The same, printable."),
-        ("Analyst dashboard", "dashboard.html", "Analysts: every finding, filter and search in the browser."),
-        ("Attack paths", "paths.html", "Architects and the security lead: possible routes to the crown jewels."),
-        ("Findings table", "report.csv", "Excel, ticketing or another tool: every finding, one row each."),
-        ("STIX 2.1 bundle", "bundle.json", "Threat-intelligence platforms (MISP, OpenCTI, Sentinel): machine-readable."),
-        ("ATT&CK Navigator layer", "attack-layer.json", "Open in the MITRE ATT&CK Navigator: the techniques your findings enable."),
-        ("Tracked threat groups", "threat-profile.md", "Which groups are tracked and why, as text."),
+        if (!File.Exists(html)) { ReportNote.Visibility = Visibility.Visible; return; }
+        try
+        {
+            if (ReportView.CoreWebView2 is null)
+                await ReportView.EnsureCoreWebView2Async(await Microsoft.Web.WebView2.Core.CoreWebView2Environment.CreateAsync(null,
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Stenwatch", "WebView2")));
+            ReportView.CoreWebView2!.Navigate(new Uri(html).AbsoluteUri);
+            ReportNote.Visibility = Visibility.Collapsed;
+        }
+        catch (Exception ex) { ReportNote.Text = $"The report cannot be shown here ({ex.Message}). Open in browser shows it: {html}"; ReportNote.Visibility = Visibility.Visible; }
+    }
+
+    // each output once: documents are exported as PDF, data in the format the receiving tool reads
+    static readonly (string Label, string File, bool Pdf, string Who)[] Outputs =
+    {
+        ("Findings report", "report.html", true, "IT and patch teams: Act and Attend findings with the evidence and what to do."),
+        ("Management brief", "brief.html", true, "Management: one page in plain language, what is urgent and why."),
+        ("Attack paths", "paths.html", true, "Architects and the security lead: possible routes to the crown jewels."),
+        ("Analyst dashboard", "dashboard.html", false, "Analysts: every finding, filter and search in the browser."),
+        ("Findings table", "report.csv", false, "Excel, ticketing or another tool: every finding, one row each."),
+        ("STIX 2.1 bundle", "bundle.json", false, "Threat-intelligence platforms (MISP, OpenCTI, Sentinel)."),
+        ("ATT&CK Navigator layer", "attack-layer.json", false, "The techniques your findings enable, for the MITRE ATT&CK Navigator."),
     };
+
+    /// <summary>Save a copy; a document is turned into PDF first (reused while it is newer than the page).</summary>
+    void Export(string path, bool pdf)
+    {
+        if (pdf)
+        {
+            var p = Path.ChangeExtension(path, ".pdf");
+            if (!File.Exists(p) || File.GetLastWriteTimeUtc(p) < File.GetLastWriteTimeUtc(path)) p = Render.ToPdf(path) ?? "";
+            if (p == "") { Status("No PDF: it needs Microsoft Edge or Chrome. Open it and print to PDF instead."); return; }
+            path = p;
+        }
+        SaveCopy(path);
+    }
 
     void OpenFullReport(object s, RoutedEventArgs e)
     {
@@ -767,8 +794,7 @@ public partial class MainWindow : Window
     void SaveFullPdf(object s, RoutedEventArgs e)
     {
         if (last is null) { Status("Rank first: the report is written by a rank"); return; }
-        var p = Path.Combine(last.OutDir, "full-report.pdf");
-        if (File.Exists(p)) SaveCopy(p); else Status("No PDF: it needs Microsoft Edge or Chrome installed. Open the full report and print it to PDF instead.");
+        Export(Path.Combine(last.OutDir, "full-report.html"), pdf: true);
     }
 
     void SaveCopy(string path)
@@ -823,12 +849,12 @@ public partial class MainWindow : Window
     // ---------- feedback ----------
     void LoadTasks(object? s, RoutedEventArgs e)
     {
-        if (Example || !File.Exists(Db)) { TasksGrid.ItemsSource = null; TaskStatus.Text = Example ? "   Tasks are not created for the Example Organisation." : ""; return; }
-        using var db = Collect.Connect(Db);
+        if (!File.Exists(TaskDb)) { TasksGrid.ItemsSource = null; TaskStatus.Text = Example ? "   Rank the Example Organisation to replay its simulated history." : ""; OpsText.Text = ""; return; }
+        using var db = Collect.Connect(TaskDb);
         var tasks = Remediation.Load(db);
         TasksGrid.ItemsSource = tasks.OrderBy(t => TaskState.Active.Contains(t.State) ? 0 : 1).ThenBy(t => t.Due).ToList();
         var m = Effectiveness.Ops(tasks, DateOnly.FromDateTime(DateTime.Today));
-        TaskStatus.Text = $"   {m.Active} active, {m.Overdue} overdue, {m.Verified} verified";
+        TaskStatus.Text = $"   {m.Active} active, {m.Overdue} overdue, {m.Verified} verified" + (Example ? "   (Example Organisation: simulated eight-week history)" : "");
         OpsText.Text = tasks.Count == 0 ? "No remediation tasks yet. Rank to create them for Act and Attend findings."
             : $"Tasks opened         {m.Opened}\nVerified by a scan    {m.Verified}\nClaimed fixed, unconfirmed  {m.Unverified}\nActive                {m.Active}   (overdue {m.Overdue})\n"
             + $"Median days to verify {(m.MedianDaysToVerify is { } d ? d.ToString("0.0", CultureInfo.InvariantCulture) : "n/a (nothing verified yet)")}\n"
@@ -839,12 +865,12 @@ public partial class MainWindow : Window
     void AssignTask(object s, RoutedEventArgs e)
     {
         if (TasksGrid.SelectedItem is not RemediationTask t) return;
-        using var db = Collect.Connect(Db); Remediation.Assign(db, t.Id, TaskOwner.Text.Trim(), TaskTicket.Text.Trim()); LoadTasks(null, null!);
+        using var db = Collect.Connect(TaskDb); Remediation.Assign(db, t.Id, TaskOwner.Text.Trim(), TaskTicket.Text.Trim()); LoadTasks(null, null!);
     }
     void ClaimTask(object s, RoutedEventArgs e)
     {
         if (TasksGrid.SelectedItem is not RemediationTask t) return;
-        using var db = Collect.Connect(Db); Remediation.ClaimFixed(db, t.Id, "claimed fixed"); LoadTasks(null, null!);
+        using var db = Collect.Connect(TaskDb); Remediation.ClaimFixed(db, t.Id, "claimed fixed"); LoadTasks(null, null!);
     }
 
     // ---------- attack paths ----------
@@ -985,12 +1011,15 @@ public partial class MainWindow : Window
 
     void ImportFile(string name, string dest)
     {
-        var dlg = new Microsoft.Win32.OpenFileDialog { Title = "Choose " + name, Filter = name + "|*" + Path.GetExtension(name) + "|All files|*.*" };
+        var dlg = new Microsoft.Win32.OpenFileDialog { Title = "Choose " + name, Filter = name == "assets.csv"
+            ? "Asset list or inventory (CSV, Excel, CycloneDX SBOM)|*.csv;*.txt;*.xlsx;*.json|All files|*.*" : name + "|*" + Path.GetExtension(name) + "|All files|*.*" };
         if (dlg.ShowDialog() != true) return;
         if (File.Exists(dest) && MessageBox.Show($"Replace the {name} Stenwatch already has?", "Stenwatch", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
         try
         {
-            if (Path.GetFullPath(dlg.FileName) != Path.GetFullPath(dest)) File.Copy(dlg.FileName, dest, true);
+            if (Path.GetFullPath(dlg.FileName) == Path.GetFullPath(dest)) { }
+            else if (name == "assets.csv") Inventory.ToCsv(dlg.FileName, dest); // any separator, Excel or SBOM -> the plain CSV the rest reads
+            else File.Copy(dlg.FileName, dest, true);
             AfterFileChange(name);
             if (name == "assets.csv" && Inventory.IsInventory(dest)) ConvertInventory(null!, null!);
         }

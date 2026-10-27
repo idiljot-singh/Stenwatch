@@ -132,7 +132,7 @@ def match(db, assets, recent_days=90, today=None):
             params = sorted(defender)
         else:
             sql += "c.cpes LIKE ?"
-            params = [f'%"{a["cpe"]}:%']
+            params = ['%"' + a["cpe"].replace("\\", "\\\\") + ':%']  # cve.cpes is JSON text, where a backslash is doubled
         if a["third_party"] and not a["version"]:
             sql += " AND (c.published >= ? OR k.date_added >= ?)"
             params += [cutoff, cutoff]

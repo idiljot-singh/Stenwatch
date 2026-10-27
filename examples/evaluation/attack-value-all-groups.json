@@ -1,0 +1,13 @@
+{
+  "t0": "2026-04-11",
+  "t_end": "2026-10-08",
+  "epss_file": "epss_scores-2026-04-11.csv.gz",
+  "attack_version": "18.1",
+  "attack_modified": "2025-11-13T14:00:00.188Z",
+  "ctid_release": "attack-16.1/kev-07.28.2025",
+  "candidates": 339837,
+  "positives": 54,
+  "overlap_candidates": 6,
+  "overlap_positives": 0,
+  "label": "Not applicable"
+}

@@ -1,0 +1,58 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "type": "application",
+      "name": "Customer portal"
+    }
+  },
+  "components": [
+    {
+      "type": "application",
+      "name": "php",
+      "version": "8.1.12",
+      "cpe": "cpe:2.3:a:php:php:8.1.12:*:*:*:*:*:*:*"
+    },
+    {
+      "type": "application",
+      "name": "httpd",
+      "publisher": "Apache Software Foundation",
+      "version": "2.4.57"
+    },
+    {
+      "type": "application",
+      "name": "wordpress",
+      "version": "6.2.2"
+    },
+    {
+      "type": "library",
+      "name": "openssl",
+      "version": "3.0.8"
+    },
+    {
+      "type": "application",
+      "name": "mysql",
+      "version": "8.0.33"
+    },
+    {
+      "type": "library",
+      "name": "jquery",
+      "group": "jquery",
+      "version": "3.5.1"
+    },
+    {
+      "type": "library",
+      "name": "phpmailer",
+      "group": "phpmailer",
+      "version": "6.5.0"
+    },
+    {
+      "type": "library",
+      "name": "guzzle",
+      "group": "guzzlehttp",
+      "version": "7.4.4"
+    }
+  ]
+}

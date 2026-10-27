@@ -11,6 +11,8 @@ public static class FeatureEvidence
     public static List<FeatureLabel> Load(string dataDir)
     {
         var dir = Path.Combine(dataDir, "out", "evaluation");
+        // not run here yet: show the published results that ship with the program (docs/evaluation.md)
+        if (!File.Exists(Path.Combine(dir, "attack-value.json")) && Directory.Exists(Path.Combine(AppPaths.Examples(), "evaluation"))) dir = Path.Combine(AppPaths.Examples(), "evaluation");
         string? Label(string name)
         {
             var path = Path.Combine(dir, name + ".json");

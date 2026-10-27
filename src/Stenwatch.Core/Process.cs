@@ -132,7 +132,7 @@ public static class Process
                 var names = only.Order(StringComparer.Ordinal).Select((c, i) => { cmd.Parameters.AddWithValue("@d" + i, c); return "@d" + i; });
                 sql += $"c.id IN ({string.Join(",", names)})";
             }
-            else { sql += "c.cpes LIKE @cpe"; cmd.Parameters.AddWithValue("@cpe", $"%\"{a.Cpe}:%"); }
+            else { sql += "c.cpes LIKE @cpe"; cmd.Parameters.AddWithValue("@cpe", $"%\"{a.Cpe.Replace(@"\", @"\\")}:%"); } // cve.cpes is JSON text, where a backslash is doubled
             if (a.ThirdParty && a.Version == "") { sql += " AND (c.published >= @cut OR k.date_added >= @cut)"; cmd.Parameters.AddWithValue("@cut", cutoff); }
             else if (!a.ThirdParty && a.Version == "" && a.OnlyCves is null && patchBaseline != "") { sql += " AND c.published >= @base"; cmd.Parameters.AddWithValue("@base", patchBaseline); }
             cmd.CommandText = sql;

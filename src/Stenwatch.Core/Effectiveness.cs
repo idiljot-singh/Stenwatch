@@ -24,8 +24,8 @@ public static class Effectiveness
         var verified = tasks.Where(t => t.State == TaskState.Verified && t.Closed != "").ToList();
         var days = verified.Select(t => (double)(P(t.Closed).DayNumber - P(t.Opened).DayNumber)).ToList();
         var inSla = verified.Count(t => string.CompareOrdinal(t.Closed, t.Due) <= 0);
-        // tasks reopened after a fix claim had a claim that did not hold
-        var claims = tasks.Count(t => t.State is TaskState.Fixed or TaskState.Reopened && t.Note.Contains("claimed fixed"));
+        // a fix claim that did not hold: the next scan still found it (the note stays when the task is picked up again)
+        var claims = tasks.Count(t => t.Note.StartsWith("claimed fixed, but"));
         return new OpsMetrics(tasks.Count, verified.Count, tasks.Count(t => t.State == TaskState.Fixed),
             tasks.Count(t => TaskState.Active.Contains(t.State)), tasks.Count(t => t.Overdue(today)), Median(days),
             verified.Count == 0 ? null : (double)inSla / verified.Count,

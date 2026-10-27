@@ -60,6 +60,7 @@ CREATE INDEX IF NOT EXISTS task_key ON task (cve, asset);";
                                              long run = 0, DateOnly? today = null)
     {
         EnsureSchema(db);
+        using var tx = db.BeginTransaction(); // one commit for the whole run, not one per task
         var day = today ?? DateOnly.FromDateTime(DateTime.Today);
         var changed = new HashSet<long>();
         var all = Load(db);
@@ -94,6 +95,7 @@ CREATE INDEX IF NOT EXISTS task_key ON task (cve, asset);";
             if (suppressedKeys.ContainsKey(key)) { if (t.State != TaskState.Excepted) Set(t, TaskState.Excepted, "suppressed by an analyst decision"); }
             else if (!openKeys.ContainsKey(key) && t.State != TaskState.Excepted) Set(t, TaskState.Verified, "verified: the CVE no longer matches this asset", close: true);
         }
+        tx.Commit();
         return Load(db).Where(t => changed.Contains(t.Id)).ToList();
     }
 

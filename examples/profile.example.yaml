@@ -7,8 +7,8 @@
 
 organisation:
   name: Example Organisation
-  sector: Example sector          # e.g. Manufacturing, Healthcare, Finance, Engineering
-  country: Example country        # used in reports and in the optional LLM brief
+  sector: Engineering and construction   # e.g. Manufacturing, Healthcare, Finance, Engineering
+  country: Finland                # used in reports and in the optional LLM brief
 
 # Priority Intelligence Requirements: the questions this pipeline answers
 pirs:

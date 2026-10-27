@@ -6,18 +6,13 @@
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4314.35" />
   </ItemGroup>
 
   <!-- the bundled Example Organisation and the documentation travel with the app -->
   <ItemGroup>
-    <Content Include="..\..\examples\profile.example.yaml" Link="profile.example.yaml" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="..\..\examples\assets.example.csv" Link="assets.example.csv" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="..\..\examples\third_parties.example.csv" Link="third_parties.example.csv" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="..\..\examples\exceptions.example.csv" Link="exceptions.example.csv" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="..\..\examples\services.example.csv" Link="services.example.csv" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="..\..\examples\asset_context.example.csv" Link="asset_context.example.csv" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="..\..\examples\links.example.csv" Link="links.example.csv" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="..\..\examples\controls.example.csv" Link="controls.example.csv" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\examples\*.example.*" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\examples\evaluation\*" Link="evaluation\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\docs\pillars.md" Link="docs\pillars.md" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\docs\evaluation.md" Link="docs\evaluation.md" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\README.md" Link="docs\README.md" CopyToOutputDirectory="PreserveNewest" />

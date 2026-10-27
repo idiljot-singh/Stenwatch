@@ -1,4 +1,31 @@
 src,dst,kind,port,note
+Perimeter firewall (FortiGate),Staff laptops (Windows 11 23H2),remote-access,443,SSL VPN lands staff on the office network
+Perimeter firewall (FortiGate),Intranet (SharePoint Server 2019),network,443,reverse proxy for the intranet
+Perimeter firewall (FortiGate),Domain controllers (Windows Server 2019),trust,389,VPN logins are checked against Active Directory
+Reverse proxy (nginx 1.24),Customer portal web server (Apache 2.4),network,443,portal traffic
+Customer portal web server (Apache 2.4),Customer portal runtime (PHP 8.1),network,9000,PHP-FPM
+Customer portal runtime (PHP 8.1),Customer portal database (MySQL 8.0),network,3306,customer records
+Customer portal CMS (WordPress 6.2),Customer portal database (MySQL 8.0),network,3306,CMS content
 Mail server (Exchange 2019),File server (Windows Server 2019),network,445,mail relay to file shares
+Mail server (Exchange 2019),Domain controllers (Windows Server 2019),trust,,Exchange holds high Active Directory rights
+Staff laptops (Windows 11 23H2),File server (Windows Server 2019),network,445,mapped network drives
+Staff laptops (Windows 11 23H2),Project file server (Windows Server 2022),network,445,mapped project drives
+Staff laptops (Windows 11 23H2),Network storage (Synology DSM 7.1),network,445,department shares
+Staff laptops (Windows 11 23H2),ERP (SAP NetWeaver AS ABAP 7.54),network,3200,SAP GUI
+Staff laptops (Windows 11 23H2),Issue tracking (Jira Data Center 9.4),network,443,
+Design workstations (Windows 10 22H2),Project file server (Windows Server 2022),network,445,CAD and BIM models
+Design workstations (Windows 10 22H2),Licence server (FlexNet Publisher 11.18),network,27000,CAD licences
 File server (Windows Server 2019),Project DB (SQL Server 2019),network,1433,application to database
-Perimeter firewall (FortiGate),Intranet (SharePoint Server 2019),network,443,reverse proxy
+Project app server (Apache Tomcat 9.0),Project DB (SQL Server 2019),network,1433,project application
+Build server (Jenkins 2.426),Source code (GitLab 16.5),trust,443,deploy token
+Build server (Jenkins 2.426),Project app server (Apache Tomcat 9.0),admin,8080,deploys builds
+Issue tracking (Jira Data Center 9.4),Wiki (Confluence Data Center 8.5),trust,443,application link
+Domain controllers (Windows Server 2019),File server (Windows Server 2019),admin,445,group policy and domain admin
+Domain controllers (Windows Server 2019),Backup server (Veeam Backup & Replication 12),trust,,backup server is domain-joined
+Domain controllers (Windows Server 2019),ERP (SAP NetWeaver AS ABAP 7.54),trust,,single sign-on
+Endpoint management (Ivanti EPM 2022),Staff laptops (Windows 11 23H2),admin,,software deployment agent
+Endpoint management (Ivanti EPM 2022),Design workstations (Windows 10 22H2),admin,,software deployment agent
+Backup server (Veeam Backup & Replication 12),Network storage (Synology DSM 7.1),admin,445,backup repository
+Backup server (Veeam Backup & Replication 12),Virtualisation management (vCenter 7.0),admin,443,VM snapshots
+Backup server (Veeam Backup & Replication 12),Project DB (SQL Server 2019),admin,1433,database backups
+Virtualisation management (vCenter 7.0),Virtualisation hosts (VMware ESXi 7.0),admin,443,host management

@@ -1,6 +1,7 @@
 ﻿<Window x:Class="Stenwatch.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         Title="Stenwatch 0.2.0 beta (C# edition) - threat-informed vulnerability management" Background="{StaticResource Bg}" Foreground="{StaticResource Fg}" Height="820" Width="1340" MinHeight="600" MinWidth="980" WindowStartupLocation="CenterScreen">
     <Grid>
         <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="26"/></Grid.RowDefinitions>
@@ -124,7 +125,7 @@
                     <Run FontWeight="SemiBold" Foreground="{StaticResource Fg}" Text="assets.csv"/><Run Text="  must be CSV (comma-separated, UTF-8, first row is the header). In Excel: Save As, CSV UTF-8. Columns:"/><LineBreak/>
                     <Run FontFamily="{StaticResource Mono}" Text="  name,cpe,version,criticality,internet_facing"/><LineBreak/>
                     <Run FontFamily="{StaticResource Mono}" Text="  Mail server,cpe:2.3:a:microsoft:exchange_server,2019,3,y"/><LineBreak/>
-                    <Run Text="  Have an inventory export instead (hostname, vendor, product, version, os)? Import it as is: Stenwatch converts it, one asset per product and version, and lists what it could not match."/><LineBreak/>
+                    <Run Text="  Have an inventory export instead? Import it as is: a CMDB, Intune, SCCM, Lansweeper or Defender export (CSV with comma, semicolon or tab, or Excel .xlsx), a software report with device counts, or a CycloneDX SBOM (.json) for web stacks such as PHP, WordPress and their libraries. Stenwatch matches every OS and product to the names NVD uses, one asset per product and version, and lists what it could not match. Examples: inventory.example.csv, apps.example.csv, sbom.example.json in the program folder."/><LineBreak/>
                     <Run Text="  cpe = vendor and product as in NVD (search nvd.nist.gov/products/cpe). criticality 1 (low) to 3 (high). internet_facing y or n. Optional: third_parties.csv and exceptions.csv (Settings). Microsoft Defender can supply assets instead: the defender section of profile.yaml."/></TextBlock>
                 <TextBlock x:Name="UnmatchedText" Margin="0,10,0,0" TextWrapping="Wrap" Foreground="{StaticResource Attend}"/>
                 <TextBlock Text="WHAT STENWATCH READ" Style="{StaticResource H}"/>
@@ -232,18 +233,22 @@
             </Grid></TabItem>
 
             <!-- 5 Dissemination -->
-            <TabItem Tag="5 Dissemination. Pillar 11 (explainable output). One result, five audiences: report for IT, dashboard for analysts, brief for management, STIX for other tools, ATT&amp;CK layer for the Navigator. Every output is marked TLP:AMBER."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
-                <TextBlock Text="5  Dissemination" FontSize="26" FontWeight="SemiBold"/>
-                <TextBlock Style="{StaticResource Muted}" Margin="0,4,0,12" Text="One result, written for each audience. The full report states everything; the rest are cuts of it for a particular reader or tool."/>
-                <Border BorderBrush="{StaticResource Accent}" BorderThickness="3,1,1,1" Background="{StaticResource Card}" Padding="16,12" MaxWidth="1100" HorizontalAlignment="Left">
-                    <DockPanel><StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button Style="{StaticResource Primary}" Content="Open full report" Click="OpenFullReport"/><Button Content="Save PDF as..." Click="SaveFullPdf"/><Button Content="Export everything (.zip)..." Click="ExportAll" Margin="0"/></StackPanel>
-                        <StackPanel><TextBlock Text="FULL INTELLIGENCE REPORT" Style="{StaticResource H}" Margin="0,0,0,4"/>
-                            <TextBlock TextWrapping="Wrap" Style="{StaticResource Muted}" Text="All six steps in one document: who we are and who targets us, the sources and how fresh they are, our assets, services, crown jewels and controls, every Act and Attend finding with its evidence, attack paths, open tasks, and the method and its limits."/></StackPanel></DockPanel></Border>
-                <TextBlock Text="EVERY OUTPUT" Style="{StaticResource H}"/>
-                <StackPanel x:Name="OutputButtons" MaxWidth="1100" HorizontalAlignment="Left"/>
-                <TextBlock x:Name="OutputText" Style="{StaticResource Muted}" Margin="0,14,0,0"/>
-            </StackPanel></ScrollViewer></TabItem>
+            <TabItem Tag="5 Dissemination. Pillar 11 (explainable output). The intelligence report is the product: everything else is a cut of it for one reader or tool. Every output is marked TLP:AMBER."><Grid>
+                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="330"/></Grid.ColumnDefinitions>
+                <DockPanel Grid.ColumnSpan="2"><StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button Style="{StaticResource Primary}" Content="Export report as PDF..." Click="SaveFullPdf"/><Button Content="Open in browser" Click="OpenFullReport"/><Button Content="Export everything (.zip)..." Click="ExportAll" Margin="0"/></StackPanel>
+                    <TextBlock Text="5  Dissemination" FontSize="26" FontWeight="SemiBold"/></DockPanel>
+                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource Muted}" Margin="0,4,0,10" TextWrapping="Wrap" Text="The intelligence report: all six steps in one document, with the evidence. The outputs on the right are cuts of it for one reader or tool; each is listed once and exported in the form that reader uses."/>
+                <Border Grid.Row="2" BorderBrush="{StaticResource Line}" BorderThickness="1" Background="#fff">
+                    <Grid><wv2:WebView2 x:Name="ReportView"/>
+                        <TextBlock x:Name="ReportNote" Margin="20" TextWrapping="Wrap" Foreground="#333" Text="Rank first: the intelligence report is written by a rank (Overview, Rank now)."/></Grid></Border>
+                <ScrollViewer Grid.Row="2" Grid.Column="1" Margin="12,0,0,0" VerticalScrollBarVisibility="Auto"><StackPanel>
+                    <TextBlock Text="FOR EACH READER" Style="{StaticResource H}" Margin="0,0,0,6"/>
+                    <StackPanel x:Name="OutputButtons"/>
+                    <TextBlock x:Name="OutputText" Style="{StaticResource Muted}" TextWrapping="Wrap" FontSize="11" Margin="0,10,0,0"/>
+                </StackPanel></ScrollViewer>
+            </Grid></TabItem>
 
             <!-- 6 Feedback: remediation -->
             <TabItem Tag="6 Feedback. Pillars 5 (freshness), 14 (closed loop). Priorities become work with an owner and a deadline. A fix is only Verified when a later scan no longer finds the CVE; saying it is fixed is just a claim."><Grid>

@@ -87,8 +87,7 @@ public static class FullReport
 
         // 6 Feedback
         md.AddRange(new[] { "## 6 Feedback: the work that follows", "" });
-        if (example) md.Add("Remediation tasks are not created for the Example Organisation.");
-        else
+        if (example) md.AddRange(new[] { "*Example Organisation: the tasks below come from a simulated eight-week history (earlier runs replayed on the estate before its upgrades).*", "" });
         {
             var by = tasks.GroupBy(t => t.State).Select(g => $"{g.Key} {g.Count()}");
             md.Add($"Tasks by state: {string.Join(", ", by)}. A fix counts as verified only when a later run no longer finds the CVE.");
