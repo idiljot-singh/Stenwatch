@@ -153,7 +153,7 @@ h1 .w{display:inline-block;opacity:0;translate:0 .5em;filter:blur(6px);animation
       <p>Stenwatch reads every publicly known software flaw, checks which ones touch the systems you and your suppliers run, and puts the handful that attackers are really using at the top, with a plain reason for each one.</p>
       <div class="btns">
         <a class="btn go" href="#watch">Watch the video</a>
-        <a class="btn" href="https://github.com/idiljot-singh/Stenwatch/releases/tag/v0.1.0-beta">Download for Windows</a>
+        <a class="btn" href="https://github.com/idiljot-singh/Stenwatch/releases/tag/v0.2.0-beta">Download for Windows</a>
         <a class="btn" href="https://github.com/idiljot-singh/Stenwatch">Get it on GitHub</a>
       </div>
     </div>
@@ -208,19 +208,37 @@ h1 .w{display:inline-block;opacity:0;translate:0 .5em;filter:blur(6px);animation
 <section id="see"><div class="wrap">
   <div class="rv idx mono"><span>03 — Interface</span></div>
   <h2 class="rv">See it working</h2>
-  <p style="max-width:680px">Screenshots use the bundled Example Organisation, not real data. Hover for colour.</p>
+  <p style="max-width:680px">The desktop app follows the intelligence cycle: six steps on the left, each telling you what it still needs, and a green Next button when it is done. Screenshots use the bundled Example Organisation, not real data. Hover for colour.</p>
   <div class="rv shots" style="margin-top:22px">
-    <figure class="cell wide"><img src="img/console.jpg" alt="Stenwatch console: a funnel of steps from broad to precise with live counts" loading="lazy"><figcaption>Console / the funnel, step by step</figcaption></figure>
-    <figure class="cell"><img src="img/console-rank.jpg" alt="Console step four: the scoring formula, the four decision tiers and the top ten findings" loading="lazy"><figcaption>Console / rank the risk</figcaption></figure>
-    <figure class="cell"><img src="img/console-record.jpg" alt="Console step six: record a decision on a finding with a review date" loading="lazy"><figcaption>Console / record decisions</figcaption></figure>
-    <figure class="cell"><img src="img/dashboard.jpg" alt="Analyst dashboard with tier cards and ranked findings" loading="lazy"><figcaption>Dashboard / ranked findings</figcaption></figure>
-    <figure class="cell"><img src="img/landing.jpg" alt="Stenwatch landing page with the particle sphere" loading="lazy"><figcaption>Landing page / this site</figcaption></figure>
+    <figure class="cell wide"><img src="img/app-overview.jpg" alt="Stenwatch desktop app, Overview: the six-step rail and the decision tiers counted by CVE" loading="lazy"><figcaption>Overview / the whole cycle in one click</figcaption></figure>
+    <figure class="cell"><img src="img/app-direction.jpg" alt="Direction: import the profile and asset list, with the file formats explained" loading="lazy"><figcaption>1 Direction / who you are, who targets you</figcaption></figure>
+    <figure class="cell"><img src="img/app-processing.jpg" alt="Processing: services, crown jewels, links and controls, mostly picked from lists" loading="lazy"><figcaption>3 Processing / your business in four short tables</figcaption></figure>
+    <figure class="cell"><img src="img/app-analysis.jpg" alt="Analysis: ranked findings, the selected one explained in separate cards" loading="lazy"><figcaption>4 Analysis / every finding explained</figcaption></figure>
+    <figure class="cell"><img src="img/app-dissemination.jpg" alt="Dissemination: the full intelligence report and every output with Open and Save as" loading="lazy"><figcaption>5 Dissemination / one result, every audience</figcaption></figure>
+    <figure class="cell"><img src="img/app-graph.jpg" alt="Knowledge graph: threat groups, ATT&amp;CK techniques, urgent CVEs and assets as a node-link map" loading="lazy"><figcaption>Intelligence / who could use what, where</figcaption></figure>
+    <figure class="cell"><img src="img/app-paths.jpg" alt="Attack paths: possible routes from the internet to the crown jewels, drawn step by step" loading="lazy"><figcaption>Intelligence / possible attack paths</figcaption></figure>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="rv idx mono"><span>04 — Context</span></div>
+  <div class="split">
+    <div>
+      <h2 class="rv">Not a scanner, and not a replacement for one</h2>
+      <p>A scanner, or an agent such as Microsoft Defender Vulnerability Management, tells you exactly what is installed and at which patch level. Stenwatch tells you which of those flaws to fix first and why.</p>
+    </div>
+    <ul class="rv list">
+      <li><b>Threat-informed.</b> Ranks by what the groups that target your sector and country actually use.</li>
+      <li><b>Shows its working.</b> Evidence, public source and confidence behind every decision.</li>
+      <li><b>Beyond the agent.</b> Network devices, appliances and suppliers count too, straight from an inventory export.</li>
+      <li><b>Better together.</b> Stenwatch can read Defender's device inventory for exact patch levels.</li>
+    </ul>
   </div>
 </div></section>
 
 <section>
   <div class="wrap">
-  <div class="rv idx mono"><span>04 — Trust</span></div>
+  <div class="rv idx mono"><span>05 — Trust</span></div>
   <div class="split">
     <div>
       <h2 class="rv">Your data never leaves your computer</h2>
@@ -236,20 +254,23 @@ h1 .w{display:inline-block;opacity:0;translate:0 .5em;filter:blur(6px);animation
 </div></section>
 
 <section><div class="wrap">
-  <div class="rv idx mono"><span>05 — Run it</span></div>
+  <div class="rv idx mono"><span>06 — Run it</span></div>
   <h2 class="rv">Try it on a sample organisation</h2>
-  <div class="btns" style="margin:0 0 18px"><a class="btn go" href="https://github.com/idiljot-singh/Stenwatch/releases/tag/v0.1.0-beta">Download the Windows installer (beta)</a></div>
-  <p style="max-width:680px">The installer sets everything up with one click. Stenwatch comes with a made-up example company, so you can see a full report before adding any of your own details.</p>
+  <div class="btns" style="margin:0 0 18px"><a class="btn go" href="https://github.com/idiljot-singh/Stenwatch/releases/tag/v0.2.0-beta">Download the Windows installer (0.2.0 beta)</a></div>
+  <p style="max-width:680px">No admin rights needed, everything included. Stenwatch comes with a made-up example company, so you can see every page and a full report before adding any of your own details. Your own asset list can be an inventory export as it is.</p>
   <div class="rv tty">
     <div class="tty-top"><i></i><i></i><i></i></div>
-<pre><span class="d"># one-time setup</span>
-<span class="p">$</span> pip install --require-hashes -r python/requirements.txt
-<span class="p">$</span> python python/test_pipeline.py                      <span class="d"># prints "ok"</span>
-<span class="p">$</span> python python/run.py --example --since 2026-01-01   <span class="d"># -> data/out/example/</span>
-<span class="p">$</span> python python/app.py                               <span class="d"># console at http://127.0.0.1:8765</span></pre>
+<pre><span class="d"># the app</span>
+<span class="p">1</span> run Stenwatch-Setup-0.2.0-beta.exe                    <span class="d"># unsigned beta: More info -> Run anyway</span>
+<span class="p">2</span> Overview -> tick "Example Organisation" -> Rank now  <span class="d"># fictional data, every page filled</span>
+<span class="p">3</span> 1 Direction -> import your profile and asset list   <span class="d"># then follow the green Next buttons</span>
+
+<span class="d"># or from source (.NET 8 SDK)</span>
+<span class="p">$</span> dotnet test src/Stenwatch.Tests
+<span class="p">$</span> dotnet run --project src/Stenwatch.App</pre>
   </div>
   <div class="rv btns" style="margin-top:18px">
-    <a class="btn go" href="https://github.com/idiljot-singh/Stenwatch#quick-start">Quick start guide</a>
+    <a class="btn go" href="https://github.com/idiljot-singh/Stenwatch#install">Install guide</a>
     <a class="btn" href="https://github.com/idiljot-singh/Stenwatch/blob/main/docs/guides/CUSTOMISE.md">Set it up for your organisation</a>
   </div>
 </div></section>
