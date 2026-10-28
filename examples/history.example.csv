@@ -7,3 +7,20 @@ Backup server (Veeam Backup & Replication 12),35,12.0.0.1420
 Project file server (Windows Server 2022),30,10.0.20348.2461
 Staff browsers (Chrome),25,126.0.6478.126
 Staff laptops (Windows 11 23H2),20,10.0.22631.3737
+Customer portal runtime (PHP 8.1),38,8.1.2
+Customer portal CMS (WordPress 6.2),33,6.1.1
+Customer portal TLS (OpenSSL 3.0),27,3.0.2
+Customer portal web server (Apache 2.4),44,2.4.49
+Reverse proxy (nginx 1.24),22,1.20.0
+Customer portal database (MySQL 8.0),18,8.0.20
+Project app server (Apache Tomcat 9.0),39,9.0.30
+Domain controllers (Windows Server 2019),10,10.0.17763.5329
+File server (Windows Server 2019),12,10.0.17763.3650
+Design workstations (Windows 10 22H2),16,10.0.19045.3693
+Staff browsers (Edge),26,110.0.1587.50
+PDF reader (Acrobat Reader DC),31,22.003.20282
+Video meetings (Zoom 5.16),21,5.11.0
+VPN client (FortiClient 7.0),36,7.0.3
+Network storage (Synology DSM 7.1),24,7.1.0
+Archiver (7-Zip 23.01),29,22.01
+Core switches (Cisco IOS XE 17.9),9,17.9.3
