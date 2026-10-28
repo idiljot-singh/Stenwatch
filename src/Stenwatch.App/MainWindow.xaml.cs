@@ -42,7 +42,7 @@ public partial class MainWindow : Window
         // test hooks: STENWATCH_PAGE=n opens page n; STENWATCH_AUTORUN=1 ranks on start
         if (int.TryParse(Environment.GetEnvironmentVariable("STENWATCH_PAGE"), out var pg)) Go(pg);
         if (Environment.GetEnvironmentVariable("STENWATCH_SYNC") == "quick") Loaded += async (_, _) => await SyncFeeds(DateTimeOffset.UtcNow.AddDays(-2));
-        if (Environment.GetEnvironmentVariable("STENWATCH_AUTORUN") == "1") Loaded += async (_, _) => { await RunEngine(false); if (pg > 0) Go(pg); if (Environment.GetEnvironmentVariable("STENWATCH_FIRST") == "1") { FindingsGrid.SelectedIndex = 0; PathsGrid.SelectedIndex = 0; } };
+        if (Environment.GetEnvironmentVariable("STENWATCH_AUTORUN") == "1") Loaded += async (_, _) => { await RunEngine(false); if (pg > 0) Go(pg); if (Environment.GetEnvironmentVariable("STENWATCH_FIRST") == "1") { FindingsGrid.SelectedIndex = 0; PathsGrid.SelectedIndex = int.TryParse(Environment.GetEnvironmentVariable("STENWATCH_PATHROW"), out var pr) ? pr : 0; } };
     }
 
     bool Example => ExampleBox.IsChecked == true;

@@ -1,4 +1,4 @@
-Stenwatch 0.2 (C# edition), beta
+Stenwatch 0.2, beta
 
 What it does
   Narrows every published vulnerability to the few that matter in your organisation, shows the evidence behind each priority, and checks that the fixes actually happen.

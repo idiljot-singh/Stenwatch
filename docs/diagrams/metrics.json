@@ -1,294 +1,260 @@
 [
  {
-  "file": "run.py",
-  "loc": 87,
-  "functions": 2,
-  "decisions": 25,
-  "max_fn": "pipeline",
-  "max_cc": 18,
-  "imports": [
-   "analyse",
-   "collect",
-   "defender",
-   "disseminate",
-   "llm",
-   "paths",
-   "process",
-   "render"
-  ],
-  "top": [
-   [
-    "pipeline",
-    18,
-    48
-   ],
-   [
-    "audit",
-    1,
-    4
-   ]
-  ]
+  "file": "Analyse.cs",
+  "project": "Stenwatch.Core",
+  "loc": 202,
+  "decisions": 63
  },
  {
-  "file": "app.py",
-  "loc": 323,
-  "functions": 15,
-  "decisions": 100,
-  "max_fn": "do_GET",
-  "max_cc": 30,
-  "imports": [
-   "paths",
-   "process"
-  ],
-  "top": [
-   [
-    "do_GET",
-    30,
-    55
-   ],
-   [
-    "do_POST",
-    23,
-    62
-   ],
-   [
-    "state",
-    12,
-    29
-   ]
-  ]
+  "file": "AppPaths.cs",
+  "project": "Stenwatch.Core",
+  "loc": 23,
+  "decisions": 3
  },
  {
-  "file": "cli.py",
-  "loc": 4,
-  "functions": 0,
-  "decisions": 0,
-  "max_fn": "-",
-  "max_cc": 1,
-  "imports": [],
-  "top": []
- },
- {
-  "file": "cti/analyse.py",
-  "loc": 166,
-  "functions": 9,
-  "decisions": 94,
-  "max_fn": "summary",
-  "max_cc": 27,
-  "imports": [],
-  "top": [
-   [
-    "summary",
-    27,
-    36
-   ],
-   [
-    "score",
-    19,
-    35
-   ],
-   [
-    "diamond",
-    18,
-    19
-   ]
-  ]
- },
- {
-  "file": "cti/collect.py",
-  "loc": 203,
-  "functions": 14,
-  "decisions": 83,
-  "max_fn": "parse_attack",
-  "max_cc": 27,
-  "imports": [
-   "vault"
-  ],
-  "top": [
-   [
-    "parse_attack",
-    27,
-    31
-   ],
-   [
-    "sync_nvd",
-    16,
-    38
-   ],
-   [
-    "parse_mitigations",
-    14,
-    12
-   ]
-  ]
- },
- {
-  "file": "cti/defender.py",
-  "loc": 69,
-  "functions": 4,
-  "decisions": 13,
-  "max_fn": "to_assets",
-  "max_cc": 12,
-  "imports": [],
-  "top": [
-   [
-    "to_assets",
-    12,
-    29
-   ],
-   [
-    "token",
-    2,
-    11
-   ],
-   [
-    "get_all",
-    2,
-    10
-   ]
-  ]
- },
- {
-  "file": "cti/disseminate.py",
-  "loc": 152,
-  "functions": 8,
-  "decisions": 59,
-  "max_fn": "write_reports",
-  "max_cc": 41,
-  "imports": [
-   "analyse",
-   "render"
-  ],
-  "top": [
-   [
-    "write_reports",
-    41,
-    83
-   ],
-   [
-    "write_stix",
-    11,
-    41
-   ],
-   [
-    "write_dashboard",
-    7,
-    13
-   ]
-  ]
- },
- {
-  "file": "cti/llm.py",
+  "file": "AttackPath.cs",
+  "project": "Stenwatch.Core",
   "loc": 93,
-  "functions": 5,
-  "decisions": 28,
-  "max_fn": "template",
-  "max_cc": 14,
-  "imports": [
-   "vault"
-  ],
-  "top": [
-   [
-    "template",
-    14,
-    17
-   ],
-   [
-    "write",
-    7,
-    25
-   ],
-   [
-    "brief_input",
-    6,
-    11
-   ]
-  ]
+  "decisions": 32
  },
  {
-  "file": "cti/paths.py",
-  "loc": 13,
-  "functions": 1,
-  "decisions": 5,
-  "max_fn": "find_browser",
-  "max_cc": 4,
-  "imports": [],
-  "top": [
-   [
-    "find_browser",
-    4,
-    5
-   ]
-  ]
+  "file": "AttackValue.cs",
+  "project": "Stenwatch.Core",
+  "loc": 183,
+  "decisions": 46
  },
  {
-  "file": "cti/process.py",
-  "loc": 119,
-  "functions": 10,
-  "decisions": 52,
-  "max_fn": "match",
-  "max_cc": 13,
-  "imports": [],
-  "top": [
-   [
-    "match",
-    13,
-    33
-   ],
-   [
-    "apply_exceptions",
-    11,
-    9
-   ],
-   [
-    "affects",
-    10,
-    15
-   ]
-  ]
+  "file": "ChainEval.cs",
+  "project": "Stenwatch.Core",
+  "loc": 100,
+  "decisions": 19
  },
  {
-  "file": "cti/render.py",
-  "loc": 116,
-  "functions": 5,
-  "decisions": 22,
-  "max_fn": "md_to_html",
-  "max_cc": 17,
-  "imports": [
-   "paths"
-  ],
-  "top": [
-   [
-    "md_to_html",
-    17,
-    29
-   ],
-   [
-    "write_page",
-    4,
-    9
-   ],
-   [
-    "to_pdf",
-    3,
-    11
-   ]
-  ]
+  "file": "Collect.cs",
+  "project": "Stenwatch.Core",
+  "loc": 329,
+  "decisions": 86
  },
  {
-  "file": "cti/vault.py",
-  "loc": 15,
-  "functions": 1,
-  "decisions": 2,
-  "max_fn": "secret",
-  "max_cc": 3,
-  "imports": [],
-  "top": [
-   [
-    "secret",
-    3,
-    9
-   ]
-  ]
+  "file": "Context.cs",
+  "project": "Stenwatch.Core",
+  "loc": 150,
+  "decisions": 35
+ },
+ {
+  "file": "Csv.cs",
+  "project": "Stenwatch.Core",
+  "loc": 61,
+  "decisions": 19
+ },
+ {
+  "file": "Defender.cs",
+  "project": "Stenwatch.Core",
+  "loc": 69,
+  "decisions": 9
+ },
+ {
+  "file": "Disseminate.cs",
+  "project": "Stenwatch.Core",
+  "loc": 229,
+  "decisions": 31
+ },
+ {
+  "file": "Effectiveness.cs",
+  "project": "Stenwatch.Core",
+  "loc": 129,
+  "decisions": 25
+ },
+ {
+  "file": "Engine.cs",
+  "project": "Stenwatch.Core",
+  "loc": 65,
+  "decisions": 10
+ },
+ {
+  "file": "Evidence.cs",
+  "project": "Stenwatch.Core",
+  "loc": 50,
+  "decisions": 11
+ },
+ {
+  "file": "ExampleHistory.cs",
+  "project": "Stenwatch.Core",
+  "loc": 46,
+  "decisions": 11
+ },
+ {
+  "file": "FeatureEvidence.cs",
+  "project": "Stenwatch.Core",
+  "loc": 36,
+  "decisions": 7
+ },
+ {
+  "file": "FullReport.cs",
+  "project": "Stenwatch.Core",
+  "loc": 96,
+  "decisions": 13
+ },
+ {
+  "file": "History.cs",
+  "project": "Stenwatch.Core",
+  "loc": 121,
+  "decisions": 22
+ },
+ {
+  "file": "Inventory.cs",
+  "project": "Stenwatch.Core",
+  "loc": 208,
+  "decisions": 71
+ },
+ {
+  "file": "Knowledge.cs",
+  "project": "Stenwatch.Core",
+  "loc": 128,
+  "decisions": 45
+ },
+ {
+  "file": "Llm.cs",
+  "project": "Stenwatch.Core",
+  "loc": 89,
+  "decisions": 14
+ },
+ {
+  "file": "Model.cs",
+  "project": "Stenwatch.Core",
+  "loc": 36,
+  "decisions": 0
+ },
+ {
+  "file": "Pipeline.cs",
+  "project": "Stenwatch.Core",
+  "loc": 39,
+  "decisions": 4
+ },
+ {
+  "file": "Process.cs",
+  "project": "Stenwatch.Core",
+  "loc": 132,
+  "decisions": 43
+ },
+ {
+  "file": "Profile.cs",
+  "project": "Stenwatch.Core",
+  "loc": 53,
+  "decisions": 0
+ },
+ {
+  "file": "Remediation.cs",
+  "project": "Stenwatch.Core",
+  "loc": 99,
+  "decisions": 19
+ },
+ {
+  "file": "Render.cs",
+  "project": "Stenwatch.Core",
+  "loc": 89,
+  "decisions": 18
+ },
+ {
+  "file": "Secrets.cs",
+  "project": "Stenwatch.Core",
+  "loc": 47,
+  "decisions": 5
+ },
+ {
+  "file": "ThreatProfileAuto.cs",
+  "project": "Stenwatch.Core",
+  "loc": 125,
+  "decisions": 34
+ },
+ {
+  "file": "App.xaml.cs",
+  "project": "Stenwatch.App",
+  "loc": 12,
+  "decisions": 0
+ },
+ {
+  "file": "AssemblyInfo.cs",
+  "project": "Stenwatch.App",
+  "loc": 5,
+  "decisions": 0
+ },
+ {
+  "file": "MainWindow.xaml.cs",
+  "project": "Stenwatch.App",
+  "loc": 959,
+  "decisions": 242
+ },
+ {
+  "file": "Rows.cs",
+  "project": "Stenwatch.App",
+  "loc": 35,
+  "decisions": 0
+ },
+ {
+  "file": "Program.cs",
+  "project": "Stenwatch.Cli",
+  "loc": 80,
+  "decisions": 17
+ },
+ {
+  "file": "CollectTests.cs",
+  "project": "Stenwatch.Tests",
+  "loc": 56,
+  "decisions": 0
+ },
+ {
+  "file": "ContextTests.cs",
+  "project": "Stenwatch.Tests",
+  "loc": 126,
+  "decisions": 6
+ },
+ {
+  "file": "CoreTests.cs",
+  "project": "Stenwatch.Tests",
+  "loc": 164,
+  "decisions": 4
+ },
+ {
+  "file": "EvaluationTests.cs",
+  "project": "Stenwatch.Tests",
+  "loc": 68,
+  "decisions": 5
+ },
+ {
+  "file": "HistoryTests.cs",
+  "project": "Stenwatch.Tests",
+  "loc": 57,
+  "decisions": 7
+ },
+ {
+  "file": "InventoryTests.cs",
+  "project": "Stenwatch.Tests",
+  "loc": 87,
+  "decisions": 7
+ },
+ {
+  "file": "LoopTests.cs",
+  "project": "Stenwatch.Tests",
+  "loc": 129,
+  "decisions": 5
+ },
+ {
+  "file": "ParityTests.cs",
+  "project": "Stenwatch.Tests",
+  "loc": 63,
+  "decisions": 10
+ },
+ {
+  "file": "ThreatProfileAutoTests.cs",
+  "project": "Stenwatch.Tests",
+  "loc": 101,
+  "decisions": 3
+ },
+ {
+  "file": "MainWindow.xaml",
+  "project": "Stenwatch.App",
+  "loc": 306,
+  "decisions": 0
  }
 ]

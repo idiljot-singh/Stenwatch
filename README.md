@@ -103,7 +103,7 @@ The original **Python edition (0.1)** still works and is unchanged: see [`python
 
 ```
 Stenwatch/
-  src/         C# edition 0.2 (Core, App, Cli, Tests)      -> src/README.md
+  src/         Stenwatch 0.2 desktop app (Core, App, Cli, Tests) -> src/README.md
   python/      Python edition 0.1 (pipeline, web console)  -> python/README.md
   examples/    the fictional Example Organisation          -> examples/README.md
   data/        YOUR files: profile, assets, cve.db, out/   -> data/README.md  (git-ignored)

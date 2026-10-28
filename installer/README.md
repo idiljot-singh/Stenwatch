@@ -4,7 +4,7 @@ Windows installers (Inno Setup 6, per-user, no admin rights). Build outputs go t
 
 | File | What |
 |---|---|
-| `stenwatch-cs.iss` | Installer for the C# edition, 0.2.0 beta. Self-contained: the .NET runtime is included. |
+| `stenwatch-cs.iss` | Installer for the 0.2.0 beta desktop app. Self-contained: the .NET runtime is included. |
 | `build-cs.bat` | Runs the tests, publishes the app and CLI, and builds the installer: `installer\build-cs.bat`. Needs the .NET 8 SDK and Inno Setup 6. |
 | `readme-before.txt` | The "what to expect" page shown by the C# installer. |
 | `stenwatch-python.iss` | Installer for the Python edition 0.1 (built by `python\build.bat`). |
