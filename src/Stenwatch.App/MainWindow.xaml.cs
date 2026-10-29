@@ -1067,6 +1067,7 @@ public partial class MainWindow : Window
 
     async void CheckUpdates(object s, RoutedEventArgs e)
     {
+        if (AppPaths.PackageFamily() != null) { UpdateText.Text = "Installed from the Microsoft Store: updates arrive through the Store."; UpdateLink.Visibility = Visibility.Collapsed; return; }
         UpdateText.Text = "Checking..."; UpdateLink.Visibility = Visibility.Collapsed;
         var mine = (typeof(MainWindow).Assembly.GetCustomAttributes(typeof(System.Reflection.AssemblyInformationalVersionAttribute), false).FirstOrDefault() as System.Reflection.AssemblyInformationalVersionAttribute)?.InformationalVersion ?? "0";
         mine = mine.Split('+')[0];
