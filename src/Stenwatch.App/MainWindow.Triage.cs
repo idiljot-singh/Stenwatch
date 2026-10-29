@@ -44,7 +44,7 @@ public partial class MainWindow
     {
         if (triExport == null && File.Exists(TriFolderFile) && Newest(File.ReadAllText(TriFolderFile).Trim()) is { } f) triExport = f; // the morning habit: save the export, open the page, Run
         if (triExport == null || !File.Exists(triExport)) { TriSummary.Text = "Choose the export first."; return; }
-        TriSummary.Text = "Working..."; Status("triage running"); IsEnabled = false;
+        TriSummary.Text = "Working..."; Status("triage running"); Pages.IsEnabled = false; // not the window: a disabled rail renders white
         try
         {
             tri = await DefenderTriage.Run(new(triExport, data, Db, TriFeeds.IsChecked == true, TriLlm.IsChecked == true, triMails.ToList()), log: m => Dispatcher.Invoke(() => Status(m)));
@@ -52,7 +52,7 @@ public partial class MainWindow
         }
         catch (Exception ex) when (ex is IOException or InvalidDataException or InvalidOperationException or Microsoft.Data.Sqlite.SqliteException)
         { TriSummary.Text = "Could not triage: " + ex.Message; Status("triage failed"); }
-        finally { IsEnabled = true; }
+        finally { Pages.IsEnabled = true; }
     }
 
     void ShowTriage()

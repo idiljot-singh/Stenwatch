@@ -43,11 +43,11 @@ public class TriageLlmTests
 
     class Fake : HttpMessageHandler
     {
-        public int Calls; readonly Func<string> content;
+        public int Calls; public string Sent = ""; readonly Func<string> content;
         public Fake(Func<string> content) => this.content = content;
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage r, CancellationToken c)
         {
-            Calls++;
+            Calls++; Sent = r.Content!.ReadAsStringAsync(c).Result;
             var body = System.Text.Json.JsonSerializer.Serialize(new { choices = new[] { new { message = new { content = content() } } } });
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(body, Encoding.UTF8, "application/json") });
         }
@@ -77,7 +77,9 @@ public class TriageLlmTests
         var plain = TriageLlm.ItNote(actions, new DateOnly(2026, 10, 29));
         Assert.Contains("Microsoft Edge: update to 148.0.1", plain); Assert.Contains("about 150 machines", plain);
 
-        var (ok, src) = await TriageLlm.ItNoteWithLlm(actions, new DateOnly(2026, 10, 29), new HttpClient(new Fake(() => "Subject: Patching\nPlease update Microsoft Edge to 148.0.1.")));
+        var noteFake = new Fake(() => "Subject: Patching\nPlease update Microsoft Edge to 148.0.1.");
+        var (ok, src) = await TriageLlm.ItNoteWithLlm(actions, new DateOnly(2026, 10, 29), new HttpClient(noteFake));
+        Assert.DoesNotContain("150", noteFake.Sent); // the machine count stays off a cloud model
         Assert.StartsWith("LLM", src);
         var (fallback, src2) = await TriageLlm.ItNoteWithLlm(actions, new DateOnly(2026, 10, 29), new HttpClient(new Fake(() => "Subject: Patching\nPlease update the browser.")));
         Assert.Equal(plain, fallback); Assert.Contains("failed", src2);

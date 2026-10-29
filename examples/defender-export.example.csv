@@ -1,0 +1,35 @@
+Vulnerabilities Export,29 Oct 2026 07:00 AM +00:00
+Name,Severity,CVSS v3,Epss score,Age (days),Published,First detected,Updated,Has Exploit,Has Known Threats,Has Associated Alerts,Related Software,Exposed Machines,Description,Status
+CVE-2026-87491,High,8.8,0.03507,50,"09 Sep, 2026","11 Sep, 2026","29 Oct, 2026",False,False,False,google:chrome,412,Summary: Out of bounds write in V8 in Google Chrome prior to 153.0.8010.36 allowed a remote attacker to execute arbitrary code inside the sandbox via a crafted HTML page. (Chromium security severity: Medium),RemediationRequired
+CVE-2026-85046,High,8.8,0.01806,56,"03 Sep, 2026","05 Sep, 2026","29 Oct, 2026",False,False,False,google:chrome,412,Summary: Type confusion in V8 in Google Chrome prior to 152.0.7977.82 allowed a remote attacker to execute arbitrary code inside the sandbox via a crafted HTML page. (Chromium security severity: High),RemediationRequired
+CVE-2026-113344,High,8.8,0.00425,9,"20 Oct, 2026","22 Oct, 2026","29 Oct, 2026",False,False,False,google:chrome,412,Summary: Use after free in Performance in Google Chrome prior to 156.0.8078.47 allowed a remote attacker to execute arbitrary code inside the sandbox via a crafted HTML page. (Chromium security severity: Medium),RemediationRequired
+CVE-2026-113220,High,8.8,0.00369,9,"20 Oct, 2026","22 Oct, 2026","29 Oct, 2026",False,False,False,google:chrome,398,Summary: Memory corruption in Extensions in Google Chrome on on Android prior to 156.0.8078.47 allowed a remote attacker to potentially execute arbitrary code inside the sandbox via a crafted HTML page. (Chromium security severity: Medium),RemediationRequired
+CVE-2026-88097,High,8.1,0.00256,41,"18 Sep, 2026","20 Sep, 2026","29 Oct, 2026",False,False,False,microsoft:edge_chromium-based,1580,Summary: Use after free in Microsoft Edge (Chromium-based) allows an unauthorized attacker to elevate privileges locally.,RemediationRequired
+CVE-2026-85893,High,8.8,0.00819,44,"15 Sep, 2026","17 Sep, 2026","29 Oct, 2026",False,False,False,microsoft:edge_chromium-based,1580,Summary: Use after free in Microsoft Edge (Chromium-based) allows an unauthorized attacker to elevate privileges over a network.,RemediationRequired
+CVE-2026-69486,High,8.8,0.00819,44,"15 Sep, 2026","17 Sep, 2026","29 Oct, 2026",False,False,False,microsoft:edge_chromium-based,1544,Summary: Heap-based buffer overflow in Microsoft Edge (Chromium-based) allows an unauthorized attacker to execute code over a network.,RemediationRequired
+CVE-2026-106016,Critical,9.8,0.00319,23,"06 Oct, 2026","08 Oct, 2026","29 Oct, 2026",False,False,False,mozilla:firefox,96,Summary: Mitigation bypass in the File Handling component. This vulnerability was fixed in Firefox 157.0.1.,RemediationRequired
+CVE-2026-100832,High,8.8,0.00245,30,"29 Sep, 2026","01 Oct, 2026","29 Oct, 2026",False,False,False,mozilla:firefox,96,"Summary: Use-after-free in the Graphics: Canvas2D component. This vulnerability was fixed in Firefox ESR 153.4, Thunderbird 140.17, Thunderbird 153.4, Firefox ESR 115.42, and Firefox ESR 140.17.",RemediationRequired
+CVE-2026-100820,High,8.8,0.00238,30,"29 Sep, 2026","01 Oct, 2026","29 Oct, 2026",False,False,False,mozilla:firefox,94,"Summary: Privilege escalation in the Address Bar component. This vulnerability was fixed in Firefox ESR 153.4, Thunderbird 157, Thunderbird 140.17, Thunderbird 153.4, Firefox 157, and Firefox ESR 140.17.",RemediationRequired
+CVE-2026-81963,High,7.8,0.00393,51,"08 Sep, 2026","10 Sep, 2026","29 Oct, 2026",False,False,False,microsoft:windows_11_24h2,1210,Summary: Improper link resolution before file access ('link following') in Windows Update Stack allows an authorized attacker to elevate privileges locally.,RemediationRequired
+CVE-2026-68820,High,7.0,0.00332,79,"11 Aug, 2026","13 Aug, 2026","29 Oct, 2026",False,False,False,microsoft:windows_11_24h2,1210,Summary: Use after free in Windows Ancillary Function Driver for WinSock allows an authorized attacker to elevate privileges locally.,RemediationRequired
+CVE-2026-14266,High,7.8,0.00742,92,"29 Jul, 2026","31 Jul, 2026","29 Oct, 2026",False,False,False,7-zip:7-zip,640,"Summary: 7-Zip XZ Decompression Heap-based Buffer Overflow Remote Code Execution Vulnerability. This vulnerability allows remote attackers to execute arbitrary code on affected installations of 7-Zip. User interaction is required to exploit this vulnerability in that the target must visit a malicious page or open a malicious file.
+
+The specific flaw exists within the processing of XZ chunked data. Crafted ",RemediationRequired
+CVE-2026-91765,High,7.5,0.00378,34,"25 Sep, 2026","27 Sep, 2026","29 Oct, 2026",False,False,False,php:php,3,"Summary: cleanup_xml_node() in the SOAP XML parser recurses once per XML nesting level with no depth limit. An unauthenticated attacker can post a SOAP request containing tens of thousands of nested elements to any SoapServer endpoint, exhaust the stack and crash the process. The same unbounded recursion exists in the SOAP value decoder and in the WSDL node search helper.",RemediationRequired
+CVE-2026-17544,High,8.1,0.00418,91,"30 Jul, 2026","01 Aug, 2026","29 Oct, 2026",False,False,False,php:php,3,Summary: Attacker-provided inputs to bccomp() could lead to an out-of-bounds write with stack and heap corruption in PHP versions from 8.4.* before 8.4.24 and from 8.5.* before 8.5.9.,RemediationRequired
+CVE-2026-84784,High,7.5,0.00607,30,"29 Sep, 2026","01 Oct, 2026","29 Oct, 2026",False,False,False,openssl:openssl,57,"Summary: Issue summary: A malicious remote peer may flood the local QUIC
+stack with NEW_CONNECTION_ID frames by avoiding a limit check on
+how many connection IDs the remote QUIC stack can use.
+
+Impact summary: The local QUIC stack sends a RETIRE_CONN_ID frame
+for every NEW_CONNECTION_ID frame it receives. The RETIRE_CONN_ID
+frame is dispatched via the Control Frame Queue (CFQ). If the remote
+peer also with",RemediationRequired
+CVE-2026-84782,High,8.2,0.00831,30,"29 Sep, 2026","01 Oct, 2026","29 Oct, 2026",False,False,False,openssl:openssl,57,"Summary: Issue summary: The DTLS retransmission logic does not correctly handle
+a handshake message write that is suspended part-way through.
+The retransmitted message can be read past the message buffer and
+the retransmission overwrites the internal state the suspended write
+needs to resume correctly.
+
+Impact summary: The retransmitted message can disclose a heap memory
+to the peer as plaintext handshake ",RemediationRequired

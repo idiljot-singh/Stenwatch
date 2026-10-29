@@ -29,7 +29,8 @@ public static class TriageLlm
     }
     public static string Model => Cfg("model", "STENWATCH_LLM_MODEL", DefaultModel);
     public static string Url => Cfg("url", "STENWATCH_LLM_URL", DefaultUrl).TrimEnd('/');
-    static bool Local => Uri.TryCreate(Url, UriKind.Absolute, out var u) && u.IsLoopback;
+    /// <summary>A model on this machine. Only then may organisation details (machine counts, sector, country) go into a prompt.</summary>
+    public static bool Local => Uri.TryCreate(Url, UriKind.Absolute, out var u) && u.IsLoopback;
     /// <summary>True when a call can be made: a local endpoint, or an OpenRouter key.</summary>
     public static bool Ready => Local || Secrets.Get(KeyName) is { Length: > 0 };
 
@@ -145,7 +146,7 @@ public static class TriageLlm
         {
             var evidence = string.Join("\n", send.Select(r => $"[{r.N}] {r.Source} (grade {r.Grade}{(r.Date != "" ? ", " + r.Date : "")}): {r.Claim.Replace("<", "&lt;")}"));
             var reply = await Ask(http, CardPrompt.Replace("{org}", org),
-                $"Fix action: {a.Product}{(a.Fix != "" ? " (update to " + a.Fix + ")" : "")}, {a.Rows.Count} CVEs on {a.Exposed} machines, tier {a.Tier}.\n<untrusted>\n{evidence}\n</untrusted>");
+                $"Fix action: {a.Product}{(a.Fix != "" ? " (update to " + a.Fix + ")" : "")}, {a.Rows.Count} CVEs{(Local ? $" on {a.Exposed} machines" : "")}, tier {a.Tier}.\n<untrusted>\n{evidence}\n</untrusted>");
             var cited = Intel.Cited(reply, send.Select(r => r.N));
             if (cited == "") { log?.Invoke($"  LLM card for {a.Product} had no cited lines; plain card kept"); return a.Card; }
             cache[key] = cited; File.WriteAllText(file, JsonSerializer.Serialize(cache));
@@ -180,8 +181,8 @@ public static class TriageLlm
         if (asked.Count == 0) return (plain, "template");
         try
         {
-            var facts = JsonSerializer.Serialize(asked.Select(a => new { product = a.Product, update_to = a.Fix, machines = a.Exposed, cves = a.Rows.Count,
-                deadline = a.Tier == "Act" ? "within 48 hours" : "next patch cycle", reason = a.Rule,
+            var facts = JsonSerializer.Serialize(asked.Select(a => new { product = a.Product, update_to = a.Fix, machines = Local ? a.Exposed : (int?)null, cves = a.Rows.Count,
+                deadline = a.Tier == "Act" ? "within 48 hours" : "next patch cycle", reason = Local ? a.Rule : a.Label, // the full rule can carry a machine count
                 intelligence = a.Card.Split('\n').Take(3) }));
             var reply = await Ask(http, "You write a short, polite email from the information security team to the IT patching team in plain English, under 180 words. " +
                 "Use only the facts given: never add machines, versions, dates or threats that are not in them. Start with a Subject line. List each product once with what to do and by when. No markdown.",

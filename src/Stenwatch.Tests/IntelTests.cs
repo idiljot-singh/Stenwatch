@@ -107,6 +107,7 @@ public class IntelTests
         var card = await TriageLlm.IntelCard(a, "a finance organisation in Finland", dir, new HttpClient(fake));
         Assert.StartsWith("Exploited: CERT-EU says yes [1].", card); Assert.DoesNotContain("APT99", card);
         Assert.Contains("1 TLP:AMBER or RED", card); Assert.DoesNotContain("sector", fake.LastBody!);
+        Assert.DoesNotContain("50 machines", fake.LastBody!); // organisation details never go to a cloud model
         await TriageLlm.IntelCard(a, "a finance organisation in Finland", dir, new HttpClient(fake));
         Assert.Equal(1, fake.Calls); // second time from intel-cache.json
     }

@@ -109,9 +109,6 @@
             <!-- 1 Direction -->
             <TabItem Tag="1 Direction. Pillars 3 (threat-informed), 7 (adversary focus). Who you are, who targets you, and what you need to know. Everything the scoring uses lives in profile.yaml. With targeting mode auto, threat groups are chosen for your sector and country from MITRE ATT&amp;CK and refreshed whenever ATT&amp;CK is synced."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,10"><TextBlock Text="1  Direction" FontSize="26" FontWeight="SemiBold"/><local:HelpButton Title="1  Direction" Text="Do this: give Stenwatch your profile (who you are) and your asset list (what you run). Import them, or start from the example and edit."/></StackPanel>
-                <StackPanel Orientation="Horizontal"><TextBlock Text="INTELLIGENCE SOURCES" Style="{StaticResource H}"/>
-                    <local:HelpButton x:Name="SourcesHelp" Title="Sources" Text="Advisory feeds Morning triage reads (Feeds). Add any RSS or Atom feed, for example your national CERT.&#10;Grade A-F: how much its word counts. An 'actively exploited' claim from grade A or B means Act; from C to F it means Attend.&#10;TLP: CLEAR may go to a cloud LLM, AMBER only to a model on this machine (llm.txt), RED never to any LLM.&#10;CVE posts only: skip items that name no CVE (vendor blogs)."/></StackPanel>
-                <StackPanel x:Name="SourcesPanel"/>
                 <TextBlock Text="YOUR FILES" Style="{StaticResource H}"/>
                 <WrapPanel>
                     <Button Content="Import profile.yaml..." Click="ImportProfile"/><Button Content="Open profile.yaml" Click="OpenProfile"/>
@@ -300,6 +297,9 @@
             <!-- Settings -->
             <TabItem Tag="Settings. Import your files, store API keys in Windows Credential Manager, check for a newer version."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel MaxWidth="980" HorizontalAlignment="Left">
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,10"><TextBlock Text="Settings" FontSize="26" FontWeight="SemiBold"/><local:HelpButton Title="Settings" Text="Bring your own files into Stenwatch, store API keys, and check for a newer version. Files are copied into the data folder; edits made there in any editor are picked up when you return to this window."/></StackPanel>
+                <StackPanel Orientation="Horizontal"><TextBlock Text="INTELLIGENCE SOURCES" Style="{StaticResource H}"/>
+                    <local:HelpButton x:Name="SourcesHelp" Title="Sources" Text="Advisory feeds Morning triage reads (Feeds). Add any RSS or Atom feed, for example your national CERT.&#10;Grade A-F: how much its word counts. An 'actively exploited' claim from grade A or B means Act; from C to F it means Attend.&#10;TLP: CLEAR may go to a cloud LLM, AMBER only to a model on this machine (llm.txt), RED never to any LLM.&#10;CVE posts only: skip items that name no CVE (vendor blogs)."/></StackPanel>
+                <StackPanel x:Name="SourcesPanel"/>
                 <TextBlock Text="YOUR FILES" Style="{StaticResource H}"/>
                 <StackPanel x:Name="FilesPanel"/>
                 <TextBlock Text="CONTEXT CSV (imported into the database)" Style="{StaticResource H}"/>

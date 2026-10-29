@@ -209,9 +209,10 @@ h1 .w{display:inline-block;opacity:0;translate:0 .5em;filter:blur(6px);animation
 <section id="see"><div class="wrap">
   <div class="rv idx mono"><span>03 — Interface</span></div>
   <h2 class="rv">See it working</h2>
-  <p style="max-width:680px">The desktop app follows the intelligence cycle: six steps on the left, each telling you what it still needs, and a green Next button when it is done. Screenshots use the bundled Example Organisation, not real data. Hover for colour.</p>
+  <p style="max-width:680px">Three workspaces in the toolbar: <b>Start</b> (Guide, Overview and Morning triage), the <b>CTI cycle</b> (six steps, each telling you what it still needs, with a green Next button when it is done) and <b>Intelligence</b>. A small ? beside anything explains it. Screenshots use the bundled Example Organisation, not real data. Hover for colour.</p>
   <div class="rv shots" style="margin-top:22px">
-    <figure class="cell wide"><img src="img/app-overview.jpg" alt="Stenwatch desktop app, Overview: the six-step rail and the decision tiers counted by CVE" loading="lazy"><figcaption>Overview / the whole cycle in one click</figcaption></figure>
+    <figure class="cell wide"><img src="img/app-triage.jpg" alt="Morning triage: a Microsoft Defender export turned into ranked fix actions with tier, feeds, reason and an intel card with numbered sources" loading="lazy"><figcaption>Morning triage / your Defender export, ranked, with the sources behind each fix</figcaption></figure>
+    <figure class="cell"><img src="img/app-overview.jpg" alt="Overview: Start, CTI cycle and Intelligence workspaces in the toolbar, decision tiers counted by CVE" loading="lazy"><figcaption>Overview / the whole cycle in one click</figcaption></figure>
     <figure class="cell"><img src="img/app-direction.jpg" alt="Direction: import the profile and asset list, with the file formats explained" loading="lazy"><figcaption>1 Direction / who you are, who targets you</figcaption></figure>
     <figure class="cell"><img src="img/app-processing.jpg" alt="Processing: services, crown jewels, links and controls, mostly picked from lists" loading="lazy"><figcaption>3 Processing / your business in four short tables</figcaption></figure>
     <figure class="cell"><img src="img/app-analysis.jpg" alt="Analysis: ranked findings, the selected one explained in separate cards" loading="lazy"><figcaption>4 Analysis / every finding explained</figcaption></figure>
@@ -232,7 +233,7 @@ h1 .w{display:inline-block;opacity:0;translate:0 .5em;filter:blur(6px);animation
       <li><b>Threat-informed.</b> Ranks by what the groups that target your sector and country actually use.</li>
       <li><b>Shows its working.</b> Evidence, public source and confidence behind every decision.</li>
       <li><b>Beyond the agent.</b> Network devices, appliances and suppliers count too, straight from an inventory export.</li>
-      <li><b>Better together.</b> Stenwatch can read Defender's device inventory for exact patch levels.</li>
+      <li><b>Better together.</b> Stenwatch can read Defender's device inventory for exact patch levels, and Morning triage ranks Defender's vulnerability export with what national CERTs, CISA, Microsoft and Chrome say each morning.</li>
     </ul>
   </div>
 </div></section>
@@ -246,8 +247,8 @@ h1 .w{display:inline-block;opacity:0;translate:0 .5em;filter:blur(6px);animation
       <p>Your list of systems says exactly where you are weak, so Stenwatch treats it that way. It runs on your own machine and only downloads public information.</p>
     </div>
     <ul class="rv list">
-      <li><b>Runs locally.</b> Nothing about your organisation is uploaded anywhere.</li>
-      <li><b>Explainable.</b> Every ranking shows the sum behind it. No black box, no AI guesswork in the scoring.</li>
+      <li><b>Runs locally.</b> Nothing about your organisation is uploaded. If you switch on a cloud AI, it sees only public advisory text and product names; restricted (TLP:AMBER) text goes to a local model or nowhere.</li>
+      <li><b>Explainable.</b> Every ranking shows the sum or the rule behind it. No black box, no AI guesswork in the scoring: an optional AI only reads advisories and writes text, and every claim it keeps cites its source.</li>
       <li><b>Repeatable.</b> The same information always gives the same answer.</li>
       <li><b>Reports for everyone.</b> A detailed view for analysts and a one-page summary for managers.</li>
     </ul>

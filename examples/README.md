@@ -18,6 +18,7 @@ Its business runs on servers and network drives: project and CAD data on Windows
 | `inventory.example.csv` | C# edition | The raw inventory export the asset list comes from: 2,844 hosts, one row each. Try Convert inventory on it. |
 | `apps.example.csv` | C# edition | An Intune-style "discovered apps" report: semicolon-separated, one row per program and version with a device count. |
 | `sbom.example.json` | C# edition | A CycloneDX SBOM of the customer portal: PHP, WordPress, OpenSSL and libraries a host inventory cannot see. |
+| `defender-export.example.csv` | Morning triage | A fictional Microsoft Defender vulnerability export: 17 public CVEs (Chrome, Edge, Firefox, Windows 11, 7-Zip, PHP, OpenSSL) with invented machine counts. |
 | `advisory.example.txt` | Morning triage | A fictional Finnish advisory email to try "Add advisory email" with (it names CVE-2026-9998 and says it is actively exploited). |
 | `evaluation/` | C# edition | The published evaluation results (docs/evaluation.md), shown on Effectiveness until you run the evaluation yourself. |
 

@@ -279,7 +279,7 @@ public static class DefenderTriage
         if (o.UseLlm && TriageLlm.Ready) // cards for what needs a decision; ponytail: top 6 only, free models are slow
         {
             var prof = Path.Combine(o.Data, "profile.yaml");
-            var org = File.Exists(prof) && Profile.Load(prof).Organisation is { Sector.Length: > 0 } og ? $"a {og.Sector} organisation in {og.Country}" : "the organisation";
+            var org = TriageLlm.Local && File.Exists(prof) && Profile.Load(prof).Organisation is { Sector.Length: > 0 } og ? $"a {og.Sector} organisation in {og.Country}" : "the organisation";
             foreach (var a in actions.Where(x => x.Tier is "Act" or "Attend" && !x.Snoozed).Take(6).ToList())
                 actions[actions.IndexOf(a)] = a with { Card = await TriageLlm.IntelCard(a, org, o.Data, http, Note) };
         }
