@@ -1,4 +1,5 @@
 using System.IO;
+using System.Net.Http;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -44,15 +45,18 @@ public partial class MainWindow
     {
         if (triExport == null && File.Exists(TriFolderFile) && Newest(File.ReadAllText(TriFolderFile).Trim()) is { } f) triExport = f; // the morning habit: save the export, open the page, Run
         if (triExport == null || !File.Exists(triExport)) { TriSummary.Text = "Choose the export first."; return; }
-        TriSummary.Text = "Working..."; Status("triage running"); Pages.IsEnabled = false; // not the window: a disabled rail renders white
+        // the whole run (feed parsing, database, LLM calls) goes to a worker thread; this page only shows progress, the rest of the app stays usable
+        var opts = new DefenderTriage.Options(triExport, data, Db, TriFeeds.IsChecked == true, TriLlm.IsChecked == true, triMails.ToList());
+        TriRunBtn.IsEnabled = false; TriBusy.Visibility = Visibility.Visible; TriSummary.Text = "Starting..."; Status("triage running");
+        void Progress(string m) => Dispatcher.BeginInvoke(() => { if (!m.StartsWith("  ")) TriSummary.Text = m.Trim(); Status(m.Trim()); });
         try
         {
-            tri = await DefenderTriage.Run(new(triExport, data, Db, TriFeeds.IsChecked == true, TriLlm.IsChecked == true, triMails.ToList()), log: m => Dispatcher.Invoke(() => Status(m)));
+            tri = await Task.Run(() => DefenderTriage.Run(opts, log: Progress));
             triMails.Clear(); ShowTriage();
         }
-        catch (Exception ex) when (ex is IOException or InvalidDataException or InvalidOperationException or Microsoft.Data.Sqlite.SqliteException)
+        catch (Exception ex) when (ex is IOException or InvalidDataException or InvalidOperationException or Microsoft.Data.Sqlite.SqliteException or HttpRequestException)
         { TriSummary.Text = "Could not triage: " + ex.Message; Status("triage failed"); }
-        finally { Pages.IsEnabled = true; }
+        finally { TriRunBtn.IsEnabled = true; TriBusy.Visibility = Visibility.Collapsed; }
     }
 
     void ShowTriage()

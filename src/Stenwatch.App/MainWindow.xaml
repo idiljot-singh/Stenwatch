@@ -322,10 +322,11 @@
                     <Button Content="Advisory..." Click="TriageMail"/>
                     <CheckBox x:Name="TriFeeds" Content="Feeds" IsChecked="True" VerticalAlignment="Center" Margin="8,0" Foreground="{StaticResource Fg}"/>
                     <CheckBox x:Name="TriLlm" Content="LLM" VerticalAlignment="Center" Margin="8,0" Foreground="{StaticResource Fg}"/>
-                    <Button Style="{StaticResource Primary}" Content="Run triage" Click="TriageRun"/>
+                    <Button x:Name="TriRunBtn" Style="{StaticResource Primary}" Content="Run triage" Click="TriageRun"/>
                     <local:HelpButton Title="Buttons" Text="Export: choose the Defender vulnerabilities export (.xlsx or .csv).&#10;Folder: pick the folder your exports land in; the newest export-tvm file is used each morning.&#10;Advisory: add a saved advisory email (.txt or .eml), English or Finnish. It is kept for later runs.&#10;Feeds: fetch every enabled source (Settings, Sources: NCSC-FI, CERT-EU, CISA, Microsoft, Chrome, or your own).&#10;LLM: read advisories and write the note to IT (OpenRouter key on Settings, or a local model). Only public advisory text is sent."/>
                 </WrapPanel>
                 <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,10,0,8">
+                    <ProgressBar x:Name="TriBusy" IsIndeterminate="True" Width="160" Height="6" Margin="0,0,12,0" VerticalAlignment="Center" Visibility="Collapsed" Foreground="{StaticResource Accent}" Background="{StaticResource Line}" BorderThickness="0" AutomationProperties.Name="Triage running"/>
                     <TextBlock x:Name="TriSummary" Style="{StaticResource Muted}" VerticalAlignment="Center" Text="Choose the export, then Run triage."/>
                     <local:HelpButton x:Name="TriNotesHelp" Title="This run" Text="Rule-based ranking, not validated against outcomes. Each row names the rule that fired."/></StackPanel>
                 <DataGrid x:Name="TriGrid" Grid.Row="3" SelectionChanged="TriageSelected">

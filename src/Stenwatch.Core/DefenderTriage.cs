@@ -264,28 +264,34 @@ public static class DefenderTriage
     {
         var today = o.Today ?? DateOnly.FromDateTime(DateTime.Now); var notes = new List<string>(); http ??= new HttpClient { Timeout = TimeSpan.FromMinutes(5) };
         void Note(string s) { notes.Add(s); log?.Invoke(s); }
+        log?.Invoke("Reading the Defender export...");
         var rows = Load(o.Export);
         if (rows.Count == 0) throw new InvalidDataException("no vulnerability rows found: is this a Defender 'Vulnerabilities export' file?");
         var advisories = Advisories.Load(o.Data);
-        if (o.FetchFeeds) { var (all, note) = await Advisories.Refresh(o.Data, http); advisories = all; Note(note); }
+        if (o.FetchFeeds) { log?.Invoke("Fetching sources (NCSC-FI, CERT-EU, CISA, Microsoft, Chrome)..."); var (all, note) = await Advisories.Refresh(o.Data, http); advisories = all; Note(note); }
         var pasted = (o.AdvisoryFiles ?? Array.Empty<string>()).Where(File.Exists).Select(Advisories.FromText).ToList();
         if (pasted.Count > 0) { advisories = Advisories.Merge(advisories, pasted); Advisories.Save(o.Data, advisories); Note($"{pasted.Count} pasted advisories kept"); }
         if (o.UseLlm)
         {
             if (!TriageLlm.Ready) Note("LLM skipped: no OpenRouter key (Settings) and no local model configured");
-            else { var (all, note) = await TriageLlm.Enrich(advisories, http, log: Note); advisories = all; Advisories.Save(o.Data, advisories); Note(note); }
+            else { log?.Invoke("LLM is reading advisories that name no CVE..."); var (all, note) = await TriageLlm.Enrich(advisories, http, log: Note); advisories = all; Advisories.Save(o.Data, advisories); Note(note); }
         }
         var actions = ApplyFlags(Rank(rows, o.CveDb, o.Data, advisories, today), LoadFlags(o.Data), today);
         if (o.UseLlm && TriageLlm.Ready) // cards for what needs a decision; ponytail: top 6 only, free models are slow
         {
             var prof = Path.Combine(o.Data, "profile.yaml");
             var org = TriageLlm.Local && File.Exists(prof) && Profile.Load(prof).Organisation is { Sector.Length: > 0 } og ? $"a {og.Sector} organisation in {og.Country}" : "the organisation";
-            foreach (var a in actions.Where(x => x.Tier is "Act" or "Attend" && !x.Snoozed).Take(6).ToList())
-                actions[actions.IndexOf(a)] = a with { Card = await TriageLlm.IntelCard(a, org, o.Data, http, Note) };
+            var top = actions.Where(x => x.Tier is "Act" or "Attend" && !x.Snoozed).Take(6).ToList();
+            for (var k = 0; k < top.Count; k++)
+            {
+                log?.Invoke($"LLM intel card {k + 1}/{top.Count}: {top[k].Product}...");
+                actions[actions.IndexOf(top[k])] = top[k] with { Card = await TriageLlm.IntelCard(top[k], org, o.Data, http, Note) };
+            }
         }
         var diff = SaveAndCompare(o.Data, actions, today);
         var unmatched = Unmatched(actions, advisories, today);
         string itNote, source = "template";
+        log?.Invoke("Writing the note to IT...");
         if (o.UseLlm && TriageLlm.Ready) (itNote, source) = await TriageLlm.ItNoteWithLlm(actions, today, http, Note); else itNote = TriageLlm.ItNote(actions, today);
         var dir = Path.Combine(o.Data, "out", "triage"); Directory.CreateDirectory(dir);
         File.WriteAllText(Path.Combine(dir, "briefing.html"), Html(actions, diff, Path.GetFileName(o.Export), today, unmatched));

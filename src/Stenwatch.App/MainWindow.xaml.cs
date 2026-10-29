@@ -41,7 +41,7 @@ public partial class MainWindow : Window
         Configure();
         // test hooks: STENWATCH_PAGE=n opens page n; STENWATCH_AUTORUN=1 ranks on start
         if (int.TryParse(Environment.GetEnvironmentVariable("STENWATCH_PAGE"), out var pg)) Go(pg);
-        if (Environment.GetEnvironmentVariable("STENWATCH_TRIAGE") is { Length: > 0 } tx) Loaded += (_, _) => { Go(12); triExport = tx; TriageRun(this, null!); }; // dev only: run the Morning triage on a file
+        if (Environment.GetEnvironmentVariable("STENWATCH_TRIAGE") is { Length: > 0 } tx) Loaded += (_, _) => { Go(12); triExport = tx; TriLlm.IsChecked = Environment.GetEnvironmentVariable("STENWATCH_TRIAGE_LLM") == "1"; TriageRun(this, null!); }; // dev only: run the Morning triage on a file
         if (Environment.GetEnvironmentVariable("STENWATCH_SYNC") == "quick") Loaded += async (_, _) => await SyncFeeds(DateTimeOffset.UtcNow.AddDays(-2));
         if (Environment.GetEnvironmentVariable("STENWATCH_AUTORUN") == "1") Loaded += async (_, _) => { await RunEngine(false); if (pg > 0) Go(pg); if (Environment.GetEnvironmentVariable("STENWATCH_FIRST") == "1") { FindingsGrid.SelectedIndex = 0; PathsGrid.SelectedIndex = int.TryParse(Environment.GetEnvironmentVariable("STENWATCH_PATHROW"), out var pr) ? pr : 0; } };
     }
