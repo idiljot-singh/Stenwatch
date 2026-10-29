@@ -1,6 +1,6 @@
 # 0002: Rewrite in C# (WPF) on the 15 research pillars
 
-**Status:** accepted 2026-10-26. The Python version stays in the repository until the installer and the public pages are moved over.
+**Status:** accepted 2026-10-26. The Python version was retired on 2026-10-29 (git tag `python-edition-0.1`).
 
 ## Context
 

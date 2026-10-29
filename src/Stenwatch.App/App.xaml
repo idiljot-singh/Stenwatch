@@ -89,9 +89,6 @@
                 </ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
         </Style>
         <!-- a group heading in the step rail: not selectable -->
-        <Style x:Key="NavHeader" TargetType="ListBoxItem"><Setter Property="IsEnabled" Value="False"/><Setter Property="Focusable" Value="False"/>
-            <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ListBoxItem">
-                <ContentPresenter Margin="16,16,16,4" TextElement.FontFamily="{StaticResource Mono}" TextElement.FontSize="10" TextElement.FontWeight="Bold" TextElement.Foreground="{StaticResource Accent}"/></ControlTemplate></Setter.Value></Setter></Style>
         <Style x:Key="Pages" TargetType="TabControl"><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="TabControl">
             <!-- the name is what lets UI Automation (screen readers, UI tests) reach the page content -->
             <Grid><TabPanel IsItemsHost="True" Visibility="Collapsed"/><ContentPresenter x:Name="PART_SelectedContentHost" ContentSource="SelectedContent"/></Grid></ControlTemplate></Setter.Value></Setter></Style>
@@ -104,6 +101,36 @@
                 <ControlTemplate.Triggers>
                     <Trigger Property="IsSelected" Value="True"><Setter TargetName="b" Property="BorderBrush" Value="{StaticResource Accent}"/><Setter TargetName="b" Property="Background" Value="#0f1a15"/><Setter Property="Foreground" Value="{StaticResource Fg}"/></Trigger>
                     <Trigger Property="IsMouseOver" Value="True"><Setter Property="Foreground" Value="{StaticResource Fg}"/></Trigger>
+                </ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter></Style>
+        <!-- HelpButton: round "?" that opens the explanation (keeps paragraphs off the page) -->
+        <Style x:Key="Help" TargetType="ToggleButton"><Setter Property="Foreground" Value="{StaticResource Accent}"/><Setter Property="BorderBrush" Value="{StaticResource Accent}"/>
+            <Setter Property="FontWeight" Value="Bold"/><Setter Property="FontSize" Value="11"/>
+            <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ToggleButton">
+                <Border x:Name="b" Width="18" Height="18" CornerRadius="9" BorderThickness="1.5" BorderBrush="{TemplateBinding BorderBrush}" Background="Transparent">
+                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" TextElement.Foreground="{TemplateBinding Foreground}"/></Border>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#0f1a15"/></Trigger>
+                    <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="b" Property="Background" Value="#0f1a15"/><Setter TargetName="b" Property="BorderThickness" Value="2"/></Trigger>
+                    <Trigger Property="IsChecked" Value="True"><Setter TargetName="b" Property="Background" Value="#0f1a15"/></Trigger>
+                </ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter></Style>
+        <!-- toolbar: workspace switcher (segments) and icon actions (built-in Windows icon font, no dependency) -->
+        <Style x:Key="Segment" TargetType="RadioButton"><Setter Property="Foreground" Value="{StaticResource Mute}"/><Setter Property="Cursor" Value="Hand"/><Setter Property="FontSize" Value="13"/>
+            <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="RadioButton">
+                <Border x:Name="b" Padding="14,5" Margin="0,0,4,0" CornerRadius="4" Background="Transparent" BorderBrush="Transparent" BorderThickness="1">
+                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" TextElement.Foreground="{TemplateBinding Foreground}"/></Border>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True"><Setter Property="Foreground" Value="{StaticResource Fg}"/><Setter TargetName="b" Property="BorderBrush" Value="{StaticResource Line}"/></Trigger>
+                    <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="b" Property="BorderBrush" Value="{StaticResource Accent}"/></Trigger>
+                    <Trigger Property="IsChecked" Value="True"><Setter TargetName="b" Property="Background" Value="{StaticResource Accent}"/><Setter Property="Foreground" Value="#03140d"/><Setter Property="FontWeight" Value="SemiBold"/></Trigger>
+                </ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter></Style>
+        <Style x:Key="IconButton" TargetType="Button"><Setter Property="Foreground" Value="{StaticResource Mute}"/><Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontFamily" Value="Segoe Fluent Icons, Segoe MDL2 Assets"/><Setter Property="FontSize" Value="16"/>
+            <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+                <Border x:Name="b" Width="34" Height="30" Margin="2,0" CornerRadius="4" Background="Transparent" BorderBrush="Transparent" BorderThickness="1">
+                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" TextElement.Foreground="{TemplateBinding Foreground}"/></Border>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True"><Setter Property="Foreground" Value="{StaticResource Fg}"/><Setter TargetName="b" Property="Background" Value="#141a22"/></Trigger>
+                    <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="b" Property="BorderBrush" Value="{StaticResource Accent}"/></Trigger>
                 </ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter></Style>
     </Application.Resources>
 </Application>

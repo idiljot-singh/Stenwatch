@@ -68,6 +68,20 @@ if (a.Contains("--convert-inventory")) // inventory export (hostname, vendor, pr
     foreach (var u in r.Unmatched) Console.WriteLine($"  not matched: {u.What} ({u.Hosts})");
     return;
 }
+if (a.Contains("--triage-flag")) // stenwatch --triage-flag "Microsoft Edge" Lower "patched by Intune ring 1" [2026-11-05]
+{
+    var i = a.IndexOf("--triage-flag");
+    DefenderTriage.SetFlag(data, a[i + 1], a[i + 2], a.ElementAtOrDefault(i + 3) ?? "", a.ElementAtOrDefault(i + 4) ?? "");
+    Console.WriteLine($"flag kept in {Path.Combine(data, "triage-flags.json")}");
+    return;
+}
+if (Opt("--defender-export", "") is { Length: > 0 } dx) // stenwatch --defender-export export-tvm-vulnerabilities.xlsx [--fetch-feeds] [--llm] [--advisory-file mail.txt]: briefing, xlsx and IT note in data/out/triage
+{
+    var run = await DefenderTriage.Run(new(dx, data, files.Db, a.Contains("--fetch-feeds"), a.Contains("--llm"), a.Where((x, i) => i > 0 && a[i - 1] == "--advisory-file").ToList()), log: Console.WriteLine);
+    foreach (var f in run.Actions) Console.WriteLine($"  {f.Tier,-7} {f.Product,-26} {(f.Fix == "" ? "-" : f.Fix),-16} {f.Rows.Count,4} CVEs {f.Exposed,5} machines  {f.Rule}");
+    Console.WriteLine($"{DefenderTriage.CveCount(run.Actions)} CVEs -> {run.Actions.Count} fix actions -> {run.OutDir} (IT note: {run.NoteSource})");
+    return;
+}
 foreach (var (flag, import) in new (string, Func<Microsoft.Data.Sqlite.SqliteConnection, string, int>)[] {
     ("--import-services", ContextStore.ImportServices), ("--import-links", ContextStore.ImportLinks),
     ("--import-controls", ContextStore.ImportControls), ("--import-assets", ContextStore.ImportAssetContext) })

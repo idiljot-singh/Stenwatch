@@ -31,6 +31,14 @@ public class FindingRow
     public string Source => R.Asset.ThirdParty ? "supplier" : "owned";
 }
 
+/// <summary>A fix action as the Morning triage grid shows it.</summary>
+public class TriageRow
+{
+    public FixAction A { get; init; } = null!;
+    public string Tier => A.Tier; public string Product => A.Product; public string Fix => A.Fix == "" ? "unknown" : A.Fix; public int Cves => A.Rows.Count; public int Machines => A.Exposed;
+    public string Feeds => A.Feeds; public string Why => A.Label != "" ? A.Label : A.Rule; public string Flag => A.Flag.Split(':')[0]; // full sentence and reason: Detail tab
+}
+
 public class PathRow { public AttackPath P { get; init; } = null!; public string Target => P.Target; public int Steps => P.Length; public string Likelihood => P.Likelihood.ToString("0.000"); public string Route => P.Describe(); }
 
 public class GroupRow

@@ -39,6 +39,16 @@ public static class Inventory
     /// <summary>First worksheet of an .xlsx as rows (shared and inline strings, numbers as written). No Excel needed.</summary>
     static List<Dictionary<string, string>> Xlsx(string path)
     {
+        var table = XlsxCells(path);
+        if (table.Count == 0) return new();
+        var head = table[0];
+        return table.Skip(1).Select(r => head.Where(h => h.Value.Trim() != "").GroupBy(h => h.Value.Trim())
+            .ToDictionary(g => g.Key, g => r.GetValueOrDefault(g.First().Key, ""))).ToList();
+    }
+
+    /// <summary>Non-empty rows of the first worksheet as column index -> text.</summary>
+    public static List<SortedDictionary<int, string>> XlsxCells(string path)
+    {
         using var zip = ZipFile.OpenRead(path);
         XNamespace ns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
         XDocument Load(string name) { using var s = zip.GetEntry(name)!.Open(); return XDocument.Load(s); }
@@ -56,10 +66,7 @@ public static class Inventory
             }
             return cells;
         }).Where(r => r.Count > 0).ToList();
-        if (table.Count == 0) return new();
-        var head = table[0];
-        return table.Skip(1).Select(r => head.Where(h => h.Value.Trim() != "").GroupBy(h => h.Value.Trim())
-            .ToDictionary(g => g.Key, g => r.GetValueOrDefault(g.First().Key, ""))).ToList();
+        return table;
     }
 
     /// <summary>CycloneDX SBOM: every component (nested ones too) as a row: vendor (publisher, supplier or group), product, version, sbom_cpe.</summary>

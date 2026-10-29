@@ -97,14 +97,13 @@ dotnet run --project src/Stenwatch.Cli -- --convert-inventory   # inventory expo
 installer\build-cs.bat                                   # tests, then the installer (needs Inno Setup 6)
 ```
 
-The original **Python edition (0.1)** still works and is unchanged: see [`python/README.md`](python/README.md). Both editions produce the same report for the Example Organisation (a test).
+The original Python edition (0.1) is retired. It is kept in git history under the tag `python-edition-0.1`.
 
 ## Repository map
 
 ```
 Stenwatch/
   src/         Stenwatch 0.2 desktop app (Core, App, Cli, Tests) -> src/README.md
-  python/      Python edition 0.1 (pipeline, web console)  -> python/README.md
   examples/    the fictional Example Organisation          -> examples/README.md
   data/        YOUR files: profile, assets, cve.db, out/   -> data/README.md  (git-ignored)
   docs/        pillars, evaluation, ADRs, guides, live page -> docs/README.md

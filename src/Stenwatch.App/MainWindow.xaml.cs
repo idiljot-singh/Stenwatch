@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Net.Http;
@@ -41,6 +41,7 @@ public partial class MainWindow : Window
         Configure();
         // test hooks: STENWATCH_PAGE=n opens page n; STENWATCH_AUTORUN=1 ranks on start
         if (int.TryParse(Environment.GetEnvironmentVariable("STENWATCH_PAGE"), out var pg)) Go(pg);
+        if (Environment.GetEnvironmentVariable("STENWATCH_TRIAGE") is { Length: > 0 } tx) Loaded += (_, _) => { Go(12); triExport = tx; TriageRun(this, null!); }; // dev only: run the Morning triage on a file
         if (Environment.GetEnvironmentVariable("STENWATCH_SYNC") == "quick") Loaded += async (_, _) => await SyncFeeds(DateTimeOffset.UtcNow.AddDays(-2));
         if (Environment.GetEnvironmentVariable("STENWATCH_AUTORUN") == "1") Loaded += async (_, _) => { await RunEngine(false); if (pg > 0) Go(pg); if (Environment.GetEnvironmentVariable("STENWATCH_FIRST") == "1") { FindingsGrid.SelectedIndex = 0; PathsGrid.SelectedIndex = int.TryParse(Environment.GetEnvironmentVariable("STENWATCH_PATHROW"), out var pr) ? pr : 0; } };
     }
@@ -103,18 +104,25 @@ public partial class MainWindow : Window
     /// <summary>Open a page by its index in Pages; the rail item with that Tag is selected, none for pages outside the rail (Settings).</summary>
     void Go(int page)
     {
-        Pages.SelectedIndex = page;
+        Pages.SelectedIndex = page; // first: the switcher's Checked handler then sees the page is already in its workspace
+        if (Ws(page) is var ws and >= 0) { ShowWs(ws); ((RadioButton)FindName("Ws" + ws)).IsChecked = true; } // links between pages switch workspace too
         var item = Nav.Items.OfType<ListBoxItem>().FirstOrDefault(i => i.Tag as string == page.ToString());
         if (item != null) Nav.SelectedItem = item; else Nav.SelectedIndex = -1;
         UpdateGate();
     }
 
+    // ---------- workspaces: Start, CTI cycle, Intelligence; the rail shows one at a time ----------
+    static int Ws(int page) => page is 0 or 1 or 12 ? 0 : page is >= 2 and <= 7 ? 1 : page is >= 8 and <= 10 ? 2 : -1;
+    static readonly int[] WsFirst = { 0, 2, 8 };
+    void ShowWs(int ws) { foreach (var i in Nav.Items.OfType<ListBoxItem>()) i.Visibility = i.Tag is string t && Ws(int.Parse(t)) == ws ? Visibility.Visible : Visibility.Collapsed; }
+    void WsClick(object s, RoutedEventArgs e) { if (Pages == null) return; var ws = int.Parse((string)((RadioButton)s).Tag); if (Ws(Pages.SelectedIndex) != ws) Go(WsFirst[ws]); } // mouse, keyboard and UI Automation all raise Checked
+
     // ---------- toolbar ----------
-    void GoGuide(object s, RoutedEventArgs e) => Go(0);
     void GoSettings(object s, RoutedEventArgs e) => Go(11);
     void ToolbarUpdates(object s, RoutedEventArgs e) { Go(11); CheckUpdates(s, e); }
     void ShowInfo(object s, RoutedEventArgs e) => MessageBox.Show((Pages.SelectedItem as TabItem)?.Tag as string ?? "", "About this page", MessageBoxButton.OK, MessageBoxImage.Information);
-    void ShowSources(object s, RoutedEventArgs e) => MessageBox.Show(
+    void ShowSources(object s, RoutedEventArgs e) => Go(11); // Settings: the Sources list, with this explanation behind its "?"
+    const string SourcesText =
         "WHERE THE INTELLIGENCE COMES FROM (public, free, pulled on Sync)\n\n"
         + "NVD (NIST)  every published CVE: description, CVSS severity, affected products (CPE).\n"
         + "CISA KEV  CVEs confirmed exploited in the wild, and whether used in ransomware.\n"
@@ -129,8 +137,7 @@ public partial class MainWindow : Window
         + "is it likely to be (EPSS), do the groups that target your sector use it (ATT&CK), how important is the asset to the business, "
         + "can an attacker reach it, is a control already covering it. Every priority carries its evidence, source and confidence, "
         + "goes to the right audience, and is checked again on the next scan. That direction-to-feedback cycle is what makes it intelligence.\n\n"
-        + "Stenwatch does not scan. It uses your asset list (or Defender) for what you run.",
-        "Sources", MessageBoxButton.OK, MessageBoxImage.Information);
+        + "Stenwatch does not scan. It uses your asset list (or Defender) for what you run.";
 
     // ---------- phase gate ----------
     static readonly Dictionary<int, (int To, string Label)> NextStep = new()
@@ -969,7 +976,7 @@ public partial class MainWindow : Window
     void LoadSettings()
     {
         seen = Stamp();
-        FilesPanel.Children.Clear(); CtxPanel.Children.Clear(); KeysPanel.Children.Clear();
+        FilesPanel.Children.Clear(); CtxPanel.Children.Clear(); KeysPanel.Children.Clear(); LoadSources();
         foreach (var name in OrgFiles)
         {
             var dest = Path.Combine(data, name); var sample = Path.Combine(AppPaths.Examples(), name.Replace(".", ".example."));
@@ -986,7 +993,7 @@ public partial class MainWindow : Window
             row.Children.Add(Cell(label, 170)); row.Children.Add(Btn("Import...", () => ImportContext(label, imp)));
             CtxPanel.Children.Add(row);
         }
-        foreach (var (key, label) in new[] { ("NVD_API_KEY", "NVD (faster sync)"), ("ANTHROPIC_API_KEY", "Anthropic (brief)"), ("AZURE_OPENAI_KEY", "Azure OpenAI (brief)") })
+        foreach (var (key, label) in new[] { ("NVD_API_KEY", "NVD (faster sync)"), ("ANTHROPIC_API_KEY", "Anthropic (brief)"), ("AZURE_OPENAI_KEY", "Azure OpenAI (brief)"), (TriageLlm.KeyName, "OpenRouter (triage LLM)") })
         {
             var box = new PasswordBox { Width = 300, Margin = new Thickness(0, 0, 8, 0), Background = (Brush)FindResource("Card"), Foreground = (Brush)FindResource("Fg"), BorderBrush = (Brush)FindResource("Line"), Padding = new Thickness(4) };
             var state = Cell(Secrets.Get(key) is { Length: > 0 } ? "set" : "not set", 60, true);

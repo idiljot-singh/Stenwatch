@@ -1,0 +1,8 @@
+Subject: Tietoturvatiedote (ESIMERKKI, kuvitteellinen): Microsoft Edge -selaimen kriittinen haavoittuvuus
+
+Tämä on kuvitteellinen esimerkkitiedote Stenwatchin kokeilua varten. Se ei ole oikean viranomaisen julkaisema.
+
+Microsoft Edge -selaimen haavoittuvuus CVE-2026-9998 on arvioitu kriittiseksi. Haavoittuvuutta hyödynnetään aktiivisesti hyökkäyksissä,
+ja hyökkääjä voi suorittaa koodia kohdekoneella, kun käyttäjä avaa huolellisesti muotoillun verkkosivun.
+
+Suositus: päivitä Microsoft Edge viipymättä uusimpaan versioon.
