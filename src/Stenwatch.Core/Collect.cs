@@ -100,30 +100,28 @@ CREATE TABLE IF NOT EXISTS defend          (technique TEXT, id TEXT, name TEXT, 
     // ---------- NVD ----------
 
     static string S(JsonElement e, string k) => e.TryGetProperty(k, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString()! : "";
+    static IEnumerable<JsonElement> A(JsonElement e, string k) => e.ValueKind == JsonValueKind.Object && e.TryGetProperty(k, out var v) && v.ValueKind == JsonValueKind.Array ? v.EnumerateArray() : Enumerable.Empty<JsonElement>();
 
-    /// <summary>One NVD 'vulnerabilities[]' item -> cve row (id, published, modified, cvss, cwe, cpes json, description).</summary>
+    /// <summary>One NVD 'vulnerabilities[]' item -> cve row (id, published, modified, cvss, cwe, cpes json, description). Missing fields are left empty: NVD records vary.</summary>
     public static object?[] ParseNvd(JsonElement item)
     {
-        var c = item.GetProperty("cve");
+        var c = item.TryGetProperty("cve", out var cv) ? cv : item;
         double? cvss = null; string vector = "";
-        if (c.TryGetProperty("metrics", out var m))
-            foreach (var key in new[] { "cvssMetricV40", "cvssMetricV31", "cvssMetricV30", "cvssMetricV2" })
-                if (m.TryGetProperty(key, out var arr) && arr.GetArrayLength() > 0)
-                {
-                    var data = arr[0].GetProperty("cvssData");
-                    cvss = data.GetProperty("baseScore").GetDouble(); vector = S(data, "vectorString");
-                    break;
-                }
-        var cwe = c.TryGetProperty("weaknesses", out var ws)
-            ? ws.EnumerateArray().SelectMany(w => w.GetProperty("description").EnumerateArray().Select(d => S(d, "value"))).Distinct().Order(StringComparer.Ordinal) : Enumerable.Empty<string>();
+        foreach (var key in new[] { "cvssMetricV40", "cvssMetricV31", "cvssMetricV30", "cvssMetricV2" })
+            if (c.TryGetProperty("metrics", out var m) && A(m, key).FirstOrDefault() is { ValueKind: JsonValueKind.Object } first && first.TryGetProperty("cvssData", out var data)
+                && data.TryGetProperty("baseScore", out var bs) && bs.TryGetDouble(out var score))
+            {
+                cvss = score; vector = S(data, "vectorString");
+                break;
+            }
+        var cwe = A(c, "weaknesses").SelectMany(w => A(w, "description").Select(d => S(d, "value"))).Distinct().Order(StringComparer.Ordinal);
         var cpes = new List<Dictionary<string, JsonElement>>();
-        if (c.TryGetProperty("configurations", out var confs))
-            foreach (var conf in confs.EnumerateArray())
-                foreach (var node in conf.GetProperty("nodes").EnumerateArray())
-                    foreach (var match in node.GetProperty("cpeMatch").EnumerateArray())
-                        if (match.GetProperty("vulnerable").GetBoolean())
-                            cpes.Add(match.EnumerateObject().Where(p => p.Name != "matchCriteriaId").ToDictionary(p => p.Name, p => p.Value));
-        var desc = c.GetProperty("descriptions").EnumerateArray().Where(d => S(d, "lang") == "en").Select(d => S(d, "value")).FirstOrDefault() ?? "";
+        foreach (var conf in A(c, "configurations"))
+            foreach (var node in A(conf, "nodes"))
+                foreach (var match in A(node, "cpeMatch"))
+                    if (match.TryGetProperty("vulnerable", out var vu) && vu.ValueKind == JsonValueKind.True)
+                        cpes.Add(match.EnumerateObject().Where(p => p.Name != "matchCriteriaId").ToDictionary(p => p.Name, p => p.Value));
+        var desc = A(c, "descriptions").Where(d => S(d, "lang") == "en").Select(d => S(d, "value")).FirstOrDefault() ?? "";
         return new object?[] { S(c, "id"), S(c, "published"), S(c, "lastModified"), cvss, string.Join(",", cwe), JsonSerializer.Serialize(cpes), desc, vector };
     }
 
@@ -143,7 +141,10 @@ CREATE TABLE IF NOT EXISTS defend          (technique TEXT, id TEXT, name TEXT, 
 
         foreach (var win in windows)
         {
-            int index = 0;
+            // the full dump resumes where a failed or cancelled run stopped (nvd_index), instead of starting 15 minutes over
+            int index = 0, bad = 0;
+            if (win is null) using (var c = db.CreateCommand()) { c.CommandText = "SELECT value FROM meta WHERE key='nvd_index'"; index = int.TryParse(c.ExecuteScalar() as string, out var i) ? i : 0; }
+            if (index > 0) log($"  NVD: resuming the full download at {index}");
             while (true)
             {
                 var url = $"{NvdUrl}?resultsPerPage=2000&startIndex={index}";
@@ -153,22 +154,38 @@ CREATE TABLE IF NOT EXISTS defend          (technique TEXT, id TEXT, name TEXT, 
                 using var resp = await http.SendAsync(req, ct);
                 if ((int)resp.StatusCode is 403 or 429 or 503) { await Task.Delay(TimeSpan.FromSeconds(30), ct); continue; } // rate limited: back off, retry
                 resp.EnsureSuccessStatusCode();
-                using var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+                var body = await resp.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(body);
                 var root = doc.RootElement;
+                // NVD sometimes answers 200 with no CVE list (busy, maintenance): treat it like a rate limit, three tries
+                if (!root.TryGetProperty("vulnerabilities", out var vulns) || !root.TryGetProperty("totalResults", out var tot) || !root.TryGetProperty("resultsPerPage", out var per))
+                {
+                    if (++bad > 3) throw new InvalidDataException($"NVD page {index}: reply has no CVE list: {body[..Math.Min(200, body.Length)]}");
+                    log($"  NVD page {index}: reply has no CVE list, retrying in 30 s"); await Task.Delay(TimeSpan.FromSeconds(30), ct); continue;
+                }
+                bad = 0;
+                var rows = new List<object?[]>();
+                foreach (var item in A(root, "vulnerabilities"))
+                    try { if (ParseNvd(item) is var r && (string)r[0]! != "") rows.Add(r); }
+                    catch (Exception e) when (e is InvalidOperationException or FormatException or KeyNotFoundException) { log($"  NVD: skipped one record ({e.Message})"); }
+                index += per.GetInt32();
                 using (var tx = db.BeginTransaction())
                 {
-                    Insert(db, "INSERT OR REPLACE INTO cve VALUES (@p0,@p1,@p2,@p3,@p4,@p5,@p6,@p7)", root.GetProperty("vulnerabilities").EnumerateArray().Select(ParseNvd));
+                    Insert(db, "INSERT OR REPLACE INTO cve VALUES (@p0,@p1,@p2,@p3,@p4,@p5,@p6,@p7)", rows);
+                    if (win is null) Exec(db, "INSERT OR REPLACE INTO meta VALUES ('nvd_index', @v)", ("@v", index.ToString()));
                     tx.Commit();
                 }
-                index += root.GetProperty("resultsPerPage").GetInt32();
-                var total = root.GetProperty("totalResults").GetInt32();
+                var total = tot.GetInt32();
                 log($"  NVD {index}/{total}");
                 if (index >= total) break;
                 await Task.Delay(delay, ct);
             }
         }
         if (since is null) // a --since test run must not mark the full backfill as done
+        {
             Exec(db, "INSERT OR REPLACE INTO meta VALUES ('nvd_sync', @v)", ("@v", Iso(now)));
+            Exec(db, "DELETE FROM meta WHERE key='nvd_index'");
+        }
     }
 
     static string Iso(DateTimeOffset d) => d.ToString("yyyy-MM-dd'T'HH:mm:ss.fffzzz", CultureInfo.InvariantCulture);
@@ -367,20 +384,25 @@ CREATE TABLE IF NOT EXISTS defend          (technique TEXT, id TEXT, name TEXT, 
     public async Task Run(string dbPath, DateTimeOffset? since = null)
     {
         using var db = Connect(dbPath);
-        log("KEV: downloading...");
-        log($"KEV:  {await SyncKev(db)} known-exploited CVEs");
-        ct.ThrowIfCancellationRequested(); log("EPSS: downloading...");
-        log($"EPSS: {await SyncEpss(db)} scored CVEs");
-        ct.ThrowIfCancellationRequested(); log("ATT&CK: downloading (about 40 MB)...");
-        var (t, a, c) = await SyncAttack(db);
-        log($"ATT&CK: {t} techniques, {a} groups, {c} group->CVE links");
-        ct.ThrowIfCancellationRequested(); log("CTID: downloading...");
-        log($"CTID: {await SyncCtid(db)} CVE->technique mappings");
-        ct.ThrowIfCancellationRequested(); log("D3FEND: fetching countermeasures, one request per technique (about 30 seconds)...");
-        log($"D3FEND: {await SyncD3fend(db)} technique->countermeasure links");
-        ct.ThrowIfCancellationRequested(); log("NVD:  syncing (first full run takes ~15 min without an API key)");
-        await SyncNvd(db, Secrets.Get("NVD_API_KEY"), since);
-        using var cmd = db.CreateCommand(); cmd.CommandText = "SELECT COUNT(*) FROM cve";
-        log($"NVD:  {cmd.ExecuteScalar()} CVEs in db");
+        var failed = new List<string>();
+        // each feed on its own: one failing is logged and the rest still update
+        async Task Step(string name, string start, Func<Task<string>> run)
+        {
+            ct.ThrowIfCancellationRequested(); log(start);
+            try { log(await run()); }
+            catch (Exception e) when (!ct.IsCancellationRequested) { failed.Add(name); log($"{name}: FAILED: {Errors.Explain(e)}"); }
+        }
+        await Step("KEV", "KEV: downloading...", async () => $"KEV:  {await SyncKev(db)} known-exploited CVEs");
+        await Step("EPSS", "EPSS: downloading...", async () => $"EPSS: {await SyncEpss(db)} scored CVEs");
+        await Step("ATT&CK", "ATT&CK: downloading (about 40 MB)...", async () => { var (t, a, c) = await SyncAttack(db); return $"ATT&CK: {t} techniques, {a} groups, {c} group->CVE links"; });
+        await Step("CTID", "CTID: downloading...", async () => $"CTID: {await SyncCtid(db)} CVE->technique mappings");
+        await Step("D3FEND", "D3FEND: fetching countermeasures, one request per technique (about 30 seconds)...", async () => $"D3FEND: {await SyncD3fend(db)} technique->countermeasure links");
+        await Step("NVD", "NVD:  syncing (first full run takes ~15 min without an API key)", async () =>
+        {
+            await SyncNvd(db, Secrets.Get("NVD_API_KEY"), since);
+            using var cmd = db.CreateCommand(); cmd.CommandText = "SELECT COUNT(*) FROM cve";
+            return $"NVD:  {cmd.ExecuteScalar()} CVEs in db";
+        });
+        if (failed.Count > 0) throw new InvalidOperationException($"{string.Join(", ", failed)} failed (reason above); the other feeds were updated");
     }
 }

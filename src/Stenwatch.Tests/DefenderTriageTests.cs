@@ -56,8 +56,25 @@ public class DefenderTriageTests
     }
 
     [Fact]
-    public void FixVersion_TakesTheHighestVersionNamed() =>
-        Assert.Equal("151", DefenderTriage.FixVersion(new[] { "fixed in Firefox 151 and Firefox ESR 140.11", "prior to 9.1" }));
+    public void FixVersion_TakesTheHighestVersionNamed_ForThisProductOnly()
+    {
+        Assert.Equal("151 or later", DefenderTriage.FixVersion("Mozilla Firefox", new[] { "fixed in Firefox 151 and Firefox ESR 140.11", "prior to 9.1" }));
+        var chrome = new[] { "Use after free in Google Chrome prior to 154.0.8037.57. Edge (Chromium-based) ingests Chromium.", "Google Chrome: affects versions prior to 148.0.7778.216",
+            "Chrome and other browsers (including Microsoft Edge) have several CVEs listed for these releases, with an example for Windows prior to 153.0.8010.47" };
+        Assert.Equal("154.0.8037.57 or later", DefenderTriage.FixVersion("Google Chrome", chrome));
+        Assert.Equal("the build with the Chrome 154.0.8037.57 fix", DefenderTriage.FixVersion("Microsoft Edge", chrome)); // Chrome's build number is not Edge's
+        Assert.Equal("4.76.0 or later", DefenderTriage.FixVersion("Docker Desktop", new[] { "VM panic. Upgrade to Docker Desktop version 4.76.0 or later." }));
+        Assert.Equal("", DefenderTriage.FixVersion("PHP", new[] { "unbounded recursion in cleanup_xml_node()" }));
+    }
+
+    [Fact]
+    public void NvdFix_GivesOneVersionPerBranch_AndDropsBranchesThatMissACve()
+    {
+        var php = new List<(string, string)> { ("PHP", "8.2.34"), ("PHP", "8.3.35"), ("PHP", "8.4.26") };
+        Assert.Equal("8.2.34 / 8.3.35 / 8.4.26 or later", DefenderTriage.NvdFix("PHP", new[] { php, new() { ("PHP", "8.1.30") } })); // 8.1 CVE is fixed in every later branch
+        Assert.Equal("154.0.8037.57 or later", DefenderTriage.NvdFix("Google Chrome", new[] { new List<(string, string)> { ("Google Chrome", "148.0.7778.216") }, new() { ("Google Chrome", "154.0.8037.57") } }));
+        Assert.Equal("", DefenderTriage.NvdFix("Microsoft Edge", new[] { new List<(string, string)> { ("Google Chrome", "154.0.8037.57") } }));
+    }
 
     [Fact]
     public void Rank_KevBeatsSeverity_EvenWhenNvdLacksTheCve_AndOneCveCanNeedTwoProducts()
@@ -73,7 +90,7 @@ public class DefenderTriageTests
         var actions = DefenderTriage.Rank(DefenderTriage.Load(Shapes(dir)[0]), db);
         Assert.Equal("Act", actions.Single(a => a.Product == "Microsoft Edge").Tier);      // 1003 is KEV, though not in cve table and "Unknown" in Defender
         Assert.Equal("Attend", actions.Single(a => a.Product == "Mozilla Thunderbird").Tier); // EPSS 20% from cve.db
-        Assert.Equal("151", actions.Single(a => a.Product == "Mozilla Firefox").Fix);
+        Assert.Equal("151 or later", actions.Single(a => a.Product == "Mozilla Firefox").Fix);
         Assert.Equal(3, DefenderTriage.CveCount(actions));
         Assert.Equal("Act", actions[0].Tier);
         Assert.All(actions, a => Assert.InRange(a.Label.Length, 1, 32)); // the grid shows Label; the full Rule is one click away

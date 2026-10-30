@@ -35,7 +35,7 @@ public class FindingRow
 public class TriageRow
 {
     public FixAction A { get; init; } = null!;
-    public string Tier => A.Tier; public string Product => A.Product; public string Fix => A.Fix == "" ? "unknown" : A.Fix; public int Cves => A.Rows.Count; public int Machines => A.Exposed;
+    public string Tier => A.Tier; public string Product => A.Product; public string Fix => A.Fix == "" ? "latest vendor update" : A.Fix; public int Cves => A.Rows.Count; public int Machines => A.Exposed;
     public string Feeds => A.Feeds; public string Why => A.Label != "" ? A.Label : A.Rule; public string Flag => A.Flag.Split(':')[0]; // full sentence and reason: Detail tab
 }
 

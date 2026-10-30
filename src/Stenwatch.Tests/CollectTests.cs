@@ -26,6 +26,20 @@ public class CollectTests
     }
 
     [Fact]
+    public void ParseNvd_SurvivesRecordsWithFieldsMissing()
+    {
+        var row = Collect.ParseNvd(J(@"{""cve"": {""id"": ""CVE-2026-1"", ""metrics"": {""cvssMetricV31"": [{}]}, ""weaknesses"": [{}], ""configurations"": [{}, {""nodes"": [{}]}]}}"));
+        Assert.Equal("CVE-2026-1", row[0]); Assert.Null(row[3]); Assert.Equal("", row[6]); Assert.Equal("[]", row[5]);
+    }
+
+    [Fact]
+    public void Errors_ExplainCommonFailuresInPlainWords()
+    {
+        Assert.StartsWith("A feed sent data in an unexpected shape", Errors.Explain(new KeyNotFoundException("The given key was not present in the dictionary.")));
+        Assert.StartsWith("The feed is rate-limiting", Errors.Explain(new HttpRequestException("x", null, System.Net.HttpStatusCode.TooManyRequests)));
+    }
+
+    [Fact]
     public void TinyFeed_IsRejected() =>
         Assert.Throws<InvalidDataException>(() => Collect.CheckSize("KEV", 2, Collect.MinKev));
 

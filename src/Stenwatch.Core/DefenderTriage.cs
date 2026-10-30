@@ -34,7 +34,7 @@ public static class DefenderTriage
         "amazon", "fedora", "oracle", "ubuntu", "alpine", "bitnami", "vmware", "dhi", "opensuse" };
     static readonly Dictionary<string, string> Names = new()
     {
-        ["microsoft:edge_chromium-based"] = "Microsoft Edge", ["mozilla:firefox"] = "Mozilla Firefox", ["mozilla:thunderbird"] = "Mozilla Thunderbird",
+        ["microsoft:edge_chromium-based"] = "Microsoft Edge", ["microsoft:edge_chromium"] = "Microsoft Edge", ["mozilla:firefox"] = "Mozilla Firefox", ["mozilla:thunderbird"] = "Mozilla Thunderbird",
         ["google:chrome"] = "Google Chrome", ["php:php"] = "PHP", ["docker:desktop"] = "Docker Desktop", ["python:python"] = "Python",
     };
     /// <summary>Product classes that face the internet by nature. No asset list exists, so this is the proxy; data/product_classes.txt (one word per line) extends it.</summary>
@@ -45,6 +45,9 @@ public static class DefenderTriage
     static readonly Regex Record = new(
         @"^(CVE-\d{4}-\d+),(\w+),([\d.]*),([\d.]*),(\d*),(""[^""]*""|[^,]*),(""[^""]*""|[^,]*),(""[^""]*""|[^,]*),(\w+),(\w+),(\w+),(.*?),(\d+),(.*)$", RegexOptions.Singleline);
     static readonly Regex Fixed = new(@"(?:prior to|before|earlier than|fixed in(?: version)?|fixed versions?:?)\s+(?:[A-Za-z][\w-]*\s+)?v?(\d+(?:\.\d+){1,3}|\d{2,})", RegexOptions.IgnoreCase);
+    static readonly Regex Upgrade = new(@"(?:upgrade|update) to\s+(?:[A-Za-z][\w-]*\s+){1,3}v?(\d+\.\d+(?:\.\d+){0,2})", RegexOptions.IgnoreCase);
+    // product words a fixed version can belong to in a description
+    static readonly string[] Owners = Names.Values.Select(n => n.Split(' ')[^1]).Append("ESR").Distinct().ToArray();
 
     /// <summary>Reads the export as Defender writes it (CSV, or .xlsx with proper columns) and also as it looks when the CSV was opened in Excel and split on commas
     /// (one record spread over many cells, descriptions broken across rows). Records are found by their CVE id, not by line.</summary>
@@ -92,12 +95,49 @@ public static class DefenderTriage
 
     public static int CveCount(IEnumerable<FixAction> actions) => actions.SelectMany(a => a.Rows).Select(r => r.Cve).Distinct().Count();
 
-    /// <summary>Highest fixed version the description names ("prior to 148.0.7778.216", "fixed in Firefox 151"), or "".</summary>
-    public static string FixVersion(IEnumerable<string> descriptions)
+    /// <summary>The version that fixes every CVE, from the descriptions ("prior to 148.0.7778.216", "fixed in Firefox 151", "upgrade to Docker Desktop version 4.76.0"), or "".
+    /// A version belongs to the product named in its own clause ("Google Chrome prior to X"), else to the first product the description names,
+    /// so Edge does not take Chrome's build number as its own: it gets "the build with the Chrome X fix".</summary>
+    public static string FixVersion(string product, IEnumerable<string> descriptions)
     {
-        var all = descriptions.SelectMany(d => Fixed.Matches(d).Select(m => m.Groups[1].Value)).Distinct().ToList();
-        return all.Count == 0 ? "" : all.MaxBy(v => Version.TryParse(v.Contains('.') ? v : v + ".0", out var ver) ? ver : new Version(0, 0))!;
+        var own = product.Split(' ')[^1];
+        var found = descriptions.SelectMany(d => Fixed.Matches(d).Concat(Upgrade.Matches(d)).Select(m => (Ver: m.Groups[1].Value,
+            By: Owner(d[Math.Max(0, m.Groups[1].Index - 40)..m.Groups[1].Index], own, last: true) ?? Owner(d, own, last: false)))).ToList();
+        var mine = found.Where(f => f.By is null || f.By.Equals(own, StringComparison.OrdinalIgnoreCase)).Select(f => f.Ver).ToList();
+        if (mine.Count > 0) return mine.Max(ByVersion) + " or later";
+        if (found.Count == 0) return "";
+        var other = found.MaxBy(f => f.Ver, ByVersion);
+        return $"the build with the {other.By} {other.Ver} fix";
     }
+
+    // ponytail: word heuristic over AI-written text; "Edge prior to <Chrome build>" in one clause would still go to Edge. NVD, tried first in Rank, is exact.
+    static string? Owner(string text, string own, bool last) => Owners.Append(own)
+        .Select(w => (w, m: Regex.Match(text, $@"\b{Regex.Escape(w)}\b", RegexOptions.IgnoreCase | (last ? RegexOptions.RightToLeft : RegexOptions.None)))).Where(x => x.m.Success)
+        .OrderBy(x => last ? -x.m.Index : x.m.Index).Select(x => x.w).FirstOrDefault();
+
+    /// <summary>NVD's fixed versions (cpe versionEndExcluding) for one product, one per branch that clears every CVE: "8.2.34 / 8.3.35 or later". "" if NVD has none.</summary>
+    public static string NvdFix(string product, IEnumerable<List<(string Product, string Fixed)>> perCve)
+    {
+        var cves = perCve.Select(l => l.Where(x => x.Product == product).Select(x => x.Fixed).ToList()).Where(l => l.Count > 0).ToList();
+        // a branch counts only if every CVE has a fix in it or was fixed before the branch (Chrome 148 drops out once one CVE needs 154)
+        var branches = cves.SelectMany(l => l).GroupBy(Branch).Select(g => g.Max(ByVersion)!)
+            .Where(b => cves.All(l => l.Any(v => Branch(v) == Branch(b)) || l.All(v => ByVersion.Compare(v, b) < 0))).Order(ByVersion).ToList();
+        return branches.Count == 0 ? "" : string.Join(" / ", branches) + " or later";
+    }
+
+    static string Branch(string v) { var n = Nums(v); return n.Length < 2 || n[0] >= 20 ? n.FirstOrDefault().ToString() : $"{n[0]}.{n[1]}"; } // PHP 8.3, OpenSSL 3.0; Chrome 154
+    static int[] Nums(string v) => Regex.Matches(v, @"\d+").Select(m => int.TryParse(m.Value, out var n) ? n : 0).ToArray();
+    static readonly Comparer<string> ByVersion = Comparer<string>.Create((a, b) =>
+    {
+        var (x, y) = (Nums(a), Nums(b));
+        for (var i = 0; i < Math.Min(x.Length, y.Length); i++) if (x[i] != y[i]) return x[i].CompareTo(y[i]);
+        return x.Length != y.Length ? x.Length.CompareTo(y.Length) : string.CompareOrdinal(a, b); // 1.1.1zh < 1.1.1zq
+    });
+
+    /// <summary>A cve.cpes JSON list -> (product, fixed version) for every entry with versionEndExcluding.</summary>
+    static List<(string, string)> Cpes(string json) => (JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(json) ?? new())
+        .Where(m => m.TryGetValue("versionEndExcluding", out var v) && v.ValueKind == JsonValueKind.String && m.TryGetValue("criteria", out var c) && c.GetString()!.Split(':').Length > 4)
+        .Select(m => (Product(new[] { string.Join(':', m["criteria"].GetString()!.Split(':')[3..5]) })[0], m["versionEndExcluding"].GetString()!)).ToList();
 
     // ---- 2. rank ----------------------------------------------------------------------------------------------------------
 
@@ -105,12 +145,16 @@ public static class DefenderTriage
     public static List<FixAction> Rank(List<DefenderRow> rows, string? cveDb, string? dataDir = null, List<Advisory>? advisories = null, DateOnly? today = null)
     {
         var kev = new HashSet<string>(); var inNvd = new HashSet<string>(); var epss = new Dictionary<string, double>(); var actors = new Dictionary<string, List<string>>();
+        var fixes = new Dictionary<string, List<(string, string)>>();
         if (cveDb is not null && File.Exists(cveDb))
         {
             using var db = new SqliteConnection($"Data Source={cveDb};Mode=ReadOnly"); db.Open();
             using var c = db.CreateCommand();
-            // three independent lookups: a CVE can be in KEV or EPSS before NVD has it (the export's only KEV CVE is exactly that)
-            c.CommandText = "SELECT (SELECT 1 FROM cve WHERE id = @id), (SELECT epss FROM epss WHERE id = @id), (SELECT 1 FROM kev WHERE id = @id)";
+            c.CommandText = "SELECT count(*) FROM pragma_table_info('cve') WHERE name = 'cpes'";
+            var hasCpes = (long)c.ExecuteScalar()! == 1;
+            // independent lookups: a CVE can be in KEV or EPSS before NVD has it (the export's only KEV CVE is exactly that)
+            c.CommandText = "SELECT (SELECT 1 FROM cve WHERE id = @id), (SELECT epss FROM epss WHERE id = @id), (SELECT 1 FROM kev WHERE id = @id), " +
+                (hasCpes ? "(SELECT cpes FROM cve WHERE id = @id)" : "NULL");
             var p = c.Parameters.Add("@id", SqliteType.Text);
             foreach (var cve in rows.Select(r => r.Cve).Distinct())
             {
@@ -118,6 +162,7 @@ public static class DefenderTriage
                 if (!r.IsDBNull(0)) inNvd.Add(cve);
                 if (!r.IsDBNull(1)) epss[cve] = r.GetDouble(1);
                 if (!r.IsDBNull(2)) kev.Add(cve);
+                if (!r.IsDBNull(3)) fixes[cve] = Cpes(r.GetString(3));
             }
             using var t = db.CreateCommand();
             t.CommandText = "SELECT count(*) FROM sqlite_master WHERE name IN ('actor', 'actor_cve')";
@@ -166,7 +211,8 @@ public static class DefenderTriage
                 ("Ignore", "medium or low severity, no sign of exploitation", "Low, not exploited");
             var feeds = new List<string>();
             if (nKev > 0) feeds.Add("KEV"); foreach (var s in adv.Select(m => m.Advisory.Source).Distinct()) feeds.Add(s); if (maxEpss >= AttendEpss) feeds.Add("EPSS"); if (defender > 0) feeds.Add("Defender"); if (groups.Count > 0) feeds.Add("ATT&CK");
-            var fa = new FixAction(g.Key, FixVersion(list.Select(r => r.Description)), list.OrderByDescending(r => kev.Contains(r.Cve)).ThenByDescending(r => r.Cvss).ToList(),
+            var fix = NvdFix(g.Key, list.Select(r => fixes.GetValueOrDefault(r.Cve) ?? new())) is { Length: > 0 } nvd ? nvd : FixVersion(g.Key, list.Select(r => r.Description));
+            var fa = new FixAction(g.Key, fix, list.OrderByDescending(r => kev.Contains(r.Cve)).ThenByDescending(r => r.Cvss).ToList(),
                 exposed, list.Max(r => r.Age), maxCvss, maxEpss, nKev, useDb ? list.Count(r => !inNvd.Contains(r.Cve)) : 0, tier, rule, string.Join(" · ", feeds), Matched: adv, Label: label) { Actors = groups };
             return fa with { Card = Intel.Card(Intel.Rows(fa)) };
         }).OrderBy(a => Array.IndexOf(Tiers, a.Tier)).ThenByDescending(a => a.Exposed).ThenByDescending(a => a.Age).ToList();
@@ -237,7 +283,7 @@ public static class DefenderTriage
         sb.Append("<h2>Fix actions, in order</h2><table><tr><th>Tier<th>Fix action<th>CVEs<th>Machines<th>Feeds<th>Why<th>Analyst</tr>");
         foreach (var a in actions)
         {
-            sb.Append($"<tr><td class={a.Tier}>{a.Tier}<td>{E(a.Product)}{(a.Fix != "" ? "<br>update to " + E(a.Fix) : "<br><span class=n>fix version unknown</span>")}<td>{a.Rows.Count}<td>{a.Exposed}<td>{E(a.Feeds)}" +
+            sb.Append($"<tr><td class={a.Tier}>{a.Tier}<td>{E(a.Product)}{(a.Fix != "" ? "<br>update to " + E(a.Fix) : "<br><span class=n>no fixed version published: latest vendor update</span>")}<td>{a.Rows.Count}<td>{a.Exposed}<td>{E(a.Feeds)}" +
                 $"<td title=\"{E(a.Rule)}\">{E(a.Label != "" ? a.Label : a.Rule)}{(a.NotInNvd > 0 ? $"<br><span class=n>{a.NotInNvd} CVEs not in local NVD</span>" : "")}<td>{E(a.Flag)}</tr>");
         }
         sb.Append("</table>");

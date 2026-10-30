@@ -246,8 +246,9 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             SyncBar.IsIndeterminate = false; SyncBar.Value = 0;
-            SyncLog.AppendText($"{DateTime.Now:HH:mm:ss}  FAILED: {ex.Message}\n");
-            SyncStatus.Text = "Failed: " + ex.Message + "   (check the internet connection, or a firewall or proxy blocking api.github.com, cisa.gov, nvd.nist.gov, first.org)";
+            var why = Errors.Explain(ex);
+            SyncLog.AppendText($"{DateTime.Now:HH:mm:ss}  FAILED: {why}\n");
+            SyncStatus.Text = "Failed: " + why;
             Status("sync failed"); return false;
         }
         finally { clock.Stop(); syncing = false; CancelSyncBtn.IsEnabled = false; SyncNowBtn.IsEnabled = QuickSyncBtn.IsEnabled = RunBtn.IsEnabled = SyncBtn.IsEnabled = true; }
@@ -267,7 +268,7 @@ public partial class MainWindow : Window
             last = await Task.Run(() => Engine.Run(f, new RunOptions(example, Pdf: true, Collect: collect), AddLog));
             ShowResult(last);
         }
-        catch (Exception ex) { AddLog("FAILED: " + ex.Message); Status("failed: " + ex.Message); }
+        catch (Exception ex) { var why = Errors.Explain(ex); AddLog("FAILED: " + why); Status("failed: " + why); }
         finally { RunBtn.IsEnabled = SyncBtn.IsEnabled = true; }
     }
 
