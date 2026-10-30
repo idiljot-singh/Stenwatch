@@ -47,8 +47,28 @@ public partial class MainWindow
         if (triExport == null || !File.Exists(triExport)) { TriSummary.Text = "Choose the export first."; return; }
         // the whole run (feed parsing, database, LLM calls) goes to a worker thread; this page only shows progress, the rest of the app stays usable
         var opts = new DefenderTriage.Options(triExport, data, Db, TriFeeds.IsChecked == true, TriLlm.IsChecked == true, triMails.ToList());
-        TriRunBtn.IsEnabled = false; TriBusy.Visibility = Visibility.Visible; TriSummary.Text = "Starting..."; Status("triage running");
-        void Progress(string m) => Dispatcher.BeginInvoke(() => { if (!m.StartsWith("  ")) TriSummary.Text = m.Trim(); Status(m.Trim()); });
+        TriRunBtn.IsEnabled = false; TriBusy.Visibility = Visibility.Visible; TriBusy.IsIndeterminate = true; TriSummary.Text = "Starting..."; Status("triage running");
+        // a clock, and for counted LLM steps ("card 3/6") a real bar and time left = average time per call so far x calls left
+        var started = DateTime.Now; var step = "Starting..."; var eta = ""; var phase = ""; var phaseStart = DateTime.Now;
+        static string Fmt(TimeSpan t) => t.TotalMinutes >= 1 ? $"{(int)t.TotalMinutes} min {t.Seconds} s" : $"{t.Seconds} s";
+        void Show() => TriSummary.Text = $"{step}{eta}   ({Fmt(DateTime.Now - started)} so far)";
+        var clock = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+        clock.Tick += (_, _) => Show(); clock.Start();
+        void Progress(string m) => Dispatcher.BeginInvoke(() =>
+        {
+            Status(m.Trim()); if (m.StartsWith("  ")) return;
+            step = m.Trim(); eta = "";
+            var k = System.Text.RegularExpressions.Regex.Match(m, @"(\d+)/(\d+)");
+            if (!k.Success) TriBusy.IsIndeterminate = true;
+            else
+            {
+                var (i, n) = (int.Parse(k.Groups[1].Value), int.Parse(k.Groups[2].Value));
+                if (m[..k.Index] != phase) { phase = m[..k.Index]; phaseStart = DateTime.Now; }
+                TriBusy.IsIndeterminate = false; TriBusy.Value = 100.0 * (i - 1) / n;
+                if (i > 1) eta = $", about {Fmt((DateTime.Now - phaseStart) / (i - 1) * (n - i + 1))} left";
+            }
+            Show();
+        });
         try
         {
             tri = await Task.Run(() => DefenderTriage.Run(opts, log: Progress));
@@ -56,7 +76,7 @@ public partial class MainWindow
         }
         catch (Exception ex) when (ex is IOException or InvalidDataException or InvalidOperationException or Microsoft.Data.Sqlite.SqliteException or HttpRequestException)
         { TriSummary.Text = "Could not triage: " + ex.Message; Status("triage failed"); }
-        finally { TriRunBtn.IsEnabled = true; TriBusy.Visibility = Visibility.Collapsed; }
+        finally { clock.Stop(); TriRunBtn.IsEnabled = true; TriBusy.Visibility = Visibility.Collapsed; }
     }
 
     void ShowTriage()

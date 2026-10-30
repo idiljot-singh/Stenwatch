@@ -320,7 +320,7 @@ public static class DefenderTriage
         if (o.UseLlm)
         {
             if (!TriageLlm.Ready) Note("LLM skipped: no OpenRouter key (Settings) and no local model configured");
-            else { log?.Invoke("LLM is reading advisories that name no CVE..."); var (all, note) = await TriageLlm.Enrich(advisories, http, log: Note); advisories = all; Advisories.Save(o.Data, advisories); Note(note); }
+            else { log?.Invoke("LLM is reading advisories that name no CVE..."); var (all, note) = await TriageLlm.Enrich(advisories, http, log: Note, progress: log); advisories = all; Advisories.Save(o.Data, advisories); Note(note); }
         }
         var actions = ApplyFlags(Rank(rows, o.CveDb, o.Data, advisories, today), LoadFlags(o.Data), today);
         if (o.UseLlm && TriageLlm.Ready) // cards for what needs a decision; ponytail: top 6 only, free models are slow

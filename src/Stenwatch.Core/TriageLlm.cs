@@ -102,13 +102,14 @@ public static class TriageLlm
     }
 
     /// <summary>Reads advisories the rules cannot place: pasted ones and feed items that name no CVE. At most <paramref name="max"/> per run; the rest wait for the next.</summary>
-    public static async Task<(List<Advisory> All, string Note)> Enrich(List<Advisory> all, HttpClient http, int max = 15, Action<string>? log = null)
+    public static async Task<(List<Advisory> All, string Note)> Enrich(List<Advisory> all, HttpClient http, int max = 15, Action<string>? log = null, Action<string>? progress = null)
     {
         var todo = all.Where(a => !a.Analysed && (a.Source == "Pasted" || a.Cves.Count == 0)).Take(max).ToList();
         if (todo.Count == 0) return (all, "LLM: nothing new to read");
         int ok = 0, bad = 0; var result = all.ToList();
         foreach (var a in todo)
         {
+            progress?.Invoke($"LLM reading advisory {ok + bad + 1}/{todo.Count}...");
             try
             {
                 var text = Llm.Redact(a.Text.Length > 6000 ? a.Text[..6000] : a.Text); // pasted mail may carry our IPs and host names; public feed text passes unchanged
