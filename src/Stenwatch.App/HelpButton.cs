@@ -4,7 +4,6 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
 
 namespace Stenwatch.App;
 
@@ -17,7 +16,7 @@ public class HelpButton : ToggleButton
     public string Text { get => (string)GetValue(TextProperty); set => SetValue(TextProperty, value); }
     public string Title { get => (string)GetValue(TitleProperty); set => SetValue(TitleProperty, value); }
     bool warn;
-    public bool Warn { get => warn; set { warn = value; BorderBrush = Foreground = (Brush)FindResource(value ? "Attend" : "Accent"); } }
+    public bool Warn { get => warn; set { warn = value; SetResourceReference(BorderBrushProperty, value ? "Attend" : "Accent"); SetResourceReference(ForegroundProperty, value ? "Attend" : "Accent"); } }
 
     readonly Popup popup;
     readonly TextBlock title = new() { FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 0, 0, 4) }, body = new() { TextWrapping = TextWrapping.Wrap };
@@ -27,13 +26,9 @@ public class HelpButton : ToggleButton
         Content = "?"; Focusable = true; Cursor = Cursors.Hand; VerticalAlignment = VerticalAlignment.Center; Margin = new Thickness(6, 0, 6, 0);
         SetResourceReference(StyleProperty, "Help");
         var panel = new StackPanel(); panel.Children.Add(title); panel.Children.Add(body);
-        popup = new Popup
-        {
-            PlacementTarget = this, Placement = PlacementMode.Bottom, StaysOpen = false, AllowsTransparency = true,
-            Child = new Border { Child = panel, MaxWidth = 380, Padding = new Thickness(12, 10, 12, 10), CornerRadius = new CornerRadius(4), BorderThickness = new Thickness(1),
-                Background = (Brush)FindResource("Card"), BorderBrush = (Brush)FindResource("Line") }
-        };
-        TextElement.SetForeground(popup.Child, (Brush)FindResource("Fg"));
+        var box = new Border { Child = panel, MaxWidth = 380, Padding = new Thickness(12, 10, 12, 10), CornerRadius = new CornerRadius(4), BorderThickness = new Thickness(1) };
+        box.SetResourceReference(Border.BackgroundProperty, "Card"); box.SetResourceReference(Border.BorderBrushProperty, "Line"); box.SetResourceReference(TextElement.ForegroundProperty, "Fg"); // follow the theme
+        popup = new Popup { PlacementTarget = this, Placement = PlacementMode.Bottom, StaysOpen = false, AllowsTransparency = true, Child = box };
         // a click on the "?" while the popup is open would close and reopen it; ignore clicks until it has closed
         popup.Opened += (_, _) => IsHitTestVisible = false;
         popup.Closed += (_, _) => { IsHitTestVisible = true; IsChecked = false; };

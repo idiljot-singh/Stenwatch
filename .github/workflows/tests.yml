@@ -17,3 +17,12 @@ jobs:
           out=$(dotnet list src/Stenwatch.sln package --vulnerable --include-transitive)
           echo "$out"
           ! echo "$out" | grep -q "has the following vulnerable packages"
+      - name: software bill of materials
+        shell: bash
+        run: |
+          dotnet tool install --global CycloneDX
+          dotnet CycloneDX src/Stenwatch.sln -o sbom
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom

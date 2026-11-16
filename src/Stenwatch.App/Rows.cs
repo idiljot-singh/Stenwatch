@@ -21,14 +21,16 @@ public class ControlRow
 }
 public class AssetRow { public string Asset { get; set; } = ""; public string Zone { get; set; } = ""; public string Owner { get; set; } = ""; public bool CrownJewel { get; set; } }
 
-/// <summary>A finding as the grid shows it.</summary>
+/// <summary>A finding as the grid shows it: a ranked CVE on an asset (R), or an exposure row from another component (E). Exactly one is set.</summary>
 public class FindingRow
 {
-    public Ranked R { get; init; } = null!;
-    public string Tier => R.Tier; public double Risk => R.Risk; public string Cve => R.Cve; public string Asset => R.Asset.Name;
-    public string Confidence => R.Confidence;
-    public string Exploitation => R.Exploitation.Split(':')[0]; public string Why => R.Why;
-    public string Source => R.Asset.ThirdParty ? "supplier" : "owned";
+    public Ranked? R { get; init; }
+    public Exposure? E { get; init; }
+    public string Component => E?.Component ?? "Vulnerabilities";
+    public string Tier => R?.Tier ?? E!.Tier; public double? Risk => R?.Risk; public string Cve => R?.Cve ?? E!.ItemId; public string Asset => R?.Asset.Name ?? E!.Asset;
+    public string Confidence => R?.Confidence ?? "";
+    public string Exploitation => R?.Exploitation.Split(':')[0] ?? ""; public string Why => R?.Why ?? $"{E!.Title}: {E.Rule}";
+    public string Source => R is null ? E!.Source : R.Asset.ThirdParty ? "supplier" : "owned";
 }
 
 /// <summary>A fix action as the Morning triage grid shows it.</summary>

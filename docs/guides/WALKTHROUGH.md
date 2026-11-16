@@ -50,6 +50,8 @@ Stenwatch follows the classic CTI lifecycle. Each stage is one file, so the code
 | 5. Dissemination | `python/cti/disseminate.py` | Ranked findings → dashboard, report, brief, CSV, STIX |
 | 6. Feedback | `exceptions.csv` | Analyst decisions → suppressed or returning findings |
 
+In the app the six stages are on these pages: Direction on **Threat profile**, Collection on **Feeds**, Processing on **Estate**, Analysis on **Findings**, Dissemination on **Reports** and Feedback on **Remediation**. The **Guided run** page (Home) lists them in order.
+
 `python/run.py` runs all six in order, which is what the daily scheduler calls. `python/app.py` is the console, which runs the same code one stage at a time and shows you each step.
 
 ```
@@ -74,7 +76,7 @@ profile → │ Collection │ → │ Processing │ → │  Analysis  │ →
 
 **Why it matters:** the same CVE is more urgent for a hospital targeted by a ransomware group that exploits it than for a firm nobody targets with it. Direction is what makes the output *threat-informed* instead of generic.
 
-**Try it:** in the console, open **Direction**, change `threat_profile: 0.2` to `0.5`, save, then re-rank in **Analysis** and watch CVEs used by your profiled groups move up.
+**Try it:** in the console, open **Threat profile** (the Direction stage), change `threat_profile: 0.2` to `0.5`, save, then re-rank in **Findings** (the Analysis stage) and watch CVEs used by your profiled groups move up.
 
 ---
 
@@ -98,7 +100,7 @@ profile → │ Collection │ → │ Processing │ → │  Analysis  │ →
 
 **Why it matters:** collection is automatic and needs no people. Everything after this point runs offline on local data, so results are reproducible.
 
-**Try it:** **Collection → Quick sync since a date** pulls only recent changes and shows the progress in the console's terminal panel.
+**Try it:** **Feeds → Quick sync since a date** (the Collection stage) pulls only recent changes and shows the progress in the console's terminal panel.
 
 ---
 
@@ -114,7 +116,7 @@ profile → │ Collection │ → │ Processing │ → │  Analysis  │ →
 
 **Why it matters:** this is the biggest filter. Hundreds of thousands of CVEs become the few thousand that touch the estate.
 
-**Try it:** **Processing → CPE lookup**: type `exchange` to see which NVD product names exist and how many CVEs each has.
+**Try it:** **Estate → CPE lookup** (the Processing stage): type `exchange` to see which NVD product names exist and how many CVEs each has.
 
 ---
 
@@ -152,7 +154,7 @@ All numbers come from `profile.yaml`. Every finding carries a written **"why"** 
 - **Defend (MITRE D3FEND):** the countermeasures for the finding's ATT&CK techniques, grouped by D3FEND tactic, with Software Update always first because patching answers any known vulnerability. ATT&CK mitigations (for example M1051 Update Software) are listed alongside.
 - **A projected Diamond Model:** the four vertices of an intrusion through this finding. *Adversary:* the profiled groups known to exploit it or able to use its techniques. *Capability:* the CVE, its weakness and techniques. *Infrastructure:* the path in (internet-facing, a supplier's access, or an internal foothold). *Victim:* the organisation and asset. The phase lists the ATT&CK tactics. It is projected, not observed: it describes the intrusion this finding would enable, so defenders can reason about it before it happens.
 
-**Try it:** **Analysis → Re-rank** (no download, a few seconds), then click any row of the top 10 to open its summary, Diamond and D3FEND countermeasures.
+**Try it:** **Findings → Re-rank** (the Analysis stage) (no download, a few seconds), then click any row of the top 10 to open its summary, Diamond and D3FEND countermeasures.
 
 ---
 
@@ -172,7 +174,7 @@ STIX object IDs are **deterministic**: the same finding gets the same ID every r
 
 The management brief uses a fixed template by default. Optionally an LLM (local Ollama, Azure OpenAI in your tenant, or Anthropic) writes it instead. The LLM sees only the Act findings, CVE text is fenced as untrusted input against prompt injection, cloud providers get redacted input, and any failure falls back to the template.
 
-**Try it:** **Dissemination** → open the dashboard and click the tier cards.
+**Try it:** **Reports** (the Dissemination stage) → open the dashboard and click the tier cards.
 
 ---
 

@@ -14,7 +14,7 @@ Its business runs on servers and network drives: project and CAD data on Windows
 | `asset_context.example.csv` | C# edition | Zone, owner and crown-jewel flag per asset. |
 | `links.example.csv` | C# edition | 30 can-reach links (network drives, database connections, admin and trust relationships), for attack paths. |
 | `controls.example.csv` | C# edition | Eight controls with dated evidence; one is too old to count. |
-| `history.example.csv` | C# edition | Versions some assets ran before their upgrades. The example replays eight weeks of runs from them, so Feedback, "what changed" and Effectiveness have data. Simulated, and labelled so. |
+| `history.example.csv` | C# edition | Versions some assets ran before their upgrades. The example replays eight weeks of runs from them, so Remediation (the Feedback stage), "what changed" and Effectiveness have data. Simulated, and labelled so. |
 | `inventory.example.csv` | C# edition | The raw inventory export the asset list comes from: 2,844 hosts, one row each. Try Convert inventory on it. |
 | `apps.example.csv` | C# edition | An Intune-style "discovered apps" report: semicolon-separated, one row per program and version with a device count. |
 | `sbom.example.json` | C# edition | A CycloneDX SBOM of the customer portal: PHP, WordPress, OpenSSL and libraries a host inventory cannot see. |

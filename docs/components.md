@@ -29,7 +29,22 @@ Eleven components were named. For each: what Stenwatch has today, the gap, the f
 | Cloud workload protection | None | All | Defender for Cloud recommendations export (CSV) | Azure Resource Graph, container images |
 | AI discovery | None | All | Defender for Cloud Apps discovered apps, "Generative AI" category | MITRE ATLAS context |
 
-Suggested additions (each gets a row and a tile): **Identity exposure** (Entra risky users, stale privileged accounts), **Misconfiguration** (Defender security recommendations, Secure Score), **End-of-life software** (endoflife.date), **Detection content** (a KQL hunting query per Act finding), **Compliance evidence** (NIS2 / ISO 27001 report from stored tasks and decisions), **Briefing delivery** (email or Teams), **Exposure Management import** (Microsoft's own attack paths next to Stenwatch's), **MSP mode**, **Stenwatch's own SBOM and signed releases**.
+Identity exposure (Entra risky users, stale privileged accounts) is the one further tile that is not in the table above (the Identity tile, in "Know your estate", phase 3). The other additions are in the second table below. Only End-of-life software gets a new tile; the rest are finding types, connectors, outputs or release work that use a place that already exists.
+
+### Extras
+
+| Item | What it is | Where it lives in the app | Phase |
+|---|---|---|---|
+| End-of-life software | A new finding type: software past vendor support, from the asset list checked against endoflife.date | A 14th Coverage tile (group "Find weaknesses"); rows in Findings | 2 |
+| Misconfiguration | A finding type from Defender security recommendations and Secure Score | The existing Misconfiguration tile; rows in Findings | 3 |
+| Exposure Management import | A connector: Microsoft's own attack paths and critical assets | An Integrations row; shown on Attack paths next to Stenwatch's own | 3 |
+| Detection content | An output: a KQL hunting query for each Act finding, from a fixed template | A button on the finding detail; a file in Reports | 2 |
+| Briefing delivery | An output: post the morning briefing to Teams, or save it as a ready-to-send email file | An Integrations row next to the schedule | 2 |
+| Compliance evidence | A report: NIS2 / ISO 27001 evidence from stored tasks and decisions | One more output on Reports | 4 |
+| MSP mode | Several organisations in one install | An organisation switcher in the toolbar | 6, with its own plan |
+| Own SBOM and signed releases | Release engineering, not an app feature | Nothing in the app; a CI step and the release page | SBOM now; signing when a certificate exists |
+
+Every format these components read, and how it was learned, is listed in [`formats.md`](formats.md).
 
 ## 3. Navigation and pages
 
@@ -49,12 +64,12 @@ Guided run       Attack paths     Advisories         Reports
 
 | Area | Page | Was | Change |
 |---|---|---|---|
-| **Home** | Dashboard | Overview | Renamed. Adds the line "Coverage: n of 13 connected". |
+| **Home** | Dashboard | Overview | Renamed. Adds the line "Coverage: n of 14 connected". |
 | | Morning triage | Morning triage | None. |
 | | Guided run | (new) | The six CTI stages in order (Direction, Collection, Processing, Analysis, Dissemination, Feedback), each with one sentence, its state, and a button to its page. For first-time users, teaching and the thesis. |
-| **Exposure** | Findings | 4 Analysis | Renamed. New *Component* column and filter: findings from every component in one ranked list. |
+| **Exposure** | Findings | 4 Analysis | Renamed. New *Component* column and filter: findings from every component in one ranked list, including end-of-life software (phase 2) and misconfigurations (phase 3). A finding of type Act gets a *Hunting query (KQL)* button on its detail (phase 2). |
 | | Estate | 3 Processing | Renamed. Same four tabs (services, asset context, links, controls). |
-| | Attack paths | Attack paths | None. |
+| | Attack paths | Attack paths | Phase 3: Microsoft's own attack paths from Exposure Management are listed next to Stenwatch's own, labelled by source. Otherwise none. |
 | | Coverage | (new) | One tile per component, in four groups. |
 | **Intelligence** | Threat profile | 1 Direction | Renamed. |
 | | Feeds | 2 Collection | Renamed. |
@@ -62,17 +77,18 @@ Guided run       Attack paths     Advisories         Reports
 | | Knowledge graph | Knowledge graph | None. |
 | **Response** | Remediation | 6 Feedback | Renamed. *Push to ticket* button and a ticket-state column. |
 | | Tickets | (new) | Tasks that were pushed, their state and link. |
-| | Reports | 5 Dissemination | Renamed. The full report gains a Coverage section. |
+| | Reports | 5 Dissemination | Renamed. The full report gains a Coverage section. The hunting queries are saved here as files (phase 2); a compliance evidence report (NIS2 / ISO 27001) is one more output (phase 4). |
 | | Effectiveness | Effectiveness | None. |
-| **Toolbar icons** | Integrations (plug) | part of Settings | Connectors table (everything that goes in or out: files, APIs, the ticket webhook) and the schedule. Intelligence sources and API keys move here (`BuildSources` in `MainWindow.Triage.cs`, the key rows in `MainWindow.xaml.cs`). |
+| **Toolbar icons** | Integrations (plug) | part of Settings | Connectors table (everything that goes in or out: files, APIs, the ticket webhook) and the schedule. Briefing delivery (Teams post, or an email file) is a row next to the schedule (phase 2); the Exposure Management import is a row in the table (phase 3). Intelligence sources and API keys move here (`BuildSources` in `MainWindow.Triage.cs`, the key rows in `MainWindow.xaml.cs`). |
 | | Guide (?) | Guide (rail) | Moves from the rail to an icon. Text updated to the new names. |
 | | Theme | (new) | Follow Windows, dark, light. |
 | | Settings (gear) | Settings | Keeps your files and updates. |
+| | Organisation switcher | (new) | Phase 6 only (MSP mode, with its own plan): a drop-down in the toolbar to switch between organisations, each with its own data folder. |
 
 ### The Coverage page
 
 ```
-EXPOSURE > COVERAGE        5 of 13 connected  [=====------]      (?)
+EXPOSURE > COVERAGE        5 of 14 connected  [=====------]      (?)
 
 KNOW YOUR ESTATE
 [Assets       ] [Attack surface] [Cloud workloads]
@@ -82,6 +98,7 @@ KNOW YOUR ESTATE
 
 FIND WEAKNESSES
 [Vulnerabilities] [Web apps] [Misconfiguration]
+[End-of-life  ]
 
 KNOW THE THREAT           ACT AND PROVE
 [Intelligence]            [Ticketing] [Reports] [Connectors]
@@ -140,7 +157,7 @@ Unchanged from today, written down so new parts match. Body Segoe UI 13; page ti
 | Status mark | Dot plus a word, never colour alone | connected = filled Accent dot; partly = Accent ring; not connected = Dim ring; needs attention = filled Warn dot |
 | Component tag | Icon and short name in a grid cell (the new Component column) | plain text colour |
 | Connector row | Name, feeds, kind (file / API / webhook), status mark, last run, one action | same four statuses |
-| Coverage counter | "5 of 13 connected" with a thin Accent bar | |
+| Coverage counter | "5 of 14 connected" with a thin Accent bar | |
 | Ticket state | Pill: Not sent, Sent, In progress, Done, Failed | Dim, Track, Attend, Accent, Warn |
 | Theme switch | One icon button in the toolbar: follow Windows, dark, light | |
 
@@ -160,16 +177,20 @@ This is phase 1, not done yet. The brushes move into two dictionaries (dark, lig
 
 ## 5. Build order
 
-| Phase | What | Ships as |
-|---|---|---|
-| 0 | Security fixes; this document; the HTML mock-up | 0.2.2.0 (fixes only) |
-| 1 | Interface: colour tokens and light theme; new navigation and page names; Guided run, Coverage (tiles from data that already exists), Advisories and Integrations pages; Component column; guides, README and Store screenshots updated | 0.3.0 |
-| 2 | Scheduler and ticket webhook | 0.3.x |
-| 3 | Graph connector: Intune, Entra identity, Defender for Cloud | 0.4.0 |
-| 4 | Attack surface (EASM) and web apps (ZAP, SARIF) | 0.5.0 |
-| 5 | AI discovery and OT/IoT | 0.6.0 |
+The work runs in phases. Each phase ends with the tests passing, a commit and a short report; the next phase starts only after that. An import is built only against a format someone has seen (see [`formats.md`](formats.md)); until a real export has been read, it stays "from documentation only" and the app says so on that connector.
 
-Phase 0 is the current round. No app interface code and no new component is built in it.
+| Phase | What it contains | Ships as |
+|---|---|---|
+| 0 | Housekeeping: the security fixes merged to `main`; `samples/` (git-ignored) and `docs/formats.md`; this document and the mock-up with the extras added; Stenwatch's own SBOM (CycloneDX) published by CI | 0.2.2.0 (fixes only, no package until the redesign ships) |
+| 1 | Interface: colour tokens as dark and light themes; the four areas (Home, Exposure, Intelligence, Response) and the new page names; toolbar icons for Integrations, Guide, Theme and Settings; the shared `Exposure` row shape and `Coverage`; the Component column in Findings; new pages Guided run, Coverage (tiles from data that exists today, the rest "not connected"), Advisories, Integrations and Tickets (empty until phase 2); the Dashboard coverage line; README, guides and Guide text with the new names | 0.3.0 |
+| 2 | Daily operation: scheduled morning run (CLI mode on the newest export in a watched folder, registered with Windows Task Scheduler); ticket push by one webhook; Briefing delivery (Teams post, or an email file); End-of-life software against endoflife.date, with the 14th tile; Detection content (a KQL hunting query per Act finding) | 0.3.x |
+| 3 | Microsoft estate: the shared Graph connector, file imports first, for Intune (devices, apps, update compliance), Entra identity exposure (risky users, stale privileged accounts), Defender for Cloud (cloud workloads, container images), Misconfiguration (Defender security recommendations, Secure Score) and the Exposure Management import (Microsoft's attack paths and critical assets) | 0.4.0 |
+| 4 | Outside-in and applications: Defender EASM export (feeds the internet-facing flag and Findings); OWASP ZAP JSON and SARIF files as findings; Compliance evidence report (NIS2 / ISO 27001) on Reports | 0.5.0 |
+| 5 | AI and OT: Defender for Cloud Apps discovered apps in the generative-AI category, with MITRE ATLAS for context; Defender for IoT inventory import; ATT&CK for ICS added to `Collect` | 0.6.0 |
+| 6 | MSP mode: several organisations in one install, a data folder per organisation and a switcher in the toolbar. It touches `AppPaths.Data` and every page that reads the data folder, so it is planned in detail when phase 5 is done | Own plan |
+| Release | After the last phase that is approved: Store package and Setup installer; README and Store screenshots retaken. The Setup installer is signed by the build script when a certificate is present; until then the Store build is the signed one. The four films still show the old interface and are re-cut only if decided then | |
+
+Phase numbers are in the order of the plan, not a promise of dates.
 
 ### Open points
 

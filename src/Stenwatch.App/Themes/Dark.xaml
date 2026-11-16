@@ -1,0 +1,21 @@
+﻿<!-- Dark theme: the colour tokens of docs/components.md. Same keys in both files; App swaps the file, DynamicResource references follow. -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="Bg" Color="#050505"/>
+    <SolidColorBrush x:Key="Card" Color="#0b0b0b"/>
+    <SolidColorBrush x:Key="Raised" Color="#151b23"/>
+    <SolidColorBrush x:Key="RaisedHover" Color="#1b2430"/>
+    <SolidColorBrush x:Key="Line" Color="#2a3340"/>
+    <SolidColorBrush x:Key="LineStrong" Color="#344050"/>
+    <SolidColorBrush x:Key="Fg" Color="#e8edf3"/>
+    <SolidColorBrush x:Key="Mute" Color="#9aa6b6"/>
+    <SolidColorBrush x:Key="Dim" Color="#808c9c"/>
+    <SolidColorBrush x:Key="Accent" Color="#3ee6a8"/>
+    <SolidColorBrush x:Key="AccentHover" Color="#6ff0c0"/>
+    <SolidColorBrush x:Key="OnAccent" Color="#03140d"/>
+    <SolidColorBrush x:Key="Selected" Color="#10261f"/>
+    <SolidColorBrush x:Key="Act" Color="#ff4d5e"/>
+    <SolidColorBrush x:Key="Attend" Color="#ff9f43"/>
+    <SolidColorBrush x:Key="Track" Color="#4ea3ff"/>
+    <SolidColorBrush x:Key="Ignore" Color="#7a8699"/>
+    <SolidColorBrush x:Key="Warn" Color="#ffc233"/>
+</ResourceDictionary>

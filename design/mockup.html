@@ -17,6 +17,7 @@ Every icon has a text label or a title next to it, so nothing is lost if a glyph
   Misconfiguration wrench       U+E90F      Intelligence      eye (stand-in for radar, no radar glyph known) U+E7B3
   Ticketing        tag          U+E8EC      Reports           document     U+E8A5
   Connectors       plug         U+E839
+  End-of-life software  calendar  U+E787 (added with the extras; also unverified)
   Toolbar: Integrations U+E839, Guide U+E897, Theme U+E706, Settings U+E713
 -->
 <style>
@@ -154,12 +155,12 @@ var EXTRA = {integrations:["Integrations","toolbar"],guide:["Guide","toolbar"],s
 var UNCHANGED = { // page -> [was, note from the design]
   triage:["Morning triage","No change."], estate:["3 Processing","Renamed. Same four tabs (services, asset context, links, controls)."],
   paths:["Attack paths","No change."], profile:["1 Direction","Renamed."], feeds:["2 Collection","Renamed."],
-  graph:["Knowledge graph","No change."], reports:["5 Dissemination","Renamed. The full report gains a Coverage section."],
+  graph:["Knowledge graph","No change."], reports:["5 Dissemination","Renamed. The full report gains a Coverage section. Hunting queries are saved here as files (phase 2) and a Compliance evidence output (NIS2 / ISO 27001) is added (phase 4)."],
   effect:["Effectiveness","No change."], guide:["Guide (rail)","Moves from the rail to an icon. Text updated to the new names."],
   settings:["Settings","Keeps your files and updates."]
 };
 var ICON = {Vulnerabilities:"",Assets:"","Attack surface":"","Cloud workloads":"","Web apps":"","OT and IoT":"",
-  "AI discovery":"",Identity:"",Misconfiguration:"",Intelligence:"",Ticketing:"",Reports:"",Connectors:""};
+  "AI discovery":"",Identity:"",Misconfiguration:"",Intelligence:"",Ticketing:"",Reports:"",Connectors:"","End-of-life software":""};
 // [component, group, status, source/last import, number, caption, open-page]
 var COMP = [
   ["Assets","Know your estate","connected","Inventory export, 28 Oct","2,844","hosts","estate"],
@@ -171,6 +172,7 @@ var COMP = [
   ["Vulnerabilities","Find weaknesses","connected","Defender export, 28 Oct","17","CVEs","findings"],
   ["Web apps","Find weaknesses","not","Needs OWASP ZAP JSON or SARIF","0","","integrations"],
   ["Misconfiguration","Find weaknesses","not","Needs Defender recommendations export","0","","integrations"],
+  ["End-of-life software","Find weaknesses","not","Needs asset list + endoflife.date","0","","integrations"],
   ["Intelligence","Know the threat","connected","5 sources, synced 29 Oct","5","sources","feeds"],
   ["Ticketing","Act and prove","attention","Webhook test failed 27 Oct","3","tasks","tickets"],
   ["Reports","Act and prove","connected","Last report 29 Oct","8","reports","reports"],
@@ -221,7 +223,9 @@ var CONN = [ // name, feeds, kind, status, last run, action
   ["Advisory sources (5)","Intelligence","API","partly","29 Oct 06:30","Open"],
   ["Ticket webhook","Ticketing","webhook","attention","27 Oct 14:12 (failed)","Retry"],
   ["Defender for Cloud recommendations","Cloud workloads","file","not","never","Import"],
-  ["OWASP ZAP report","Web apps","file","not","never","Import"]
+  ["OWASP ZAP report","Web apps","file","not","never","Import"],
+  ["Exposure Management import","Attack surface","file","not","never","Import"],
+  ["Briefing delivery (Teams, email file)","Reports","webhook","not","never","Set up"]
 ];
 
 // ---- helpers ----
@@ -262,7 +266,7 @@ dashboard:function(){
    +'<div class="stat"><span class="tier t-Attend">Attend</span><span class="num t-Attend">11</span><span class="cap">plan this week</span></div>'
    +'<div class="stat"><span class="tier t-Track">Track</span><span class="num t-Track">27</span><span class="cap">watch</span></div>'
    +'<div class="stat"><span class="tier t-Ignore">Ignore</span><span class="num t-Ignore">9</span><span class="cap">decided, with a reason</span></div></div>'
-   +'<h2>Coverage</h2><div class="counter"><span>Coverage: '+n+' of 13 connected</span><span class="bar"><i style="width:'+(n/13*100)+'%"></i></span><button class="btn sm" data-page="coverage">Open Coverage</button></div>'
+   +'<h2>Coverage</h2><div class="counter"><span>Coverage: '+n+' of 14 connected</span><span class="bar"><i style="width:'+(n/14*100)+'%"></i></span><button class="btn sm" data-page="coverage">Open Coverage</button></div>'
    +'<h2>What changed since the last run</h2><div class="scroll"><table><thead><tr><th>CHANGE</th><th>CVE</th><th>ASSET</th><th>WHY</th></tr></thead><tbody>'
    +[["Moved to Act","CVE-2026-14266","7-Zip, 640 machines","Defender now marks remediation required"],
      ["New","CVE-2026-113344","Chrome, 412 machines","Published 20 Oct, matched on import"],
@@ -279,7 +283,7 @@ guided:function(){
 },
 coverage:function(){
   var n=coverageCount(),groups=["Know your estate","Find weaknesses","Know the threat","Act and prove"];
-  var h='<div class="counter"><span>'+n+' of 13 connected</span><span class="bar" role="img" aria-label="'+n+' of 13 connected"><i style="width:'+(n/13*100)+'%"></i></span></div>'
+  var h='<div class="counter"><span>'+n+' of 14 connected</span><span class="bar" role="img" aria-label="'+n+' of 14 connected"><i style="width:'+(n/14*100)+'%"></i></span></div>'
    +'<p class="cap">Status kinds: '+mark("connected")+' &nbsp; '+mark("partly")+' &nbsp; '+mark("not")+' &nbsp; '+mark("attention")+'</p>';
   h+='<div class="groups">';
   groups.forEach(function(g){
@@ -295,7 +299,7 @@ coverage:function(){
 findings:function(){
   var comps=Object.keys(ICON).filter(function(c){return FIND.some(function(f){return f[3]===c})});
   return '<div class="row" style="margin-bottom:12px"><label for="cf" class="cap">Component</label><select id="cf"><option>All</option>'+comps.map(function(c){return '<option>'+c+'</option>'}).join("")+'</select>'
-   +'<span class="cap">Findings from every component in one ranked list. Click a row to select it.</span></div>'
+   +'<span class="cap">Findings from every component in one ranked list. Click a row to select it.</span><button class="btn sm" disabled title="Example only. This button belongs on the detail of an Act finding and writes a KQL hunting query from a fixed template (phase 2).">Hunting query (KQL)</button></div>'
    +'<div class="scroll"><table id="ft"><thead><tr><th>#</th><th>TIER</th><th>RISK</th><th>CVE</th><th>COMPONENT</th><th>ASSET</th><th>EXPLOITATION</th><th>WHY</th></tr></thead><tbody></tbody></table></div>';
 },
 advisories:function(){
@@ -314,7 +318,7 @@ tickets:function(){
 integrations:function(){
   return '<h2>Connectors</h2><p>Everything that goes in or out: files, APIs and the ticket webhook.</p><div class="scroll"><table><thead><tr><th>NAME</th><th>FEEDS</th><th>KIND</th><th>STATUS</th><th>LAST RUN</th><th></th></tr></thead><tbody>'
    +CONN.map(function(c){return '<tr><td>'+c[0]+'</td><td>'+tag(c[1])+'</td><td>'+c[2]+'</td><td>'+mark(c[3])+'</td><td>'+c[4]+'</td><td><button class="btn sm" data-toast="'+c[5]+': '+c[0]+' (mock-up, nothing happens)">'+c[5]+'</button></td></tr>'}).join("")+'</tbody></table></div>'
-   +'<h2>Schedule</h2><div class="card"><div class="row"><span>Morning run</span>'+mark("not","not scheduled")+'<span class="cap">Weekdays 07:00 once the scheduler exists (phase 2)</span><button class="btn sm" data-toast="Schedule: mock-up, nothing happens">Set schedule</button></div></div>'
+   +'<h2>Schedule</h2><div class="card"><div class="row"><span>Morning run</span>'+mark("not","not scheduled")+'<span class="cap">Weekdays 07:00 once the scheduler exists (phase 2)</span><button class="btn sm" data-toast="Schedule: mock-up, nothing happens">Set schedule</button></div><div class="row" style="margin-top:8px"><span>Briefing delivery</span>'+mark("not","not set up")+'<span class="cap">Post the morning briefing to Teams, or save it as a ready-to-send email file (phase 2)</span><button class="btn sm" data-toast="Briefing delivery: mock-up, nothing happens">Set up</button></div></div>'
    +'<h2>Intelligence sources and API keys</h2><p class="cap">Move here from Settings. Not redrawn in this mock-up.</p>';
 },
 tokens:function(){

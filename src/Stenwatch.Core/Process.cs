@@ -18,7 +18,7 @@ public static class Process
         var need = thirdParty ? new[] { "name", "cpe", "version", "type", "data_access", "privileged", "internet_facing" } : new[] { "name", "cpe", "version", "criticality", "internet_facing" };
         if (rows.Count > 0 && need.Where(n => !rows[0].ContainsKey(n)).ToList() is { Count: > 0 } missing)
             throw new InvalidDataException($"{Path.GetFileName(path)} is missing the column(s) {string.Join(", ", missing)}. Found: {string.Join(", ", rows[0].Keys)}."
-                + (thirdParty ? "" : " An inventory export (hostname, vendor, product, os ...) can be converted on 1 Direction: Convert inventory."));
+                + (thirdParty ? "" : " An inventory export (hostname, vendor, product, os ...) can be converted on Threat profile: Convert inventory."));
         foreach (var r in rows)
         {
             var cpe = r["cpe"].Trim().TrimEnd(':');

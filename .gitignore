@@ -55,3 +55,6 @@ tools/make_fake_fleet.py
 src/**/bin/
 src/**/obj/
 .vs/
+
+# Real exports for learning formats: never commit
+samples/

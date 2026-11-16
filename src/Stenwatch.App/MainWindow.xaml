@@ -3,69 +3,73 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         xmlns:local="clr-namespace:Stenwatch.App"
-        Title="Stenwatch" Background="{StaticResource Bg}" Foreground="{StaticResource Fg}" Height="820" Width="1340" MinHeight="600" MinWidth="980" WindowStartupLocation="CenterScreen">
+        Title="Stenwatch" Background="{DynamicResource Bg}" Foreground="{DynamicResource Fg}" Height="820" Width="1340" MinHeight="600" MinWidth="980" WindowStartupLocation="CenterScreen">
     <Grid>
         <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="26"/></Grid.RowDefinitions>
         <Grid.ColumnDefinitions><ColumnDefinition Width="220"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
 
-        <!-- toolbar: wordmark, the three workspaces, icon actions, TLP -->
-        <Border Grid.ColumnSpan="2" Background="#000" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1"><DockPanel Margin="14,6">
+        <!-- toolbar: wordmark, the four areas, icon actions (Integrations, Guide, Theme, Settings), TLP -->
+        <Border Grid.ColumnSpan="2" Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1"><DockPanel Margin="14,6">
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
-                <Button Style="{StaticResource IconButton}" Content="&#xE897;" Click="ShowInfo" ToolTip="About this page" AutomationProperties.Name="About this page"/>
-                <Button Style="{StaticResource IconButton}" Content="&#xE8F1;" Click="ShowSources" ToolTip="Sources" AutomationProperties.Name="Sources"/>
-                <Button Style="{StaticResource IconButton}" Content="&#xE8B7;" Click="OpenDataFolder" ToolTip="Data folder" AutomationProperties.Name="Data folder"/>
-                <Button Style="{StaticResource IconButton}" Content="&#xE895;" Click="ToolbarUpdates" ToolTip="Check for updates" AutomationProperties.Name="Check for updates"/>
+                <Button Style="{StaticResource IconButton}" Content="&#xE839;" Click="GoIntegrations" ToolTip="Integrations" AutomationProperties.Name="Integrations"/>
+                <Button Style="{StaticResource IconButton}" Content="&#xE897;" Click="GoGuide" ToolTip="Guide (F1: about this page)" AutomationProperties.Name="Guide"/>
+                <Button x:Name="ThemeBtn" Style="{StaticResource IconButton}" Content="&#xE706;" Click="ThemeClick"/>
                 <Button Style="{StaticResource IconButton}" Content="&#xE713;" Click="GoSettings" ToolTip="Settings" AutomationProperties.Name="Settings"/>
+                <!-- TLP chip: the standard TLP colours in both themes -->
                 <Border Background="#ffc233" CornerRadius="3" Padding="8,2" Margin="12,0,0,0" VerticalAlignment="Center" ToolTip="Need-to-know only"><TextBlock Text="TLP:AMBER" Foreground="#000" FontFamily="{StaticResource Mono}" FontSize="11" FontWeight="Bold"/></Border></StackPanel>
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock Text="STENWATCH" FontFamily="{StaticResource Mono}" FontWeight="Bold" FontSize="15" Foreground="{StaticResource Accent}" VerticalAlignment="Center"/>
-                <Border BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="3" Padding="5,0" Margin="8,0,28,0" VerticalAlignment="Center"><TextBlock Text="0.2 beta" FontFamily="{StaticResource Mono}" FontSize="10" Foreground="{StaticResource Mute}"/></Border>
-                <RadioButton x:Name="Ws0" Style="{StaticResource Segment}" Content="Start" Tag="0" Checked="WsClick"/>
-                <RadioButton x:Name="Ws1" Style="{StaticResource Segment}" Content="CTI cycle" Tag="1" Checked="WsClick"/>
-                <RadioButton x:Name="Ws2" Style="{StaticResource Segment}" Content="Intelligence" Tag="2" Checked="WsClick"/>
+                <TextBlock Text="STENWATCH" FontFamily="{StaticResource Mono}" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource Accent}" VerticalAlignment="Center"/>
+                <Border BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="3" Padding="5,0" Margin="8,0,28,0" VerticalAlignment="Center"><TextBlock Text="0.2 beta" FontFamily="{StaticResource Mono}" FontSize="10" Foreground="{DynamicResource Mute}"/></Border>
+                <RadioButton x:Name="Area0" Style="{StaticResource Segment}" Content="Home" Tag="0" Checked="AreaClick"/>
+                <RadioButton x:Name="Area1" Style="{StaticResource Segment}" Content="Exposure" Tag="1" Checked="AreaClick"/>
+                <RadioButton x:Name="Area2" Style="{StaticResource Segment}" Content="Intelligence" Tag="2" Checked="AreaClick"/>
+                <RadioButton x:Name="Area3" Style="{StaticResource Segment}" Content="Response" Tag="3" Checked="AreaClick"/>
             </StackPanel></DockPanel></Border>
 
-        <!-- step rail: the CTI lifecycle first, then the pillars that go beyond it -->
-        <Border Grid.Row="1" Background="#070707" BorderBrush="{StaticResource Line}" BorderThickness="0,0,1,0">
+        <!-- rail: the pages of the area chosen in the toolbar (Areas in MainWindow.xaml.cs); Tag = page index in Pages -->
+        <Border Grid.Row="1" Background="{DynamicResource Bg}" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,1,0">
             <DockPanel>
                 <StackPanel DockPanel.Dock="Top" Margin="16,18,16,14">
                     <TextBlock x:Name="OrgName" Text="" Style="{StaticResource Muted}" FontSize="12"/>
                 </StackPanel>
-                <ListBox x:Name="Nav" BorderThickness="0" Background="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ItemContainerStyle="{StaticResource Nav}" SelectionChanged="NavChanged">
-                    <ListBoxItem Tag="0"><StackPanel><TextBlock Text="Guide" FontWeight="SemiBold"/><TextBlock Text="start here" Style="{StaticResource Muted}" FontSize="10"/></StackPanel></ListBoxItem>
-                    <ListBoxItem Tag="1"><StackPanel><TextBlock Text="Overview" FontWeight="SemiBold"/><TextBlock Text="run it, see what changed" Style="{StaticResource Muted}" FontSize="10"/></StackPanel></ListBoxItem>
-                    <ListBoxItem Tag="12"><StackPanel><TextBlock Text="Morning triage" FontWeight="SemiBold"/><TextBlock Text="Defender export to fix actions" Style="{StaticResource Muted}" FontSize="10"/></StackPanel></ListBoxItem>
-                    <ListBoxItem Tag="2"><StackPanel><TextBlock Text="1  Direction" FontWeight="SemiBold"/><TextBlock Text="who you are, who targets you" Style="{StaticResource Muted}" FontSize="10"/></StackPanel></ListBoxItem>
-                    <ListBoxItem Tag="3"><StackPanel><TextBlock Text="2  Collection" FontWeight="SemiBold"/><TextBlock Text="public feeds, the database" Style="{StaticResource Muted}" FontSize="10"/></StackPanel></ListBoxItem>
-                    <ListBoxItem Tag="4"><StackPanel><TextBlock Text="3  Processing" FontWeight="SemiBold"/><TextBlock Text="your estate, services, controls" Style="{StaticResource Muted}" FontSize="10"/></StackPanel></ListBoxItem>
-                    <ListBoxItem Tag="5"><StackPanel><TextBlock Text="4  Analysis" FontWeight="SemiBold"/><TextBlock Text="ranked findings and why" Style="{StaticResource Muted}" FontSize="10"/></StackPanel></ListBoxItem>
-                    <ListBoxItem Tag="6"><StackPanel><TextBlock Text="5  Dissemination" FontWeight="SemiBold"/><TextBlock Text="reports for each audience" Style="{StaticResource Muted}" FontSize="10"/></StackPanel></ListBoxItem>
-                    <ListBoxItem Tag="7"><StackPanel><TextBlock Text="6  Feedback" FontWeight="SemiBold"/><TextBlock Text="work, owners, verification" Style="{StaticResource Muted}" FontSize="10"/></StackPanel></ListBoxItem>
-                    <ListBoxItem Tag="8"><StackPanel><TextBlock Text="Attack paths" FontWeight="SemiBold"/><TextBlock Text="possible routes to crown jewels" Style="{StaticResource Muted}" FontSize="10"/></StackPanel></ListBoxItem>
-                    <ListBoxItem Tag="9"><StackPanel><TextBlock Text="Knowledge graph" FontWeight="SemiBold"/><TextBlock Text="questions across the data" Style="{StaticResource Muted}" FontSize="10"/></StackPanel></ListBoxItem>
-                    <ListBoxItem Tag="10"><StackPanel><TextBlock Text="Effectiveness" FontWeight="SemiBold"/><TextBlock Text="what has been shown to help" Style="{StaticResource Muted}" FontSize="10"/></StackPanel></ListBoxItem>
+                <ListBox x:Name="Nav" BorderThickness="0" Background="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ItemContainerStyle="{StaticResource Nav}" SelectionChanged="NavChanged" AutomationProperties.Name="Pages">
+                    <ListBoxItem Tag="1" AutomationProperties.Name="Dashboard"><StackPanel><TextBlock Text="Dashboard" FontWeight="SemiBold"/><TextBlock Text="run it, see what changed" Style="{StaticResource Muted}" FontSize="10"/></StackPanel></ListBoxItem>
+                    <ListBoxItem Tag="12" AutomationProperties.Name="Morning triage"><StackPanel><TextBlock Text="Morning triage" FontWeight="SemiBold"/><TextBlock Text="Defender export to fix actions" Style="{StaticResource Muted}" FontSize="10"/></StackPanel></ListBoxItem>
+                    <ListBoxItem Tag="13" AutomationProperties.Name="Guided run"><StackPanel><TextBlock Text="Guided run" FontWeight="SemiBold"/><TextBlock Text="the six CTI stages, in order" Style="{StaticResource Muted}" FontSize="10"/></StackPanel></ListBoxItem>
+                    <ListBoxItem Tag="5" AutomationProperties.Name="Findings"><StackPanel><TextBlock Text="Findings" FontWeight="SemiBold"/><TextBlock Text="ranked findings and why" Style="{StaticResource Muted}" FontSize="10"/></StackPanel></ListBoxItem>
+                    <ListBoxItem Tag="4" AutomationProperties.Name="Estate"><StackPanel><TextBlock Text="Estate" FontWeight="SemiBold"/><TextBlock Text="your estate, services, controls" Style="{StaticResource Muted}" FontSize="10"/></StackPanel></ListBoxItem>
+                    <ListBoxItem Tag="8" AutomationProperties.Name="Attack paths"><StackPanel><TextBlock Text="Attack paths" FontWeight="SemiBold"/><TextBlock Text="possible routes to crown jewels" Style="{StaticResource Muted}" FontSize="10"/></StackPanel></ListBoxItem>
+                    <ListBoxItem Tag="14" AutomationProperties.Name="Coverage"><StackPanel><TextBlock Text="Coverage" FontWeight="SemiBold"/><TextBlock Text="what each component sees" Style="{StaticResource Muted}" FontSize="10"/></StackPanel></ListBoxItem>
+                    <ListBoxItem Tag="2" AutomationProperties.Name="Threat profile"><StackPanel><TextBlock Text="Threat profile" FontWeight="SemiBold"/><TextBlock Text="who you are, who targets you" Style="{StaticResource Muted}" FontSize="10"/></StackPanel></ListBoxItem>
+                    <ListBoxItem Tag="3" AutomationProperties.Name="Feeds"><StackPanel><TextBlock Text="Feeds" FontWeight="SemiBold"/><TextBlock Text="public feeds, the database" Style="{StaticResource Muted}" FontSize="10"/></StackPanel></ListBoxItem>
+                    <ListBoxItem Tag="15" AutomationProperties.Name="Advisories"><StackPanel><TextBlock Text="Advisories" FontWeight="SemiBold"/><TextBlock Text="every advisory read" Style="{StaticResource Muted}" FontSize="10"/></StackPanel></ListBoxItem>
+                    <ListBoxItem Tag="9" AutomationProperties.Name="Knowledge graph"><StackPanel><TextBlock Text="Knowledge graph" FontWeight="SemiBold"/><TextBlock Text="questions across the data" Style="{StaticResource Muted}" FontSize="10"/></StackPanel></ListBoxItem>
+                    <ListBoxItem Tag="7" AutomationProperties.Name="Remediation"><StackPanel><TextBlock Text="Remediation" FontWeight="SemiBold"/><TextBlock Text="work, owners, verification" Style="{StaticResource Muted}" FontSize="10"/></StackPanel></ListBoxItem>
+                    <ListBoxItem Tag="16" AutomationProperties.Name="Tickets"><StackPanel><TextBlock Text="Tickets" FontWeight="SemiBold"/><TextBlock Text="tasks sent to a ticket system" Style="{StaticResource Muted}" FontSize="10"/></StackPanel></ListBoxItem>
+                    <ListBoxItem Tag="6" AutomationProperties.Name="Reports"><StackPanel><TextBlock Text="Reports" FontWeight="SemiBold"/><TextBlock Text="reports for each audience" Style="{StaticResource Muted}" FontSize="10"/></StackPanel></ListBoxItem>
+                    <ListBoxItem Tag="10" AutomationProperties.Name="Effectiveness"><StackPanel><TextBlock Text="Effectiveness" FontWeight="SemiBold"/><TextBlock Text="what has been shown to help" Style="{StaticResource Muted}" FontSize="10"/></StackPanel></ListBoxItem>
                 </ListBox>
             </DockPanel>
         </Border>
 
         <!-- phase gate: what this step still needs, and the way on once it is done -->
-        <Border x:Name="GateBar" Grid.Row="1" Grid.Column="1" VerticalAlignment="Bottom" Background="{StaticResource Card}" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0" Padding="24,8" Visibility="Collapsed">
+        <Border x:Name="GateBar" Grid.Row="1" Grid.Column="1" VerticalAlignment="Bottom" Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="0,1,0,0" Padding="24,8" Visibility="Collapsed">
             <DockPanel><Button x:Name="NextBtn" DockPanel.Dock="Right" Click="NextClick" Margin="0"/>
                 <TextBlock x:Name="GateText" VerticalAlignment="Center" TextWrapping="Wrap" FontFamily="{StaticResource Mono}" FontSize="12"/></DockPanel></Border>
 
         <TabControl x:Name="Pages" Grid.Row="1" Grid.Column="1" Style="{StaticResource Pages}" Margin="24,18,24,60">
 
-            <!-- Guide -->
-            <TabItem Tag="Guide. How to start, how to read a finding, and what the labels mean. The step rail on the left is the CTI lifecycle: Direction, Collection, Processing, Analysis, Dissemination, Feedback. Each step shows at the bottom what it still needs; the Next button turns green when it is done."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel MaxWidth="980" HorizontalAlignment="Left">
+            <!-- 0 Guide (toolbar icon) -->
+            <TabItem Tag="Guide. How to start, how to read a finding, and what the labels mean. The toolbar has four areas: Home, Exposure, Intelligence and Response; the rail on the left shows the pages of the one you pick. The CTI lifecycle (Direction, Collection, Processing, Analysis, Dissemination, Feedback) runs through Threat profile, Feeds, Estate, Findings, Reports and Remediation: each of those shows at the bottom what it still needs, and the Next button turns green when it is done. Guided run takes the six stages in order."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel MaxWidth="980" HorizontalAlignment="Left">
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,10"><TextBlock Text="Guide" FontSize="26" FontWeight="SemiBold"/><local:HelpButton Title="Guide" Text="Stenwatch 0.2.0 beta. A vulnerability management tool that explains which vulnerabilities matter to your organisation, with the evidence, and checks that the work actually gets done."/></StackPanel>
 
                 <TextBlock Text="START HERE: FOUR STEPS" Style="{StaticResource H}"/>
-                <TextBlock TextWrapping="Wrap" LineHeight="22"><Run FontWeight="SemiBold" Text="1  Pick the data. "/><Run Foreground="{StaticResource Mute}" Text="Overview has a tick box for the Example Organisation: fictional data with services, links and a control already filled in, so every page has something to show. Untick it to use your own profile.yaml and asset lists."/><LineBreak/>
-                    <Run FontWeight="SemiBold" Text="2  Get the feeds. "/><Run Foreground="{StaticResource Mute}" Text="Collection: choose an existing cve.db, or sync the public feeds. The first full sync of every CVE takes about 15 minutes without an NVD API key."/><LineBreak/>
-                    <Run FontWeight="SemiBold" Text="3  Rank. "/><Run Foreground="{StaticResource Mute}" Text="Overview, Rank now. It matches CVEs to your assets, scores them, writes the reports, and records the run."/><LineBreak/>
-                    <Run FontWeight="SemiBold" Text="4  Read a finding. "/><Run Foreground="{StaticResource Mute}" Text="Analysis: click a row. You get the plain-English summary, what is known and not known about exploitation, and the evidence table behind the priority."/></TextBlock>
+                <TextBlock TextWrapping="Wrap" LineHeight="22"><Run FontWeight="SemiBold" Text="1  Pick the data. "/><Run Foreground="{DynamicResource Mute}" Text="Dashboard has a tick box for the Example Organisation: fictional data with services, links and a control already filled in, so every page has something to show. Untick it to use your own profile.yaml and asset lists."/><LineBreak/>
+                    <Run FontWeight="SemiBold" Text="2  Get the feeds. "/><Run Foreground="{DynamicResource Mute}" Text="Feeds (Intelligence): choose an existing cve.db, or sync the public feeds. The first full sync of every CVE takes about 15 minutes without an NVD API key."/><LineBreak/>
+                    <Run FontWeight="SemiBold" Text="3  Rank. "/><Run Foreground="{DynamicResource Mute}" Text="Dashboard, Rank now. It matches CVEs to your assets, scores them, writes the reports, and records the run."/><LineBreak/>
+                    <Run FontWeight="SemiBold" Text="4  Read a finding. "/><Run Foreground="{DynamicResource Mute}" Text="Findings (Exposure): click a row. You get the plain-English summary, what is known and not known about exploitation, and the evidence table behind the priority."/></TextBlock>
                 <WrapPanel Margin="0,12,0,0">
-                    <Button Content="Go to Overview" Style="{StaticResource Primary}" Click="GoOverview"/>
+                    <Button Content="Go to Dashboard" Style="{StaticResource Primary}" Click="GoOverview"/>
                     <Button Content="Choose an existing cve.db..." Click="ChooseDb" ToolTip="Copy a database you already have (for example from the Python version) into Stenwatch's data folder"/>
                     <Button Content="Open data folder" Click="OpenDataFolder" ToolTip="Where profile.yaml, the asset lists, cve.db and the reports live"/>
                     <Button Content="Documentation" Click="OpenDocs" ToolTip="The 15 pillars and the evaluation of what has been shown to help"/>
@@ -85,15 +89,15 @@
 
                 <StackPanel Orientation="Horizontal"><TextBlock Text="LABELS ON FEATURES (Effectiveness page)" Style="{StaticResource H}"/><local:HelpButton Title="LABELS ON FEATURES (Effectiveness page)" Text="Validated or Supported: tested and it beat its baseline. Not validated: tested, the data could not tell. Not shown: tested, no benefit. Proposed: a reasoned design that has not been tested. Rule-based: transparent rules from your profile. Display-only: explanation, makes no accuracy claim. Not run: the test needs input nobody has supplied yet."/></StackPanel>
 
-                <StackPanel Orientation="Horizontal"><TextBlock Text="THE PAGES AND THE 15 PILLARS" Style="{StaticResource H}"/><local:HelpButton Title="THE PAGES AND THE 15 PILLARS" Text="Direction: threat groups, automatic or pinned (3, 7).  Collection: KEV, EPSS, ATT&amp;CK, CTID, D3FEND, NVD with pull times (1, 2, 3, 4, 5).  Processing: assets, services, links, controls (6, 9, 10).  Analysis: scoring, evidence, confidence, explanation (1, 2, 3, 7, 11, 12).  Dissemination: report, dashboard, brief, STIX, ATT&amp;CK layer (11).  Feedback: remediation tasks with automatic verification (5, 14).  Attack paths (8).  Knowledge graph (13).  Effectiveness (15).&#10;&#10;TLP:AMBER: everything Stenwatch writes describes where your organisation is vulnerable. Keep it inside the organisation and its clients."/></StackPanel>
+                <StackPanel Orientation="Horizontal"><TextBlock Text="THE PAGES AND THE 15 PILLARS" Style="{StaticResource H}"/><local:HelpButton Title="THE PAGES AND THE 15 PILLARS" Text="Threat profile (Direction): threat groups, automatic or pinned (3, 7).  Feeds (Collection): KEV, EPSS, ATT&amp;CK, CTID, D3FEND, NVD with pull times (1, 2, 3, 4, 5).  Estate (Processing): assets, services, links, controls (6, 9, 10).  Findings (Analysis): scoring, evidence, confidence, explanation (1, 2, 3, 7, 11, 12).  Reports (Dissemination): report, dashboard, brief, STIX, ATT&amp;CK layer (11).  Remediation (Feedback): remediation tasks with automatic verification (5, 14).  Attack paths (8).  Knowledge graph (13).  Effectiveness (15).&#10;&#10;TLP:AMBER: everything Stenwatch writes describes where your organisation is vulnerable. Keep it inside the organisation and its clients."/></StackPanel>
             </StackPanel></ScrollViewer></TabItem>
 
-            <!-- 0 Overview -->
-            <TabItem Tag="Overview. Pillars 1 to 15 in one run. Narrows every published vulnerability to the few that matter in your estate, and says why. Run the whole cycle here; each step also has its own page."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,10"><TextBlock Text="Overview" FontSize="26" FontWeight="SemiBold"/><local:HelpButton Title="Overview" Text="The whole cycle in one click. First time? Go step by step from 1 Direction instead."/></StackPanel>
+            <!-- 1 Dashboard (was Overview) -->
+            <TabItem Tag="Dashboard. Pillars 1 to 15 in one run. Narrows every published vulnerability to the few that matter in your estate, and says why. Run the whole cycle here; each step also has its own page."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10"><TextBlock Text="Dashboard" FontSize="26" FontWeight="SemiBold"/><local:HelpButton Title="Dashboard" Text="The whole cycle in one click. First time? Go step by step from Threat profile instead, or follow Guided run."/></StackPanel>
                 <WrapPanel>
                     <Button x:Name="RunBtn" Style="{StaticResource Primary}" Content="Rank now (existing feeds)" Click="RunClick" ToolTip="Match, score, write the reports, record the run. Uses the feeds already in the database."/>
-                    <Button x:Name="SyncBtn" Content="Sync feeds, then rank" Click="SyncClick" ToolTip="Download the public feeds first (progress shows on the Collection page), then rank. Slow the first time."/>
+                    <Button x:Name="SyncBtn" Content="Sync feeds, then rank" Click="SyncClick" ToolTip="Download the public feeds first (progress shows on the Feeds page), then rank. Slow the first time."/>
                     <CheckBox x:Name="ExampleBox" ToolTip="Fictional data bundled with the app. Nothing is saved, and your own data is never touched." Content="Example Organisation (no real data)" Margin="12,0,0,0" Checked="ExampleToggled" Unchecked="ExampleToggled"/>
                 </WrapPanel>
                 <UniformGrid Columns="4" Margin="0,16,0,6" x:Name="Cards"/>
@@ -106,22 +110,22 @@
                 <TextBox x:Name="Log" Height="150" IsReadOnly="True" FontFamily="{StaticResource Mono}" FontSize="12" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap"/>
             </StackPanel></ScrollViewer></TabItem>
 
-            <!-- 1 Direction -->
-            <TabItem Tag="1 Direction. Pillars 3 (threat-informed), 7 (adversary focus). Who you are, who targets you, and what you need to know. Everything the scoring uses lives in profile.yaml. With targeting mode auto, threat groups are chosen for your sector and country from MITRE ATT&amp;CK and refreshed whenever ATT&amp;CK is synced."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,10"><TextBlock Text="1  Direction" FontSize="26" FontWeight="SemiBold"/><local:HelpButton Title="1  Direction" Text="Do this: give Stenwatch your profile (who you are) and your asset list (what you run). Import them, or start from the example and edit."/></StackPanel>
+            <!-- 2 Threat profile (was 1 Direction) -->
+            <TabItem Tag="Threat profile (CTI stage 1, Direction). Pillars 3 (threat-informed), 7 (adversary focus). Who you are, who targets you, and what you need to know. Everything the scoring uses lives in profile.yaml. With targeting mode auto, threat groups are chosen for your sector and country from MITRE ATT&amp;CK and refreshed whenever ATT&amp;CK is synced."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10"><TextBlock Text="Threat profile" FontSize="26" FontWeight="SemiBold"/><local:HelpButton Title="Threat profile" Text="Do this: give Stenwatch your profile (who you are) and your asset list (what you run). Import them, or start from the example and edit."/></StackPanel>
                 <TextBlock Text="YOUR FILES" Style="{StaticResource H}"/>
                 <WrapPanel>
                     <Button Content="Import profile.yaml..." Click="ImportProfile"/><Button Content="Open profile.yaml" Click="OpenProfile"/>
                     <Button Content="Import assets.csv..." Click="ImportAssets"/><Button Content="Open assets.csv" Click="OpenAssets"/>
                     <Button Content="Convert inventory" Click="ConvertInventory" ToolTip="Turn an inventory export (hostname, vendor, product, version, os) into assets.csv by looking each OS and product up in NVD. Happens automatically when you import one."/>
                     <Button Content="Reload files" Click="ReloadFiles" ToolTip="Re-read the files after editing them (also happens when you come back to this window)"/></WrapPanel>
-                <TextBlock Style="{StaticResource Muted}" Margin="0,8,0,0" TextWrapping="Wrap" LineHeight="20"><Run FontWeight="SemiBold" Foreground="{StaticResource Fg}" Text="profile.yaml"/><Run Text="  YAML text file: organisation (name, sector, country), priority intelligence requirements, threat groups or targeting: auto, weights, SLA. Start from the example; edit in Notepad or VS Code."/><LineBreak/>
-                    <Run FontWeight="SemiBold" Foreground="{StaticResource Fg}" Text="assets.csv"/><Run Text="  must be CSV (comma-separated, UTF-8, first row is the header). In Excel: Save As, CSV UTF-8. Columns:"/><LineBreak/>
+                <TextBlock Style="{StaticResource Muted}" Margin="0,8,0,0" TextWrapping="Wrap" LineHeight="20"><Run FontWeight="SemiBold" Foreground="{DynamicResource Fg}" Text="profile.yaml"/><Run Text="  YAML text file: organisation (name, sector, country), priority intelligence requirements, threat groups or targeting: auto, weights, SLA. Start from the example; edit in Notepad or VS Code."/><LineBreak/>
+                    <Run FontWeight="SemiBold" Foreground="{DynamicResource Fg}" Text="assets.csv"/><Run Text="  must be CSV (comma-separated, UTF-8, first row is the header). In Excel: Save As, CSV UTF-8. Columns:"/><LineBreak/>
                     <Run FontFamily="{StaticResource Mono}" Text="  name,cpe,version,criticality,internet_facing"/><LineBreak/>
                     <Run FontFamily="{StaticResource Mono}" Text="  Mail server,cpe:2.3:a:microsoft:exchange_server,2019,3,y"/><LineBreak/>
                     <Run Text="  Have an inventory export instead? Import it as is: a CMDB, Intune, SCCM, Lansweeper or Defender export (CSV with comma, semicolon or tab, or Excel .xlsx), a software report with device counts, or a CycloneDX SBOM (.json) for web stacks such as PHP, WordPress and their libraries. Stenwatch matches every OS and product to the names NVD uses, one asset per product and version, and lists what it could not match. Examples: inventory.example.csv, apps.example.csv, sbom.example.json in the program folder."/><LineBreak/>
                     <Run Text="  cpe = vendor and product as in NVD (search nvd.nist.gov/products/cpe). criticality 1 (low) to 3 (high). internet_facing y or n. Optional: third_parties.csv and exceptions.csv (Settings). Microsoft Defender can supply assets instead: the defender section of profile.yaml."/></TextBlock>
-                <TextBlock x:Name="UnmatchedText" Margin="0,10,0,0" TextWrapping="Wrap" Foreground="{StaticResource Attend}"/>
+                <TextBlock x:Name="UnmatchedText" Margin="0,10,0,0" TextWrapping="Wrap" Foreground="{DynamicResource Attend}"/>
                 <TextBlock Text="WHAT STENWATCH READ" Style="{StaticResource H}"/>
                 <TextBlock x:Name="DirectionText" TextWrapping="Wrap" FontFamily="{StaticResource Mono}" FontSize="12"/>
                 <TextBlock Text="THREAT GROUPS TRACKED, AND WHY" Style="{StaticResource H}"/>
@@ -131,9 +135,9 @@
                         <DataGridTextColumn Header="HOW CHOSEN" Binding="{Binding Source}" Width="100"/><DataGridTextColumn Header="SCORE" Binding="{Binding ScoreText}" Width="60"/><DataGridTextColumn Header="REASONS" Binding="{Binding ReasonText}" Width="*"/></DataGrid.Columns></DataGrid>
             </StackPanel></ScrollViewer></TabItem>
 
-            <!-- 2 Collection -->
-            <TabItem Tag="2 Collection. Pillars 1 to 5 (exploitation evidence, prediction, adversary use, source reliability, freshness). Public feeds only: NVD, CISA KEV, FIRST EPSS, MITRE ATT&amp;CK and D3FEND, and the CTID mappings. Nothing about your estate leaves the machine. Use Sources in the toolbar for what each feed is."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,10"><TextBlock Text="2  Collection" FontSize="26" FontWeight="SemiBold"/><local:HelpButton Title="2  Collection" Text="Do this: download the public feeds (Sync feeds now), or choose a cve.db you already have. To try the app fast, sync from a recent date."/></StackPanel>
+            <!-- 3 Feeds (was 2 Collection) -->
+            <TabItem Tag="Feeds (CTI stage 2, Collection). Pillars 1 to 5 (exploitation evidence, prediction, adversary use, source reliability, freshness). Public feeds only: NVD, CISA KEV, FIRST EPSS, MITRE ATT&amp;CK and D3FEND, and the CTID mappings. Nothing about your estate leaves the machine. Settings lists the advisory sources and what each feed is."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10"><TextBlock Text="Feeds" FontSize="26" FontWeight="SemiBold"/><local:HelpButton Title="Feeds" Text="Do this: download the public feeds (Sync feeds now), or choose a cve.db you already have. To try the app fast, sync from a recent date."/></StackPanel>
                 <DataGrid x:Name="FeedGrid" Height="200">
                     <DataGrid.Columns><DataGridTextColumn Header="FEED" Binding="{Binding Item1}" Width="200"/><DataGridTextColumn Header="LAST PULLED" Binding="{Binding Item2}" Width="220"/><DataGridTextColumn Header="STATUS" Binding="{Binding Item3}" Width="*"/></DataGrid.Columns></DataGrid>
                 <WrapPanel Margin="0,14,0,0">
@@ -145,25 +149,25 @@
                     <Button x:Name="QuickSyncBtn" Content="Sync from this date" Click="QuickSyncClick" ToolTip="KEV, EPSS, ATT&amp;CK, CTID and D3FEND are always pulled in full (they are small); only NVD is limited to CVEs published or changed since the date. The closer the date, the faster."/></WrapPanel>
                 <TextBlock x:Name="CollectionNote" Style="{StaticResource Muted}" Margin="0,10,0,0"/>
                 <TextBlock Text="SYNC PROGRESS" Style="{StaticResource H}"/>
-                <ProgressBar x:Name="SyncBar" Height="8" Minimum="0" Maximum="100" Value="0" Foreground="{StaticResource Accent}" Background="{StaticResource Card}" BorderBrush="{StaticResource Line}"/>
+                <ProgressBar x:Name="SyncBar" Height="8" Minimum="0" Maximum="100" Value="0" Foreground="{DynamicResource Accent}" Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}"/>
                 <DockPanel Margin="0,6,0,6"><Button x:Name="CancelSyncBtn" DockPanel.Dock="Right" Content="Cancel sync" IsEnabled="False" Click="CancelSync" Margin="0" ToolTip="Stops after the current download. What is already saved stays in the database."/>
                     <TextBlock x:Name="SyncStatus" VerticalAlignment="Center" FontFamily="{StaticResource Mono}" FontSize="12" Text="Idle. Nothing is downloaded until you press a sync button."/></DockPanel>
                 <TextBox x:Name="SyncLog" Height="230" IsReadOnly="True" FontFamily="{StaticResource Mono}" FontSize="12" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap"/>
                 <local:HelpButton Title="Sync order" HorizontalAlignment="Left" Margin="0,8,0,0" Text="Order: KEV, EPSS, ATT&amp;CK, CTID mappings, D3FEND, then NVD (the long one). A free NVD API key makes it several times faster: add it on the Settings page."/>
             </StackPanel></ScrollViewer></TabItem>
 
-            <!-- 3 Processing: assets, services, links, controls -->
-            <TabItem Tag="3 Processing. Pillars 6 (business context), 9 (compensating controls), 10 (reachability). What you run and what depends on it. Services give an asset its business impact, links say what can reach what (for attack paths), controls reduce likelihood only while their evidence is valid. Leave these empty and scoring is unchanged."><DockPanel>
+            <!-- 4 Estate (was 3 Processing): assets, services, links, controls -->
+            <TabItem Tag="Estate (CTI stage 3, Processing). Pillars 6 (business context), 9 (compensating controls), 10 (reachability). What you run and what depends on it. Services give an asset its business impact, links say what can reach what (for attack paths), controls reduce likelihood only while their evidence is valid. Leave these empty and scoring is unchanged."><DockPanel>
                 <StackPanel DockPanel.Dock="Top">
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10"><TextBlock Text="3  Processing" FontSize="26" FontWeight="SemiBold"/><local:HelpButton Title="3  Processing" Text="Optional, but it makes the ranking yours. Four short tables about your business. Most cells are a pick from a list: click a cell, then pick. Start from a common entry with the drop-down above each table. Then Save context; the green button below ranks."/></StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10"><TextBlock Text="Estate" FontSize="26" FontWeight="SemiBold"/><local:HelpButton Title="Estate" Text="Optional, but it makes the ranking yours. Four short tables about your business. Most cells are a pick from a list: click a cell, then pick. Start from a common entry with the drop-down above each table. Then Save context; the green button below ranks."/></StackPanel>
                 </StackPanel>
                 <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,10,0,0">
                     <Button Content="+ Add empty row" Click="AddContextRow" ToolTip="A new empty row in the table shown"/><Button Style="{StaticResource Primary}" Content="Save context" Click="SaveContext"/><Button Content="Reload" Click="ReloadContext"/><Button Content="Import CSV files..." Click="GoSettings" ToolTip="services.csv, asset_context.csv, links.csv, controls.csv"/>
                     <TextBlock x:Name="ContextStatus" Style="{StaticResource Muted}" VerticalAlignment="Center"/></StackPanel>
                 <TabControl x:Name="CtxTabs" Style="{StaticResource SubTabs}">
-                    <TabItem Header="1  Services"><DockPanel><TextBlock DockPanel.Dock="Top" Margin="6,8,6,4" TextWrapping="Wrap" LineHeight="20"><Run FontWeight="SemiBold" Text="What the business does, how critical it is, and which assets it runs on."/><LineBreak/><Run Foreground="{StaticResource Mute}" Text="Why: a CVE on an asset that a criticality-3 service runs on scores higher than the same CVE on a spare laptop. Select a service, then tick its assets on the right."/></TextBlock>
+                    <TabItem Header="1  Services"><DockPanel><TextBlock DockPanel.Dock="Top" Margin="6,8,6,4" TextWrapping="Wrap" LineHeight="20"><Run FontWeight="SemiBold" Text="What the business does, how critical it is, and which assets it runs on."/><LineBreak/><Run Foreground="{DynamicResource Mute}" Text="Why: a CVE on an asset that a criticality-3 service runs on scores higher than the same CVE on a spare laptop. Select a service, then tick its assets on the right."/></TextBlock>
                         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="6,0,6,8"><TextBlock Text="Add a common service:  " VerticalAlignment="Center" Style="{StaticResource Muted}"/><ComboBox x:Name="ServicePreset" Width="280" SelectionChanged="AddServicePreset"/></StackPanel>
-                        <Border DockPanel.Dock="Right" Width="330" Margin="8,0,0,0" BorderBrush="{StaticResource Line}" BorderThickness="1" Padding="10"><DockPanel>
+                        <Border DockPanel.Dock="Right" Width="330" Margin="8,0,0,0" BorderBrush="{DynamicResource Line}" BorderThickness="1" Padding="10"><DockPanel>
                             <TextBlock DockPanel.Dock="Top" Text="ASSETS THIS SERVICE RUNS ON" Style="{StaticResource H}" Margin="0,0,0,6"/>
                             <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel x:Name="ServiceAssetsPanel"/></ScrollViewer></DockPanel></Border>
                         <DataGrid x:Name="ServicesGrid" IsReadOnly="False" CanUserAddRows="False" CanUserDeleteRows="True" SelectionChanged="ServiceSelected">
@@ -171,15 +175,15 @@
                                 <DataGridComboBoxColumn Header="CRITICALITY" SelectedItemBinding="{Binding Criticality}" Width="95"/><DataGridComboBoxColumn Header="DATA" SelectedItemBinding="{Binding DataClass}" Width="115"/>
                                 <DataGridTextColumn Header="REGULATORY" Binding="{Binding Regulatory}" Width="100"/><DataGridTextColumn Header="RTO H" Binding="{Binding RtoHours}" Width="60"/>
                                 <DataGridTextColumn Header="ASSETS" Binding="{Binding Assets}" Width="*" IsReadOnly="True"/></DataGrid.Columns></DataGrid></DockPanel></TabItem>
-                    <TabItem Header="2  Asset context"><DockPanel><TextBlock DockPanel.Dock="Top" Margin="6,8,6,8" TextWrapping="Wrap" LineHeight="20"><Run FontWeight="SemiBold" Text="Every asset is listed. Zone is pre-filled from your asset list (internet-facing or internal); correct it if needed."/><LineBreak/><Run Foreground="{StaticResource Mute}" Text="Why: tick crown jewel on what an attacker must not reach (file servers, backups, finance): they become the targets on Attack paths."/></TextBlock>
+                    <TabItem Header="2  Asset context"><DockPanel><TextBlock DockPanel.Dock="Top" Margin="6,8,6,8" TextWrapping="Wrap" LineHeight="20"><Run FontWeight="SemiBold" Text="Every asset is listed. Zone is pre-filled from your asset list (internet-facing or internal); correct it if needed."/><LineBreak/><Run Foreground="{DynamicResource Mute}" Text="Why: tick crown jewel on what an attacker must not reach (file servers, backups, finance): they become the targets on Attack paths."/></TextBlock>
                         <DataGrid x:Name="AssetsGrid" IsReadOnly="False" CanUserAddRows="False" CanUserDeleteRows="True">
                             <DataGrid.Columns><DataGridTextColumn Header="ASSET" Binding="{Binding Asset}" Width="*" IsReadOnly="True"/><DataGridComboBoxColumn Header="ZONE" SelectedItemBinding="{Binding Zone}" Width="140"/>
                                 <DataGridTextColumn Header="OWNER" Binding="{Binding Owner}" Width="140"/><DataGridCheckBoxColumn Header="CROWN JEWEL" Binding="{Binding CrownJewel, UpdateSourceTrigger=PropertyChanged}" Width="110"/></DataGrid.Columns></DataGrid></DockPanel></TabItem>
-                    <TabItem Header="3  Links"><DockPanel><TextBlock DockPanel.Dock="Top" Margin="6,8,6,8" TextWrapping="Wrap" LineHeight="20"><Run FontWeight="SemiBold" Text="Which asset can reach which over the network. Pick From and To from your assets; direction matters."/><LineBreak/><Run Foreground="{StaticResource Mute}" Text="Why: Attack paths follow only these links, from internet-facing assets to crown jewels. No links means no attack paths. Typical: remote-access gateway or firewall to servers, servers to storage and backup."/></TextBlock>
+                    <TabItem Header="3  Links"><DockPanel><TextBlock DockPanel.Dock="Top" Margin="6,8,6,8" TextWrapping="Wrap" LineHeight="20"><Run FontWeight="SemiBold" Text="Which asset can reach which over the network. Pick From and To from your assets; direction matters."/><LineBreak/><Run Foreground="{DynamicResource Mute}" Text="Why: Attack paths follow only these links, from internet-facing assets to crown jewels. No links means no attack paths. Typical: remote-access gateway or firewall to servers, servers to storage and backup."/></TextBlock>
                         <DataGrid x:Name="LinksGrid" IsReadOnly="False" CanUserAddRows="False" CanUserDeleteRows="True">
                             <DataGrid.Columns><DataGridComboBoxColumn Header="FROM" SelectedItemBinding="{Binding From}" Width="*"/><DataGridComboBoxColumn Header="TO" SelectedItemBinding="{Binding To}" Width="*"/>
                                 <DataGridComboBoxColumn Header="KIND" SelectedItemBinding="{Binding Kind}" Width="130"/><DataGridTextColumn Header="PORT" Binding="{Binding Port}" Width="80"/><DataGridTextColumn Header="NOTE" Binding="{Binding Note}" Width="*"/></DataGrid.Columns></DataGrid></DockPanel></TabItem>
-                    <TabItem Header="4  Controls"><DockPanel><TextBlock DockPanel.Dock="Top" Margin="6,8,6,4" TextWrapping="Wrap" LineHeight="20"><Run FontWeight="SemiBold" Text="A protection you can prove, with a date. Pick a common one: its ATT&amp;CK techniques are filled in for you. Add the evidence and its date."/><LineBreak/><Run Foreground="{StaticResource Mute}" Text="Why: lowers the likelihood of CVEs whose technique it counters (partial x0.8, strong x0.5), only while the evidence is dated (YYYY-MM-DD) and not expired."/></TextBlock>
+                    <TabItem Header="4  Controls"><DockPanel><TextBlock DockPanel.Dock="Top" Margin="6,8,6,4" TextWrapping="Wrap" LineHeight="20"><Run FontWeight="SemiBold" Text="A protection you can prove, with a date. Pick a common one: its ATT&amp;CK techniques are filled in for you. Add the evidence and its date."/><LineBreak/><Run Foreground="{DynamicResource Mute}" Text="Why: lowers the likelihood of CVEs whose technique it counters (partial x0.8, strong x0.5), only while the evidence is dated (YYYY-MM-DD) and not expired."/></TextBlock>
                         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="6,0,6,8"><TextBlock Text="Add a common control:  " VerticalAlignment="Center" Style="{StaticResource Muted}"/><ComboBox x:Name="ControlPreset" Width="420" SelectionChanged="AddControlPreset"/></StackPanel>
                         <DataGrid x:Name="ControlsGrid" IsReadOnly="False" CanUserAddRows="False" CanUserDeleteRows="True">
                             <DataGrid.Columns><DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/><DataGridTextColumn Header="NAME" Binding="{Binding Name}" Width="150"/><DataGridTextColumn Header="TYPE" Binding="{Binding Type}" Width="90"/>
@@ -189,29 +193,31 @@
                 </TabControl>
             </DockPanel></TabItem>
 
-            <!-- 4 Analysis: findings -->
-            <TabItem Tag="4 Analysis. Pillars 1, 2, 3, 7, 11, 12. Every CVE matched to an asset, scored as likelihood times impact, with the evidence, its source and how confident Stenwatch is. Click a row for the plain-English summary. Record a decision (patched, mitigated, accepted) and it is applied on the next rank."><Grid>
+            <!-- 5 Findings (was 4 Analysis) -->
+            <TabItem Tag="Findings (CTI stage 4, Analysis). Pillars 1, 2, 3, 7, 11, 12. Every CVE matched to an asset, scored as likelihood times impact, with the evidence, its source and how confident Stenwatch is. Rows other components imported (Component column) sit in the same list, tiered by a fixed rule that each row names. Click a row for the plain-English summary. Record a decision (patched, mitigated, accepted) and it is applied on the next rank."><Grid>
                 <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="1.1*"/></Grid.RowDefinitions>
-                <TextBlock Text="4  Analysis" FontSize="26" FontWeight="SemiBold"/>
+                <TextBlock Text="Findings" FontSize="26" FontWeight="SemiBold"/>
                 <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,8,0,8">
-                    <TextBlock Text="Search " VerticalAlignment="Center" Style="{StaticResource Muted}"/><TextBox x:Name="Filter" Width="260" TextChanged="FilterChanged" Margin="0,0,14,0"/>
+                    <TextBlock Text="Search " VerticalAlignment="Center" Style="{StaticResource Muted}"/><TextBox x:Name="Filter" Width="260" TextChanged="FilterChanged" Margin="0,0,14,0" AutomationProperties.Name="Search findings"/>
                     <TextBlock Text="Tier " VerticalAlignment="Center" Style="{StaticResource Muted}"/>
-                    <ComboBox x:Name="TierFilter" Width="130" SelectionChanged="FilterChanged"><ComboBoxItem Content="Act + Attend"/><ComboBoxItem Content="All"/><ComboBoxItem Content="Act"/><ComboBoxItem Content="Attend"/><ComboBoxItem Content="Track"/><ComboBoxItem Content="Ignore"/></ComboBox>
+                    <ComboBox x:Name="TierFilter" Width="130" SelectionChanged="FilterChanged" AutomationProperties.Name="Tier filter"><ComboBoxItem Content="Act + Attend"/><ComboBoxItem Content="All"/><ComboBoxItem Content="Act"/><ComboBoxItem Content="Attend"/><ComboBoxItem Content="Track"/><ComboBoxItem Content="Ignore"/></ComboBox>
+                    <TextBlock Text="Component " VerticalAlignment="Center" Style="{StaticResource Muted}"/>
+                    <ComboBox x:Name="ComponentFilter" Width="170" SelectionChanged="FilterChanged" AutomationProperties.Name="Component filter"/>
                     <TextBlock x:Name="FindingCount" Style="{StaticResource Muted}" VerticalAlignment="Center"/>
                 </StackPanel>
                 <DataGrid x:Name="FindingsGrid" Grid.Row="2" SelectionChanged="FindingSelected">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="TIER" Binding="{Binding Tier}" Width="80"><DataGridTextColumn.CellStyle><Style TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
-                            <Style.Triggers><DataTrigger Binding="{Binding Tier}" Value="Act"><Setter Property="Foreground" Value="{StaticResource Act}"/></DataTrigger>
-                                <DataTrigger Binding="{Binding Tier}" Value="Attend"><Setter Property="Foreground" Value="{StaticResource Attend}"/></DataTrigger>
-                                <DataTrigger Binding="{Binding Tier}" Value="Track"><Setter Property="Foreground" Value="{StaticResource Track}"/></DataTrigger></Style.Triggers></Style></DataGridTextColumn.CellStyle></DataGridTextColumn>
+                            <Style.Triggers><DataTrigger Binding="{Binding Tier}" Value="Act"><Setter Property="Foreground" Value="{DynamicResource Act}"/></DataTrigger>
+                                <DataTrigger Binding="{Binding Tier}" Value="Attend"><Setter Property="Foreground" Value="{DynamicResource Attend}"/></DataTrigger>
+                                <DataTrigger Binding="{Binding Tier}" Value="Track"><Setter Property="Foreground" Value="{DynamicResource Track}"/></DataTrigger></Style.Triggers></Style></DataGridTextColumn.CellStyle></DataGridTextColumn>
                         <DataGridTextColumn Header="RISK" Binding="{Binding Risk}" Width="70"/><DataGridTextColumn Header="CVE" Binding="{Binding Cve}" Width="130"/>
-                        <DataGridTextColumn Header="ASSET" Binding="{Binding Asset}" Width="230"/><DataGridTextColumn Header="EXPLOITATION" Binding="{Binding Exploitation}" Width="110"/><DataGridTextColumn Header="CONFIDENCE" Binding="{Binding Confidence}" Width="100"/>
+                        <DataGridTextColumn Header="COMPONENT" Binding="{Binding Component}" Width="130"/><DataGridTextColumn Header="ASSET" Binding="{Binding Asset}" Width="230"/><DataGridTextColumn Header="EXPLOITATION" Binding="{Binding Exploitation}" Width="110"/><DataGridTextColumn Header="CONFIDENCE" Binding="{Binding Confidence}" Width="100"/>
                         <DataGridTextColumn Header="WHY" Binding="{Binding Why}" Width="*"/></DataGrid.Columns></DataGrid>
                 <TextBlock Grid.Row="3" Text="DETAIL OF THE SELECTED FINDING" Style="{StaticResource H}"/>
                 <ScrollViewer Grid.Row="4" VerticalScrollBarVisibility="Auto"><StackPanel>
                     <StackPanel x:Name="DetailPanel"><TextBlock Style="{StaticResource Muted}" Text="Click a finding."/></StackPanel>
-                    <Expander Header="All evidence behind this priority (table)" Foreground="{StaticResource Mute}" Margin="0,10,0,0">
+                    <Expander Header="All evidence behind this priority (table)" Foreground="{DynamicResource Mute}" Margin="0,10,0,0">
                     <DataGrid x:Name="EvidenceGrid" MaxHeight="190">
                         <DataGrid.Columns><DataGridTextColumn Header="SIGNAL" Binding="{Binding Signal}" Width="120"/><DataGridTextColumn Header="KIND" Binding="{Binding Kind}" Width="90"/><DataGridTextColumn Header="CONF" Binding="{Binding Confidence}" Width="70"/>
                             <DataGridTextColumn Header="SOURCE" Binding="{Binding Source}" Width="190"/><DataGridTextColumn Header="VALUE" Binding="{Binding Value}" Width="*"/><DataGridTextColumn Header="NOTE" Binding="{Binding Note}" Width="*"/></DataGrid.Columns></DataGrid></Expander>
@@ -224,16 +230,16 @@
                 </StackPanel></ScrollViewer>
             </Grid></TabItem>
 
-            <!-- 5 Dissemination -->
-            <TabItem Tag="5 Dissemination. Pillar 11 (explainable output). The intelligence report is the product: everything else is a cut of it for one reader or tool. Every output is marked TLP:AMBER."><Grid>
+            <!-- 6 Reports (was 5 Dissemination) -->
+            <TabItem Tag="Reports (CTI stage 5, Dissemination). Pillar 11 (explainable output). The intelligence report is the product: everything else is a cut of it for one reader or tool. Every output is marked TLP:AMBER."><Grid>
                 <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="330"/></Grid.ColumnDefinitions>
                 <DockPanel Grid.ColumnSpan="2"><StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                         <Button Style="{StaticResource Primary}" Content="Export report as PDF..." Click="SaveFullPdf"/><Button Content="Open in browser" Click="OpenFullReport"/><Button Content="Export everything (.zip)..." Click="ExportAll" Margin="0"/></StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10"><TextBlock Text="5  Dissemination" FontSize="26" FontWeight="SemiBold"/><local:HelpButton Title="5  Dissemination" Text="The intelligence report: all six steps in one document, with the evidence. The outputs on the right are cuts of it for one reader or tool; each is listed once and exported in the form that reader uses."/></StackPanel></DockPanel>
-                <Border Grid.Row="2" BorderBrush="{StaticResource Line}" BorderThickness="1" Background="#fff">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10"><TextBlock Text="Reports" FontSize="26" FontWeight="SemiBold"/><local:HelpButton Title="Reports" Text="The intelligence report: all six steps in one document, with the evidence. The outputs on the right are cuts of it for one reader or tool; each is listed once and exported in the form that reader uses."/></StackPanel></DockPanel>
+                <Border Grid.Row="2" BorderBrush="{DynamicResource Line}" BorderThickness="1" Background="#fff">
                     <Grid><wv2:WebView2 x:Name="ReportView"/>
-                        <TextBlock x:Name="ReportNote" Margin="20" TextWrapping="Wrap" Foreground="#333" Text="Rank first: the intelligence report is written by a rank (Overview, Rank now)."/></Grid></Border>
+                        <TextBlock x:Name="ReportNote" Margin="20" TextWrapping="Wrap" Foreground="#333" Text="Rank first: the intelligence report is written by a rank (Dashboard, Rank now)."/></Grid></Border>
                 <ScrollViewer Grid.Row="2" Grid.Column="1" Margin="12,0,0,0" VerticalScrollBarVisibility="Auto"><StackPanel>
                     <TextBlock Text="FOR EACH READER" Style="{StaticResource H}" Margin="0,0,0,6"/>
                     <StackPanel x:Name="OutputButtons"/>
@@ -241,10 +247,10 @@
                 </StackPanel></ScrollViewer>
             </Grid></TabItem>
 
-            <!-- 6 Feedback: remediation -->
-            <TabItem Tag="6 Feedback. Pillars 5 (freshness), 14 (closed loop). Priorities become work with an owner and a deadline. A fix is only Verified when a later scan no longer finds the CVE; saying it is fixed is just a claim."><Grid>
+            <!-- 7 Remediation (was 6 Feedback) -->
+            <TabItem Tag="Remediation (CTI stage 6, Feedback). Pillars 5 (freshness), 14 (closed loop). Priorities become work with an owner and a deadline. A fix is only Verified when a later scan no longer finds the CVE; saying it is fixed is just a claim."><Grid>
                 <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,10"><TextBlock Text="6  Feedback" FontSize="26" FontWeight="SemiBold"/><local:HelpButton Title="6  Feedback" Text="Do this: select a task, give it an owner and ticket, Assign. When IT says it is done, Claim fixed; the next rank on a fresh asset list verifies it."/></StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10"><TextBlock Text="Remediation" FontSize="26" FontWeight="SemiBold"/><local:HelpButton Title="Remediation" Text="Do this: select a task, give it an owner and ticket, Assign. When IT says it is done, Claim fixed; the next rank on a fresh asset list verifies it."/></StackPanel>
                 <DataGrid x:Name="TasksGrid" Grid.Row="2">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="STATE" Binding="{Binding State}" Width="100"/><DataGridTextColumn Header="TIER" Binding="{Binding Tier}" Width="70"/><DataGridTextColumn Header="CVE" Binding="{Binding Cve}" Width="130"/>
@@ -257,8 +263,8 @@
                     <TextBlock x:Name="TaskStatus" Style="{StaticResource Muted}" VerticalAlignment="Center"/></StackPanel>
             </Grid></TabItem>
 
-            <!-- 7 Attack paths -->
-            <TabItem Tag="Attack paths. Pillar 8 (attack paths), Proposed. Possible routes from the internet to your crown jewels. Possible, not proven: they follow the links you declared in Processing, and assume each vulnerability can be used the way its CVSS vector or ATT&amp;CK tactic says."><Grid>
+            <!-- 8 Attack paths -->
+            <TabItem Tag="Attack paths. Pillar 8 (attack paths), Proposed. Possible routes from the internet to your crown jewels. Possible, not proven: they follow the links you declared on Estate, and assume each vulnerability can be used the way its CVSS vector or ATT&amp;CK tactic says."><Grid>
                 <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="170"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                 <TextBlock Text="Attack paths" FontSize="26" FontWeight="SemiBold"/>
                 <TextBlock x:Name="PathsNote" Grid.Row="1" Style="{StaticResource Muted}" Margin="0,4,0,10" Text="Updated after every rank. Click a route to draw it."/>
@@ -267,11 +273,11 @@
                 <ScrollViewer Grid.Row="3" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Margin="0,10,0,0"><Canvas x:Name="PathCanvas" MinHeight="220"/></ScrollViewer>
             </Grid></TabItem>
 
-            <!-- 8 Knowledge graph -->
+            <!-- 9 Knowledge graph -->
             <TabItem Tag="Knowledge graph. Pillar 13 (connected intelligence). Questions that cross vulnerabilities, weaknesses, techniques, adversaries, assets, services and controls."><Grid>
                 <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="2*"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                 <TextBlock Text="Knowledge graph" FontSize="26" FontWeight="SemiBold"/>
-                <Border Grid.Row="2" BorderBrush="{StaticResource Line}" BorderThickness="1" Margin="0,0,0,10"><ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"><Canvas x:Name="KgCanvas" Margin="10"/></ScrollViewer></Border>
+                <Border Grid.Row="2" BorderBrush="{DynamicResource Line}" BorderThickness="1" Margin="0,0,0,10"><ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"><Canvas x:Name="KgCanvas" Margin="10"/></ScrollViewer></Border>
                 <TextBlock x:Name="GraphNote" Grid.Row="1" Style="{StaticResource Muted}" Margin="0,4,0,10" TextWrapping="Wrap" Text="Filled in automatically after every rank: each tracked threat group against your estate. Ask your own question below."/>
                 <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,10">
                     <ComboBox x:Name="QKind" Width="260" SelectedIndex="0"><ComboBoxItem Content="Assets hit by an adversary (ATT&amp;CK group id)"/><ComboBoxItem Content="Assets sharing a weakness (CWE id)"/><ComboBoxItem Content="How are these connected? (type:id, type:id)"/><ComboBoxItem Content="Around a node (type:id)"/></ComboBox>
@@ -281,7 +287,7 @@
                     <DataGrid.Columns><DataGridTextColumn Header="RESULT" Binding="{Binding Item1}" Width="*"/><DataGridTextColumn Header="DETAIL" Binding="{Binding Item2}" Width="*"/><DataGridTextColumn Header="EVIDENCE" Binding="{Binding Item3}" Width="200"/></DataGrid.Columns></DataGrid>
             </Grid></TabItem>
 
-            <!-- 9 Effectiveness -->
+            <!-- 10 Effectiveness -->
             <TabItem Tag="Effectiveness. Pillar 15 (measured outcomes). Does the work reduce risk, and which features have actually been shown to help? Numbers count only verified work."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,10"><TextBlock Text="Effectiveness" FontSize="26" FontWeight="SemiBold"/><local:HelpButton Title="Effectiveness" Text="How the remediation work is going, and which features have evidence behind them."/></StackPanel>
                 <TextBlock Text="REMEDIATION" Style="{StaticResource H}"/>
@@ -294,8 +300,8 @@
                 <TextBlock x:Name="EvalText" Style="{StaticResource Muted}" Margin="0,8,0,0"/>
             </StackPanel></ScrollViewer></TabItem>
 
-            <!-- Settings -->
-            <TabItem Tag="Settings. Import your files, store API keys in Windows Credential Manager, check for a newer version."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel MaxWidth="980" HorizontalAlignment="Left">
+            <!-- 11 Settings (toolbar icon) -->
+            <TabItem Tag="Settings. Import your files, store API keys in Windows Credential Manager, open the data folder, check for a newer version."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel MaxWidth="980" HorizontalAlignment="Left">
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,10"><TextBlock Text="Settings" FontSize="26" FontWeight="SemiBold"/><local:HelpButton Title="Settings" Text="Bring your own files into Stenwatch, store API keys, and check for a newer version. Files are copied into the data folder; edits made there in any editor are picked up when you return to this window."/></StackPanel>
                 <StackPanel Orientation="Horizontal"><TextBlock Text="INTELLIGENCE SOURCES" Style="{StaticResource H}"/>
                     <local:HelpButton x:Name="SourcesHelp" Title="Sources" Text="Advisory feeds Morning triage reads (Feeds). Add any RSS or Atom feed, for example your national CERT.&#10;Grade A-F: how much its word counts. An 'actively exploited' claim from grade A or B means Act; from C to F it means Attend.&#10;TLP: CLEAR may go to a cloud LLM, AMBER only to a model on this machine (llm.txt), RED never to any LLM.&#10;CVE posts only: skip items that name no CVE (vendor blogs)."/></StackPanel>
@@ -306,12 +312,12 @@
                 <StackPanel x:Name="CtxPanel"/>
                 <TextBlock Text="API KEYS (stored in Windows Credential Manager)" Style="{StaticResource H}"/>
                 <StackPanel x:Name="KeysPanel"/>
-                <TextBlock Text="UPDATES" Style="{StaticResource H}"/>
-                <WrapPanel><Button Content="Check for updates" Click="CheckUpdates"/><Button x:Name="UpdateLink" Content="Open download page" Visibility="Collapsed" Click="OpenUpdate"/><Button Content="Reload files" Click="ReloadFiles"/></WrapPanel>
+                <TextBlock Text="DATA FOLDER AND UPDATES" Style="{StaticResource H}"/>
+                <WrapPanel><Button Content="Check for updates" Click="CheckUpdates"/><Button Content="Open data folder" Click="OpenDataFolder" ToolTip="Where profile.yaml, the asset lists, cve.db and the reports live"/><Button x:Name="UpdateLink" Content="Open download page" Visibility="Collapsed" Click="OpenUpdate"/><Button Content="Reload files" Click="ReloadFiles"/></WrapPanel>
                 <TextBlock x:Name="UpdateText" Style="{StaticResource Muted}" Margin="0,8,0,24"/>
             </StackPanel></ScrollViewer></TabItem>
 
-            <!-- Morning triage (page 12): the result on screen, every explanation behind a "?" -->
+            <!-- 12 Morning triage: the result on screen, every explanation behind a "?" -->
             <TabItem Tag="Morning triage. Take the Microsoft Defender vulnerability export, add what the feeds and national advisories say, and get fix actions in order with a reason each. The LLM reads advisories and writes the note to IT; it never sets a tier. Your Raise, Lower and Snooze marks are kept."><Grid>
                 <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="0.85*"/></Grid.RowDefinitions>
                 <StackPanel Orientation="Horizontal"><TextBlock Text="Morning triage" FontSize="26" FontWeight="SemiBold"/>
@@ -320,13 +326,13 @@
                     <Button Content="Export..." Click="TriagePick"/>
                     <Button Content="Folder..." Click="TriageFolder"/>
                     <Button Content="Advisory..." Click="TriageMail"/>
-                    <CheckBox x:Name="TriFeeds" Content="Feeds" IsChecked="True" VerticalAlignment="Center" Margin="8,0" Foreground="{StaticResource Fg}"/>
-                    <CheckBox x:Name="TriLlm" Content="LLM" VerticalAlignment="Center" Margin="8,0" Foreground="{StaticResource Fg}"/>
+                    <CheckBox x:Name="TriFeeds" Content="Feeds" IsChecked="True" VerticalAlignment="Center" Margin="8,0" Foreground="{DynamicResource Fg}"/>
+                    <CheckBox x:Name="TriLlm" Content="LLM" VerticalAlignment="Center" Margin="8,0" Foreground="{DynamicResource Fg}"/>
                     <Button x:Name="TriRunBtn" Style="{StaticResource Primary}" Content="Run triage" Click="TriageRun"/>
-                    <local:HelpButton Title="Buttons" Text="Export: choose the Defender vulnerabilities export (.xlsx or .csv).&#10;Folder: pick the folder your exports land in; the newest export-tvm file is used each morning.&#10;Advisory: add a saved advisory email (.txt or .eml), English or Finnish. It is kept for later runs.&#10;Feeds: fetch every enabled source (Settings, Sources: NCSC-FI, CERT-EU, CISA, Microsoft, Chrome, or your own).&#10;LLM: read advisories and write the note to IT (OpenRouter key on Settings, or a local model). Only public advisory text is sent."/>
+                    <local:HelpButton Title="Buttons" Text="Export: choose the Defender vulnerabilities export (.xlsx or .csv).&#10;Folder: pick the folder your exports land in; the newest export-tvm file is used each morning.&#10;Advisory: add a saved advisory email (.txt or .eml), English or Finnish. It is kept for later runs.&#10;Feeds: fetch every enabled source (Settings, Intelligence sources: NCSC-FI, CERT-EU, CISA, Microsoft, Chrome, or your own).&#10;LLM: read advisories and write the note to IT (OpenRouter key on Settings, or a local model). Only public advisory text is sent."/>
                 </WrapPanel>
                 <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,10,0,8">
-                    <ProgressBar x:Name="TriBusy" IsIndeterminate="True" Width="160" Height="6" Margin="0,0,12,0" VerticalAlignment="Center" Visibility="Collapsed" Foreground="{StaticResource Accent}" Background="{StaticResource Line}" BorderThickness="0" AutomationProperties.Name="Triage running"/>
+                    <ProgressBar x:Name="TriBusy" IsIndeterminate="True" Width="160" Height="6" Margin="0,0,12,0" VerticalAlignment="Center" Visibility="Collapsed" Foreground="{DynamicResource Accent}" Background="{DynamicResource Line}" BorderThickness="0" AutomationProperties.Name="Triage running"/>
                     <TextBlock x:Name="TriSummary" Style="{StaticResource Muted}" VerticalAlignment="Center" Text="Choose the export, then Run triage."/>
                     <local:HelpButton x:Name="TriNotesHelp" Title="This run" Text="Rule-based ranking, not validated against outcomes. Each row names the rule that fired."/></StackPanel>
                 <DataGrid x:Name="TriGrid" Grid.Row="3" SelectionChanged="TriageSelected">
@@ -334,9 +340,9 @@
                         <DataGridTextColumn Binding="{Binding Tier}" Width="90"><DataGridTextColumn.Header><StackPanel Orientation="Horizontal"><TextBlock Text="TIER" VerticalAlignment="Center"/>
                             <local:HelpButton Title="Tiers" Text="Act: within 48 hours. KEV lists a CVE, or an advisory says it is actively exploited.&#10;Attend: next patch cycle. An advisory names it, an exploit exists, EPSS 5%+, or high severity on an internet-facing product on 100+ machines.&#10;Track: other high or critical.&#10;Ignore: the rest.&#10;&#10;Rule-based, not validated against outcomes."/></StackPanel></DataGridTextColumn.Header>
                             <DataGridTextColumn.CellStyle><Style TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
-                            <Style.Triggers><DataTrigger Binding="{Binding Tier}" Value="Act"><Setter Property="Foreground" Value="{StaticResource Act}"/></DataTrigger>
-                                <DataTrigger Binding="{Binding Tier}" Value="Attend"><Setter Property="Foreground" Value="{StaticResource Attend}"/></DataTrigger>
-                                <DataTrigger Binding="{Binding Tier}" Value="Track"><Setter Property="Foreground" Value="{StaticResource Track}"/></DataTrigger></Style.Triggers></Style></DataGridTextColumn.CellStyle></DataGridTextColumn>
+                            <Style.Triggers><DataTrigger Binding="{Binding Tier}" Value="Act"><Setter Property="Foreground" Value="{DynamicResource Act}"/></DataTrigger>
+                                <DataTrigger Binding="{Binding Tier}" Value="Attend"><Setter Property="Foreground" Value="{DynamicResource Attend}"/></DataTrigger>
+                                <DataTrigger Binding="{Binding Tier}" Value="Track"><Setter Property="Foreground" Value="{DynamicResource Track}"/></DataTrigger></Style.Triggers></Style></DataGridTextColumn.CellStyle></DataGridTextColumn>
                         <DataGridTextColumn Header="FIX ACTION" Binding="{Binding Product}" Width="180"/><DataGridTextColumn Header="UPDATE TO" Binding="{Binding Fix}" Width="120"/>
                         <DataGridTextColumn Header="CVEs" Binding="{Binding Cves}" Width="60"/><DataGridTextColumn Header="MACHINES" Binding="{Binding Machines}" Width="90"/>
                         <DataGridTextColumn Header="FEEDS" Binding="{Binding Feeds}" Width="120"/><DataGridTextColumn Header="WHY" Binding="{Binding Why}" Width="*" MinWidth="150"><DataGridTextColumn.ElementStyle><Style TargetType="TextBlock"><Setter Property="TextWrapping" Value="Wrap"/></Style></DataGridTextColumn.ElementStyle></DataGridTextColumn>
@@ -358,9 +364,39 @@
                         <ListBox x:Name="TriUnmatched" Background="Transparent" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled"><ListBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,3"/></DataTemplate></ListBox.ItemTemplate></ListBox></DockPanel></TabItem>
                 </TabControl>
             </Grid></TabItem>
+
+            <!-- 13 Guided run (page shell: content built in step B into GuidedRunHost) -->
+            <TabItem Tag="Guided run. The six CTI stages in order (Direction, Collection, Processing, Analysis, Dissemination, Feedback), each with one sentence, its state, and a button to its page."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
+                <TextBlock Text="Guided run" FontSize="26" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                <StackPanel x:Name="GuidedRunHost"/>
+            </StackPanel></ScrollViewer></TabItem>
+
+            <!-- 14 Coverage (page shell: content built in step B into CoverageHost) -->
+            <TabItem Tag="Coverage. One tile per component, in four groups: what each one sees, where its data comes from, when it was last imported, and the export a component still needs."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
+                <TextBlock Text="Coverage" FontSize="26" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                <StackPanel x:Name="CoverageHost"/>
+            </StackPanel></ScrollViewer></TabItem>
+
+            <!-- 15 Advisories (page shell: content built in step B into AdvisoriesHost) -->
+            <TabItem Tag="Advisories. Every stored advisory with its source, grade, TLP and whether it matched something in your estate."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
+                <TextBlock Text="Advisories" FontSize="26" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                <StackPanel x:Name="AdvisoriesHost"/>
+            </StackPanel></ScrollViewer></TabItem>
+
+            <!-- 16 Tickets (page shell: content built in step B into TicketsHost) -->
+            <TabItem Tag="Tickets. Remediation tasks that were sent to a ticket system, their state and link."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
+                <TextBlock Text="Tickets" FontSize="26" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                <StackPanel x:Name="TicketsHost"/>
+            </StackPanel></ScrollViewer></TabItem>
+
+            <!-- 17 Integrations (page shell: content built in step B into IntegrationsHost) -->
+            <TabItem Tag="Integrations. Everything that goes in or out: file imports, API connections, the ticket webhook, the intelligence sources and API keys, and the schedule."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
+                <TextBlock Text="Integrations" FontSize="26" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                <StackPanel x:Name="IntegrationsHost"/>
+            </StackPanel></ScrollViewer></TabItem>
         </TabControl>
 
-        <Border Grid.Row="2" Grid.ColumnSpan="2" Background="#000" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0">
-            <TextBlock x:Name="StatusBar" Foreground="{StaticResource Dim}" FontFamily="{StaticResource Mono}" FontSize="11" VerticalAlignment="Center" Margin="12,0"/></Border>
+        <Border Grid.Row="2" Grid.ColumnSpan="2" Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="0,1,0,0">
+            <TextBlock x:Name="StatusBar" Foreground="{DynamicResource Dim}" FontFamily="{StaticResource Mono}" FontSize="11" VerticalAlignment="Center" Margin="12,0"/></Border>
     </Grid>
 </Window>

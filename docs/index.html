@@ -209,14 +209,14 @@ h1 .w{display:inline-block;opacity:0;translate:0 .5em;filter:blur(6px);animation
 <section id="see"><div class="wrap">
   <div class="rv idx mono"><span>03 — Interface</span></div>
   <h2 class="rv">See it working</h2>
-  <p style="max-width:680px">Three workspaces in the toolbar: <b>Start</b> (Guide, Overview and Morning triage), the <b>CTI cycle</b> (six steps, each telling you what it still needs, with a green Next button when it is done) and <b>Intelligence</b>. A small ? beside anything explains it. Screenshots use the bundled Example Organisation, not real data. Hover for colour.</p>
+  <p style="max-width:680px">Four areas in the toolbar: <b>Home</b> (Dashboard, Morning triage and the Guided run, which lists the six CTI steps), <b>Exposure</b> (Findings, Estate, Attack paths, Coverage), <b>Intelligence</b> (Threat profile, Feeds, Advisories, Knowledge graph) and <b>Response</b> (Remediation, Tickets, Reports, Effectiveness). Each stage page tells you what it still needs, with a green Next button when it is done. A small ? beside anything explains it. Screenshots use the bundled Example Organisation, not real data. Hover for colour.</p>
   <div class="rv shots" style="margin-top:22px">
     <figure class="cell wide"><img src="img/app-triage.jpg" alt="Morning triage: a Microsoft Defender export turned into ranked fix actions with tier, feeds, reason and an intel card with numbered sources" loading="lazy"><figcaption>Morning triage / your Defender export, ranked, with the sources behind each fix</figcaption></figure>
-    <figure class="cell"><img src="img/app-overview.jpg" alt="Overview: Start, CTI cycle and Intelligence workspaces in the toolbar, decision tiers counted by CVE" loading="lazy"><figcaption>Overview / the whole cycle in one click</figcaption></figure>
-    <figure class="cell"><img src="img/app-direction.jpg" alt="Direction: import the profile and asset list, with the file formats explained" loading="lazy"><figcaption>1 Direction / who you are, who targets you</figcaption></figure>
-    <figure class="cell"><img src="img/app-processing.jpg" alt="Processing: services, crown jewels, links and controls, mostly picked from lists" loading="lazy"><figcaption>3 Processing / your business in four short tables</figcaption></figure>
-    <figure class="cell"><img src="img/app-analysis.jpg" alt="Analysis: ranked findings, the selected one explained in separate cards" loading="lazy"><figcaption>4 Analysis / every finding explained</figcaption></figure>
-    <figure class="cell"><img src="img/app-dissemination.jpg" alt="Dissemination: the full intelligence report and every output with Open and Save as" loading="lazy"><figcaption>5 Dissemination / one result, every audience</figcaption></figure>
+    <figure class="cell"><img src="img/app-overview.jpg" alt="Dashboard: Home, Exposure, Intelligence and Response areas in the toolbar, decision tiers counted by CVE" loading="lazy"><figcaption>Dashboard / the whole cycle in one click</figcaption></figure>
+    <figure class="cell"><img src="img/app-direction.jpg" alt="Threat profile (Direction): import the profile and asset list, with the file formats explained" loading="lazy"><figcaption>Threat profile (Direction) / who you are, who targets you</figcaption></figure>
+    <figure class="cell"><img src="img/app-processing.jpg" alt="Estate (Processing): services, crown jewels, links and controls, mostly picked from lists" loading="lazy"><figcaption>Estate (Processing) / your business in four short tables</figcaption></figure>
+    <figure class="cell"><img src="img/app-analysis.jpg" alt="Findings (Analysis): ranked findings, the selected one explained in separate cards" loading="lazy"><figcaption>Findings (Analysis) / every finding explained</figcaption></figure>
+    <figure class="cell"><img src="img/app-dissemination.jpg" alt="Reports (Dissemination): the full intelligence report and every output with Open and Save as" loading="lazy"><figcaption>Reports (Dissemination) / one result, every audience</figcaption></figure>
     <figure class="cell"><img src="img/app-graph.jpg" alt="Knowledge graph: threat groups, ATT&amp;CK techniques, urgent CVEs and assets as a node-link map" loading="lazy"><figcaption>Intelligence / who could use what, where</figcaption></figure>
     <figure class="cell"><img src="img/app-paths.jpg" alt="Attack paths: possible routes from the internet to the crown jewels, drawn step by step" loading="lazy"><figcaption>Intelligence / possible attack paths</figcaption></figure>
   </div>
@@ -264,8 +264,8 @@ h1 .w{display:inline-block;opacity:0;translate:0 .5em;filter:blur(6px);animation
     <div class="tty-top"><i></i><i></i><i></i></div>
 <pre><span class="d"># the app</span>
 <span class="p">1</span> install from the Microsoft Store                      <span class="d"># or Stenwatch-Setup-0.2.0-beta.exe (unsigned: More info -> Run anyway)</span>
-<span class="p">2</span> Overview -> tick "Example Organisation" -> Rank now  <span class="d"># fictional data, every page filled</span>
-<span class="p">3</span> 1 Direction -> import your profile and asset list   <span class="d"># then follow the green Next buttons</span>
+<span class="p">2</span> Dashboard -> tick "Example Organisation" -> Rank now  <span class="d"># fictional data, every page filled</span>
+<span class="p">3</span> Threat profile -> import your profile and asset list <span class="d"># then follow the Guided run</span>
 
 <span class="d"># or from source (.NET 8 SDK)</span>
 <span class="p">$</span> dotnet test src/Stenwatch.Tests

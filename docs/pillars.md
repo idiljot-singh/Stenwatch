@@ -1,6 +1,6 @@
 # The 15 pillars
 
-Stenwatch is built on the characteristics of a cyber threat intelligence driven vulnerability management tool set out in the research framework (*Research Framework: CTI-Driven Vulnerability Management*, 26 October 2026). The CTI lifecycle (Direction, Collection, Processing, Analysis, Dissemination, Feedback) is the navigation; the pillars are the capabilities inside it.
+Stenwatch is built on the characteristics of a cyber threat intelligence driven vulnerability management tool set out in the research framework (*Research Framework: CTI-Driven Vulnerability Management*, 26 October 2026). The CTI lifecycle (Direction, Collection, Processing, Analysis, Dissemination, Feedback) is the method; the Guided run page lists its six stages and the page each one is on, and the pillars are the capabilities inside it.
 
 **Evidence labels.** The research framework labels each characteristic Strong, Moderate or Proposed by how well it is supported in the literature. The *Status* column below is different: it says what Stenwatch does today and how far that has been tested. See [evaluation.md](evaluation.md) for how the tests are defined and what they found.
 

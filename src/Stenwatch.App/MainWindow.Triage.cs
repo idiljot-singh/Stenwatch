@@ -89,7 +89,7 @@ public partial class MainWindow
         // everything else about the run sits behind the "?": file, comparison day, feed and LLM notes, the validation caveat
         var notes = new List<string> { "File: " + Path.GetFileName(triExport), d.HasPrevious ? $"Compared with {d.PreviousDay}." : "First export kept; tomorrow shows what changed." };
         notes.AddRange(tri.Notes);
-        if (!File.Exists(Db)) notes.Add("No cve.db: KEV and EPSS were not used. Sync on 2 Collection.");
+        if (!File.Exists(Db)) notes.Add("No cve.db: KEV and EPSS were not used. Sync on Feeds.");
         notes.Add("IT note: " + tri.NoteSource + ".");
         notes.Add("Rule-based ranking, not validated against outcomes. Each row names the rule that fired.");
         TriNotesHelp.Text = string.Join("\n", notes);
@@ -153,7 +153,7 @@ public partial class MainWindow
             row.Children.Add(on); row.Children.Add(Cell(src.Name, 150)); row.Children.Add(Cell(src.Type, 50, true));
             row.Children.Add(Pick(Sources.Grades, src.Grade, v => all[k] = all[k] with { Grade = v }));
             row.Children.Add(Pick(Sources.Tlps, src.Tlp, v => all[k] = all[k] with { Tlp = v }));
-            var cve = new CheckBox { Content = "CVE posts only", IsChecked = src.RequireCve, VerticalAlignment = VerticalAlignment.Center, Foreground = (Brush)FindResource("Fg"), Margin = new Thickness(0, 0, 8, 0) };
+            var cve = new CheckBox { Content = "CVE posts only", IsChecked = src.RequireCve, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0) };
             cve.Click += (_, _) => { all[k] = all[k] with { RequireCve = cve.IsChecked == true }; Save(); };
             row.Children.Add(cve);
             row.Children.Add(Btn("Remove", () => { all.RemoveAt(k); Save(); LoadSources(); }));

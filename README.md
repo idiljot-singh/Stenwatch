@@ -19,11 +19,11 @@ From every CVE in the world to the few that matter to *your* organisation, with 
 
 ![Stenwatch desktop app, Morning triage: a Microsoft Defender export turned into ranked fix actions, each with its reason and sources](docs/img/app-triage.jpg)
 
-| Overview: the whole cycle in one click | Knowledge graph: who could use what, where |
+| Dashboard: the whole cycle in one click | Knowledge graph: who could use what, where |
 |---|---|
-| ![Overview: Start, CTI cycle and Intelligence workspaces in the toolbar, decision tiers counted by CVE](docs/img/app-overview.jpg) | ![Knowledge graph: threat groups, ATT&CK techniques, urgent CVEs and your assets as a node-link map](docs/img/app-graph.jpg) |
-| **Analysis: every finding explained** | **Dissemination: one result, every audience** |
-| ![Analysis page: ranked findings, and the selected one explained in cards: what it is, is it exploited, why this priority, who uses it, what to do, how sure](docs/img/app-analysis.jpg) | ![Dissemination page: the full intelligence report, and every output with Open and Save as](docs/img/app-dissemination.jpg) |
+| ![Dashboard: Home, Exposure, Intelligence and Response areas in the toolbar, decision tiers counted by CVE](docs/img/app-overview.jpg) | ![Knowledge graph: threat groups, ATT&CK techniques, urgent CVEs and your assets as a node-link map](docs/img/app-graph.jpg) |
+| **Findings: every finding explained** | **Reports: one result, every audience** |
+| ![Findings page: ranked findings, and the selected one explained in cards: what it is, is it exploited, why this priority, who uses it, what to do, how sure](docs/img/app-analysis.jpg) | ![Reports page: the full intelligence report, and every output with Open and Save as](docs/img/app-dissemination.jpg) |
 
 <sub>Screenshots use the bundled fictional Example Organisation and example Defender export, not real data.</sub>
 
@@ -53,24 +53,24 @@ An optional LLM (OpenRouter's free model, or a model on your own machine) reads 
 
 1. Get it from the [Microsoft Store](https://apps.microsoft.com/detail/9PBKG30523KJ). It is signed by Microsoft, installs without admin rights and updates itself. .NET is included.
 2. Or download `Stenwatch-Setup-0.2.0-beta.exe` from the [release page](https://github.com/idiljot-singh/Stenwatch/releases/tag/v0.2.0-beta). That installer is unsigned, so Windows shows a blue "unknown publisher" screen: choose **More info → Run anyway**, or ask IT to allow-list the file by its SHA-256 (in the release notes).
-3. The app opens on **Guide**. The toolbar has three workspaces: **Start** (Guide, Overview, Morning triage), **CTI cycle** (the six steps) and **Intelligence**. Tick **Example Organisation** on Overview to try every page with fictional data, or open Morning triage with your Defender export. Every **?** explains the thing next to it.
+3. The toolbar has four areas: **Home** (Dashboard, Morning triage, Guided run), **Exposure** (Findings, Estate, Attack paths, Coverage), **Intelligence** (Threat profile, Feeds, Advisories, Knowledge graph) and **Response** (Remediation, Tickets, Reports, Effectiveness). Integrations, the Guide, the theme switch and Settings are icons at the right of the toolbar. Tick **Example Organisation** on the Dashboard to try every page with fictional data, or open Morning triage with your Defender export. Every **?** explains the thing next to it.
 
-Your files live in `%APPDATA%\Stenwatch` and survive updates. The Store updates the app for you; with the Setup installer use **Check for updates** in the toolbar, or run the newer Setup over the old one.
+Your files live in `%APPDATA%\Stenwatch` and survive updates. The Store updates the app for you; with the Setup installer use **Check for updates** in Settings, or run the newer Setup over the old one.
 
 ## How it works: the intelligence cycle
 
-The **CTI cycle** workspace is the intelligence lifecycle. Each step shows at the bottom what it still needs; the **Next** button turns green when it is done.
+The six stages of the intelligence lifecycle are still the method. The **Guided run** page (Home) lists them in order, each with its state and a button to its page. Each stage page shows at the bottom what it still needs; the **Next** button turns green when it is done.
 
-| Step | What you do | What Stenwatch does |
-|---|---|---|
-| **1 Direction** | Import `profile.yaml` (who you are, who targets you) and your asset list | Picks the threat groups that matter to your sector and country, with the reason for each |
-| **2 Collection** | Sync the feeds, or only CVEs changed since a date (cancel any time) | Downloads NVD, CISA KEV, FIRST EPSS, MITRE ATT&CK and D3FEND, CTID mappings into a local database |
-| **3 Processing** | Optional: services, crown jewels, links, controls, mostly picked from lists | Matches every CVE to your assets; services raise impact, evidenced controls lower likelihood |
-| **4 Analysis** | Read the findings; record a decision (patched, mitigated, accepted) | Scores `risk = likelihood × impact`, and explains each finding with its evidence and confidence |
-| **5 Dissemination** | Open or export | Full intelligence report, findings report, management brief (HTML and PDF), dashboard, CSV, STIX 2.1, ATT&CK Navigator layer |
-| **6 Feedback** | Assign tasks, claim fixes | Turns priorities into tasks with deadlines; a fix counts only when a later run no longer finds the CVE |
+| Step | Page | What you do | What Stenwatch does |
+|---|---|---|---|
+| **1 Direction** | Threat profile | Import `profile.yaml` (who you are, who targets you) and your asset list | Picks the threat groups that matter to your sector and country, with the reason for each |
+| **2 Collection** | Feeds | Sync the feeds, or only CVEs changed since a date (cancel any time) | Downloads NVD, CISA KEV, FIRST EPSS, MITRE ATT&CK and D3FEND, CTID mappings into a local database |
+| **3 Processing** | Estate | Optional: services, crown jewels, links, controls, mostly picked from lists | Matches every CVE to your assets; services raise impact, evidenced controls lower likelihood |
+| **4 Analysis** | Findings | Read the findings; record a decision (patched, mitigated, accepted) | Scores `risk = likelihood × impact`, and explains each finding with its evidence and confidence |
+| **5 Dissemination** | Reports | Open or export | Full intelligence report, findings report, management brief (HTML and PDF), dashboard, CSV, STIX 2.1, ATT&CK Navigator layer |
+| **6 Feedback** | Remediation | Assign tasks, claim fixes | Turns priorities into tasks with deadlines; a fix counts only when a later run no longer finds the CVE |
 
-The **Intelligence** workspace fills in after every rank: a knowledge-graph map (threat group → technique → CVE → your asset, with links to MITRE ATT&CK and NVD), possible attack paths to your crown jewels, and what has been shown to help.
+The **Knowledge graph**, **Attack paths** and **Effectiveness** pages fill in after every rank: a knowledge-graph map (threat group → technique → CVE → your asset, with links to MITRE ATT&CK and NVD), possible attack paths to your crown jewels, and what has been shown to help.
 
 ```
 likelihood = 0.4·EPSS + 0.3·in KEV + 0.1·ransomware + 0.2·used by a tracked threat group

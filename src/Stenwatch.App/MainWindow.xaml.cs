@@ -35,7 +35,9 @@ public partial class MainWindow : Window
         SetupPickLists();
         ServicesGrid.ItemsSource = services; AssetsGrid.ItemsSource = assetRows; LinksGrid.ItemsSource = links; ControlsGrid.ItemsSource = controls;
         data = AppPaths.Data();
-        Go(0);
+        ShowArea(0); Go(0); // the Guide first, with the Home pages in the rail
+        ShowTheme();
+        KeyDown += (_, e) => { if (e.Key == System.Windows.Input.Key.F1) ShowInfo(this, e); }; // F1: about this page
         ExampleBox.IsChecked = Environment.GetEnvironmentVariable("STENWATCH_EXAMPLE") == "1" || !File.Exists(Path.Combine(data, "profile.yaml"));
         loading = false;
         Configure();
@@ -59,7 +61,7 @@ public partial class MainWindow : Window
         files = new PipelineFiles(Db, Path.Combine(root, $"profile{ex}.yaml"), Path.Combine(root, $"assets{ex}.csv"),
             Path.Combine(root, $"third_parties{ex}.csv"), Path.Combine(root, $"exceptions{ex}.csv"));
         LoadSettings();
-        if (!File.Exists(files.Profile)) { Status($"No profile.yaml in {data}: import one on 1 Direction, or tick the Example Organisation on Overview"); UpdateGate(); return; }
+        if (!File.Exists(files.Profile)) { Status($"No profile.yaml in {data}: import one on Threat profile, or tick the Example Organisation on Dashboard"); UpdateGate(); return; }
         var p = Profile.Load(files.Profile);
         OrgName.Text = p.Organisation.Name;
         ShowGroups(p);
@@ -81,7 +83,7 @@ public partial class MainWindow : Window
         LoadFeeds(); LoadContext(); LoadTasks(null, null!); LoadEvidence(); UpdateGate();
     }
 
-    /// <summary>Direction page: the threat groups that will be tracked, with the reason for each.</summary>
+    /// <summary>Threat profile page: the threat groups that will be tracked, with the reason for each.</summary>
     void ShowGroups(Profile p)
     {
         List<GroupPick> picks; string note;
@@ -101,27 +103,32 @@ public partial class MainWindow : Window
     void ExampleToggled(object s, RoutedEventArgs e) { if (!loading) { last = null; Configure(); } }
     void NavChanged(object s, SelectionChangedEventArgs e) { if (Pages != null && Nav.SelectedItem is ListBoxItem { Tag: string t }) Pages.SelectedIndex = int.Parse(t); UpdateGate(); }
 
-    /// <summary>Open a page by its index in Pages; the rail item with that Tag is selected, none for pages outside the rail (Settings).</summary>
+    /// <summary>Open a page by its index in Pages; the rail item with that Tag is selected, none for pages outside the rail (Guide, Settings, Integrations).</summary>
     void Go(int page)
     {
-        Pages.SelectedIndex = page; // first: the switcher's Checked handler then sees the page is already in its workspace
-        if (Ws(page) is var ws and >= 0) { ShowWs(ws); ((RadioButton)FindName("Ws" + ws)).IsChecked = true; } // links between pages switch workspace too
+        Pages.SelectedIndex = page; // first: the area's Checked handler then sees the page is already in its area
+        if (Area(page) is var a and >= 0) { ShowArea(a); ((RadioButton)FindName("Area" + a)).IsChecked = true; } // links between pages switch area too
+        else foreach (var r in new[] { Area0, Area1, Area2, Area3 }) r.IsChecked = false; // a toolbar page: no area lit, the rail stays as it was
         var item = Nav.Items.OfType<ListBoxItem>().FirstOrDefault(i => i.Tag as string == page.ToString());
         if (item != null) Nav.SelectedItem = item; else Nav.SelectedIndex = -1;
         UpdateGate();
     }
 
-    // ---------- workspaces: Start, CTI cycle, Intelligence; the rail shows one at a time ----------
-    static int Ws(int page) => page is 0 or 1 or 12 ? 0 : page is >= 2 and <= 7 ? 1 : page is >= 8 and <= 10 ? 2 : -1;
-    static readonly int[] WsFirst = { 0, 2, 8 };
-    void ShowWs(int ws) { foreach (var i in Nav.Items.OfType<ListBoxItem>()) i.Visibility = i.Tag is string t && Ws(int.Parse(t)) == ws ? Visibility.Visible : Visibility.Collapsed; }
-    void WsClick(object s, RoutedEventArgs e) { if (Pages == null) return; var ws = int.Parse((string)((RadioButton)s).Tag); if (Ws(Pages.SelectedIndex) != ws) Go(WsFirst[ws]); } // mouse, keyboard and UI Automation all raise Checked
+    // ---------- areas: Home, Exposure, Intelligence, Response; the rail shows one at a time. Page indices never change (STENWATCH_PAGE, Go(n)); new pages are appended ----------
+    // 0 Guide, 1 Dashboard, 2 Threat profile, 3 Feeds, 4 Estate, 5 Findings, 6 Reports, 7 Remediation, 8 Attack paths, 9 Knowledge graph, 10 Effectiveness,
+    // 11 Settings, 12 Morning triage, 13 Guided run, 14 Coverage, 15 Advisories, 16 Tickets, 17 Integrations
+    static readonly int[][] Areas = { new[] { 1, 12, 13 }, new[] { 5, 4, 8, 14 }, new[] { 2, 3, 15, 9 }, new[] { 7, 16, 6, 10 } };
+    static int Area(int page) => Array.FindIndex(Areas, a => a.Contains(page));
+    void ShowArea(int area) { foreach (var i in Nav.Items.OfType<ListBoxItem>()) i.Visibility = i.Tag is string t && Area(int.Parse(t)) == area ? Visibility.Visible : Visibility.Collapsed; }
+    void AreaClick(object s, RoutedEventArgs e) { if (Pages == null) return; var a = int.Parse((string)((RadioButton)s).Tag); if (Area(Pages.SelectedIndex) != a) Go(Areas[a][0]); } // mouse, keyboard and UI Automation all raise Checked
 
     // ---------- toolbar ----------
     void GoSettings(object s, RoutedEventArgs e) => Go(11);
-    void ToolbarUpdates(object s, RoutedEventArgs e) { Go(11); CheckUpdates(s, e); }
+    void GoGuide(object s, RoutedEventArgs e) => Go(0);
+    void GoIntegrations(object s, RoutedEventArgs e) => Go(17);
+    void ThemeClick(object s, RoutedEventArgs e) { Theme.Next(); ShowTheme(); Status(Theme.Label.Split('.')[0]); }
+    void ShowTheme() { ThemeBtn.ToolTip = Theme.Label; System.Windows.Automation.AutomationProperties.SetName(ThemeBtn, Theme.Label); }
     void ShowInfo(object s, RoutedEventArgs e) => MessageBox.Show((Pages.SelectedItem as TabItem)?.Tag as string ?? "", "About this page", MessageBoxButton.OK, MessageBoxImage.Information);
-    void ShowSources(object s, RoutedEventArgs e) => Go(11); // Settings: the Sources list, with this explanation behind its "?"
     const string SourcesText =
         "WHERE THE INTELLIGENCE COMES FROM (public, free, pulled on Sync)\n\n"
         + "NVD (NIST)  every published CVE: description, CVSS severity, affected products (CPE).\n"
@@ -142,8 +149,8 @@ public partial class MainWindow : Window
     // ---------- phase gate ----------
     static readonly Dictionary<int, (int To, string Label)> NextStep = new()
     {
-        [2] = (3, "Next: 2 Collection"), [3] = (4, "Next: 3 Processing"), [4] = (5, "Rank now, then 4 Analysis"),
-        [5] = (6, "Next: 5 Dissemination"), [6] = (7, "Next: 6 Feedback"), [7] = (10, "Next: Effectiveness"),
+        [2] = (3, "Next: Feeds"), [3] = (4, "Next: Estate"), [4] = (5, "Rank now, then Findings"),
+        [5] = (6, "Next: Reports"), [6] = (7, "Next: Remediation"), [7] = (10, "Next: Effectiveness"),
     };
 
     long Rows(string table)
@@ -196,7 +203,7 @@ public partial class MainWindow : Window
 
     // ---------- run ----------
     async void RunClick(object s, RoutedEventArgs e) => await RunEngine(false);
-    /// <summary>Overview: sync, then rank.</summary>
+    /// <summary>Dashboard: sync, then rank.</summary>
     async void SyncClick(object s, RoutedEventArgs e) { if (await SyncFeeds(null)) await RunEngine(false); }
     async void SyncOnlyClick(object s, RoutedEventArgs e) => await SyncFeeds(null);
     async void QuickSyncClick(object s, RoutedEventArgs e)
@@ -209,7 +216,7 @@ public partial class MainWindow : Window
     CancellationTokenSource? syncCancel;
     void CancelSync(object s, RoutedEventArgs e) { syncCancel?.Cancel(); CancelSyncBtn.IsEnabled = false; SyncStatus.Text = "Cancelling: finishing the current download..."; }
 
-    /// <summary>Download the public feeds with visible progress on the Collection page. since = only CVEs changed after that date.</summary>
+    /// <summary>Download the public feeds with visible progress on the Feeds page. since = only CVEs changed after that date.</summary>
     async Task<bool> SyncFeeds(DateTimeOffset? since)
     {
         if (syncing) { Status("A sync is already running"); return false; }
@@ -259,7 +266,7 @@ public partial class MainWindow : Window
         if (!File.Exists(Db))
         {
             Go(3); CollectionNote.Text = "There is no database yet. Choose an existing cve.db, or sync the feeds (the first full sync of every CVE takes about 15 minutes without an NVD API key).";
-            Status("No database yet: see Collection"); return;
+            Status("No database yet: see Feeds"); return;
         }
         RunBtn.IsEnabled = SyncBtn.IsEnabled = false; Status("working..."); Log.Clear();
         try
@@ -278,15 +285,20 @@ public partial class MainWindow : Window
         foreach (var (t, brush) in new[] { ("Act", "Act"), ("Attend", "Attend"), ("Track", "Track"), ("Ignore", "Ignore") })
         {
             var n = r.Ranked.Count(x => x.Tier == t);
-            Cards.Children.Add(new Border { BorderThickness = new Thickness(3, 1, 1, 1), BorderBrush = (Brush)FindResource(brush), Background = (Brush)FindResource("Card"), Margin = new Thickness(0, 0, 10, 0), Padding = new Thickness(14, 10, 14, 10),
+            Cards.Children.Add(new Border { BorderThickness = new Thickness(3, 1, 1, 1), Margin = new Thickness(0, 0, 10, 0), Padding = new Thickness(14, 10, 14, 10),
                 Child = new StackPanel { Children = {
-                    new TextBlock { Text = t.ToUpper(), Foreground = (Brush)FindResource(brush), FontFamily = (FontFamily)FindResource("Mono"), FontSize = 11, FontWeight = FontWeights.Bold },
+                    new TextBlock { Text = t.ToUpper(), FontFamily = (FontFamily)FindResource("Mono"), FontSize = 11, FontWeight = FontWeights.Bold }.Res(TextBlock.ForegroundProperty, brush),
                     new TextBlock { Text = r.Ranked.Where(x => x.Tier == t).Select(x => x.F.Cve).Distinct().Count().ToString("N0"), FontSize = 30, FontFamily = (FontFamily)FindResource("Mono"), FontWeight = FontWeights.Bold },
                     new TextBlock { Text = $"CVEs, on {n:N0} asset findings", Style = (Style)FindResource("Muted"), FontSize = 11 },
-                    new TextBlock { Text = Analyse.Action[t], Style = (Style)FindResource("Muted"), FontSize = 12 } } } });
+                    new TextBlock { Text = Analyse.Action[t], Style = (Style)FindResource("Muted"), FontSize = 12 } } } }.Res(Border.BorderBrushProperty, brush).Res(Border.BackgroundProperty, "Card"));
         }
         EventsGrid.ItemsSource = r.Events;
-        allFindings = r.Ranked.Select(x => new FindingRow { R = x }).ToList();
+        // ponytail: exposures have no risk score, so they follow the ranked CVEs (by tier) instead of interleaving; interleave when they get a comparable score
+        allFindings = r.Ranked.Select(x => new FindingRow { R = x })
+            .Concat(Exposure.Load(Example ? AppPaths.Examples() : data).OrderBy(x => Array.IndexOf(DefenderTriage.Tiers, x.Tier)).Select(x => new FindingRow { E = x })).ToList();
+        var pick = ComponentFilter.SelectedItem as string;
+        ComponentFilter.ItemsSource = new[] { AllComponents }.Concat(allFindings.Select(f => f.Component).Distinct()).ToList();
+        ComponentFilter.SelectedItem = ComponentFilter.Items.Contains(pick ?? "") ? pick : AllComponents;
         ApplyFilter();
         PathsGrid.ItemsSource = r.Paths?.Paths.Select(p => new PathRow { P = p }).ToList();
         ShowOutputs(r);
@@ -311,7 +323,7 @@ public partial class MainWindow : Window
             var entries = r.Paths?.BestTo.Where(b => r.Paths.Hops.GetValueOrDefault(b.Key) == 1).Select(b => b.Value).OrderByDescending(p => p.Likelihood).ToList() ?? new();
             PathsGrid.ItemsSource = entries.Select(p => new PathRow { P = p }).ToList();
             PathsNote.Text = (entries.Count > 0 ? $"Entry points: {entries.Count} internet-facing asset(s) with a vulnerability usable from the internet, the first step of any attack. " : "")
-                + $"Routes to crown jewels need links between assets (you have {nLinks}) and crown jewels ({jewels}); internet-facing assets: {web}. Add links on 3 Processing and rank again.";
+                + $"Routes to crown jewels need links between assets (you have {nLinks}) and crown jewels ({jewels}); internet-facing assets: {web}. Add links on Estate and rank again.";
         }
         if (PathsGrid.Items.Count > 0) PathsGrid.SelectedIndex = 0; // drawn without a click
 
@@ -385,7 +397,7 @@ public partial class MainWindow : Window
                 foreach (var r in Csv.ReadDict(files.Assets).Where(r => r.GetValueOrDefault("name", "").Trim() is { Length: > 0 } n && !c.Assets.ContainsKey(n)).DistinctBy(r => r["name"].Trim()))
                 { assetRows.Add(new() { Asset = r["name"].Trim(), Zone = r.GetValueOrDefault("internet_facing", "").Trim().ToLowerInvariant() is "y" or "yes" or "true" ? "internet" : "internal" }); listed++; } // zone from the asset list, correct if needed
         }
-        catch { } // a broken asset list is reported on 1 Direction
+        catch { } // a broken asset list is reported on Threat profile
         RefreshAssetPickLists(); ServiceSelected(null!, null!);
         ContextStatus.Text = $"  {services.Count} services, {assetRows.Count} assets ({listed} new from {Path.GetFileName(files.Assets)}, zone pre-filled), {links.Count} links, {controls.Count} controls"
             + (Example ? ". Example Organisation: read-only." : "");
@@ -418,7 +430,6 @@ public partial class MainWindow : Window
     void DrawMap(List<(string Id, string Name)> groups, List<MapEdge> edges)
     {
         KgCanvas.Children.Clear();
-        Brush B(string k) => (Brush)FindResource(k);
         var nodes = new Dictionary<string, (string Type, string Label, string Tip, Action Click)>();
         var links = new HashSet<(string A, string B, bool Strong)>();
         void N(string key, string type, string label, string tip, Action click) { if (!nodes.ContainsKey(key)) nodes[key] = (type, label, tip, click); }
@@ -436,7 +447,7 @@ public partial class MainWindow : Window
             }
             foreach (var a in (lastRanked ?? new()).Where(x => x.Cve == r.Cve && x.Tier is "Act" or "Attend").Select(x => x.Asset.Name).Distinct().Take(3))
             {
-                N("a:" + a, "asset", a, $"{a}: your asset. Click: its findings in Analysis.", () => { Filter.Text = a; TierFilter.SelectedIndex = 0; Go(5); });
+                N("a:" + a, "asset", a, $"{a}: your asset. Click: its findings in Findings.", () => { Filter.Text = a; TierFilter.SelectedIndex = 0; ComponentFilter.SelectedItem = AllComponents; Go(5); });
                 links.Add(("c:" + r.Cve, "a:" + a, true));
             }
         }
@@ -462,8 +473,8 @@ public partial class MainWindow : Window
         var lineEls = new List<(Line L, string A, string B)>(); var nodeEls = new Dictionary<string, List<UIElement>>();
         foreach (var (a, b, strong) in links)
         {
-            var l = new Line { X1 = px[idx[a]], Y1 = py[idx[a]], X2 = px[idx[b]], Y2 = py[idx[b]], StrokeThickness = a.StartsWith("g:") && strong ? 2.5 : 1.3,
-                Stroke = !strong ? B("Dim") : a.StartsWith("g:") ? B("Act") : new SolidColorBrush(Color.FromRgb(0x3a, 0x4a, 0x5e)) };
+            var l = new Line { X1 = px[idx[a]], Y1 = py[idx[a]], X2 = px[idx[b]], Y2 = py[idx[b]], StrokeThickness = a.StartsWith("g:") && strong ? 2.5 : 1.3 }
+                .Res(Line.StrokeProperty, !strong ? "Dim" : a.StartsWith("g:") ? "Act" : "LineStrong");
             if (!strong) l.StrokeDashArray = new DoubleCollection { 4, 3 };
             KgCanvas.Children.Add(l); lineEls.Add((l, a, b));
         }
@@ -476,8 +487,10 @@ public partial class MainWindow : Window
         foreach (var key in keys)
         {
             var (type, label, tip, click) = nodes[key]; var (size, brush) = look[type]; var x = px[idx[key]]; var y = py[idx[key]];
-            var dot = new System.Windows.Shapes.Ellipse { Width = size, Height = size, Fill = B(brush), Stroke = B("Bg"), StrokeThickness = 2, Cursor = System.Windows.Input.Cursors.Hand, ToolTip = tip };
-            var txt = new TextBlock { Text = label, FontSize = type == "group" ? 13 : 11, FontWeight = type == "group" ? FontWeights.SemiBold : FontWeights.Normal, Foreground = type == "technique" ? B("Mute") : B("Fg"), MaxWidth = 190, TextTrimming = TextTrimming.CharacterEllipsis, IsHitTestVisible = false };
+            var dot = new System.Windows.Shapes.Ellipse { Width = size, Height = size, StrokeThickness = 2, Cursor = System.Windows.Input.Cursors.Hand, ToolTip = tip }
+                .Res(System.Windows.Shapes.Shape.FillProperty, brush).Res(System.Windows.Shapes.Shape.StrokeProperty, "Bg");
+            var txt = new TextBlock { Text = label, FontSize = type == "group" ? 13 : 11, FontWeight = type == "group" ? FontWeights.SemiBold : FontWeights.Normal, MaxWidth = 190, TextTrimming = TextTrimming.CharacterEllipsis, IsHitTestVisible = false }
+                .Res(TextBlock.ForegroundProperty, type == "technique" ? "Mute" : "Fg");
             Canvas.SetLeft(dot, x - size / 2); Canvas.SetTop(dot, y - size / 2);
             Canvas.SetLeft(txt, x + size / 2 + 4); Canvas.SetTop(txt, y - 8);
             dot.MouseLeftButtonUp += (_, _) => click(); dot.MouseEnter += (_, _) => Highlight(key); dot.MouseLeave += (_, _) => Highlight(null);
@@ -486,10 +499,10 @@ public partial class MainWindow : Window
         var legend = new StackPanel { Orientation = Orientation.Horizontal };
         foreach (var (t, name) in new[] { ("group", "threat group"), ("technique", "ATT&CK technique"), ("cve", "urgent CVE"), ("asset", "your asset") })
         {
-            legend.Children.Add(new System.Windows.Shapes.Ellipse { Width = 12, Height = 12, Fill = B(look[t].Brush), Margin = new Thickness(0, 0, 6, 0), VerticalAlignment = VerticalAlignment.Center });
-            legend.Children.Add(new TextBlock { Text = name, Foreground = B("Mute"), FontSize = 11, Margin = new Thickness(0, 0, 18, 0) });
+            legend.Children.Add(new System.Windows.Shapes.Ellipse { Width = 12, Height = 12, Margin = new Thickness(0, 0, 6, 0), VerticalAlignment = VerticalAlignment.Center }.Res(System.Windows.Shapes.Shape.FillProperty, look[t].Brush));
+            legend.Children.Add(new TextBlock { Text = name, FontSize = 11, Margin = new Thickness(0, 0, 18, 0) }.Res(TextBlock.ForegroundProperty, "Mute"));
         }
-        legend.Children.Add(new TextBlock { Text = "red line: documented exploiting it    dashed: via a technique the group uses    hover a node to isolate it", Foreground = B("Mute"), FontSize = 11 });
+        legend.Children.Add(new TextBlock { Text = "red line: documented exploiting it    dashed: via a technique the group uses    hover a node to isolate it", FontSize = 11 }.Res(TextBlock.ForegroundProperty, "Mute"));
         Canvas.SetLeft(legend, 0); Canvas.SetTop(legend, -26); KgCanvas.Children.Add(legend);
         KgCanvas.Margin = new Thickness(10, 36, 10, 10); KgCanvas.Width = W; KgCanvas.Height = H;
     }
@@ -628,11 +641,13 @@ public partial class MainWindow : Window
     }
 
     // ---------- analysis ----------
+    const string AllComponents = "All components";
     void FilterChanged(object s, RoutedEventArgs e) { if (IsLoaded) ApplyFilter(); }
     void ApplyFilter()
     {
         var q = Filter.Text.Trim().ToLowerInvariant(); var tier = (TierFilter.SelectedItem as ComboBoxItem)?.Content as string ?? "All";
-        var rows = allFindings.Where(f => (tier == "All" || f.Tier == tier || (tier == "Act + Attend" && f.Tier is "Act" or "Attend")) && (q == "" || f.Cve.ToLowerInvariant().Contains(q) || f.Asset.ToLowerInvariant().Contains(q) || f.Why.ToLowerInvariant().Contains(q))).ToList();
+        var comp = ComponentFilter.SelectedItem as string ?? AllComponents;
+        var rows = allFindings.Where(f => (comp == AllComponents || f.Component == comp) && (tier == "All" || f.Tier == tier || (tier == "Act + Attend" && f.Tier is "Act" or "Attend")) && (q == "" || f.Cve.ToLowerInvariant().Contains(q) || f.Asset.ToLowerInvariant().Contains(q) || f.Why.ToLowerInvariant().Contains(q))).ToList();
         FindingsGrid.ItemsSource = rows.Take(2000).ToList();
         FindingCount.Text = $"   {rows.Select(f => f.Cve).Distinct().Count():N0} CVEs on {rows.Count:N0} asset findings (of {allFindings.Count:N0})" + (rows.Count > 2000 ? ", first 2,000 shown" : "");
     }
@@ -640,25 +655,28 @@ public partial class MainWindow : Window
     void FindingSelected(object s, SelectionChangedEventArgs e)
     {
         if (FindingsGrid.SelectedItem is not FindingRow f) return;
-        EvidenceGrid.ItemsSource = f.R.Evidence;
-        ShowDetail(f.R);
+        EvidenceGrid.ItemsSource = f.R?.Evidence;
+        if (f.R != null) { ShowDetail(f.R); return; }
+        var x = f.E!; DetailPanel.Children.Clear(); // an exposure: what the import said, and the rule that set its tier
+        DetailPanel.Children.Add(new TextBlock { Text = $"{x.Title}  on  {x.Asset}", FontSize = 18, FontWeight = FontWeights.SemiBold, TextWrapping = TextWrapping.Wrap });
+        DetailPanel.Children.Add(new TextBlock { TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 6, 0, 0), Style = (Style)FindResource("Muted"),
+            Text = $"{x.Component}, {x.ItemId}. Severity {(x.Severity != "" ? x.Severity : "not given")}. Source {x.Source}, {x.Date}.\nEvidence: {(x.Evidence != "" ? x.Evidence : "none given")}\n{x.Tier}: {x.Rule}. Rule-based, not validated against outcomes." });
     }
 
     /// <summary>One finding as separate cards, each answering one question in plain words.</summary>
     void ShowDetail(Ranked r)
     {
-        Brush B(string k) => (Brush)FindResource(k);
-        TextBlock Text(string s, bool muted = false) => new() { Text = s, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 2, 0, 2), Foreground = muted ? B("Mute") : B("Fg") };
+        TextBlock Text(string s, bool muted = false) => new TextBlock { Text = s, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 2, 0, 2) }.Res(TextBlock.ForegroundProperty, muted ? "Mute" : "Fg");
         TextBlock Link(string s, string url)
         {
-            var t = new TextBlock { Text = s + "  ↗", Foreground = B("Accent"), Cursor = System.Windows.Input.Cursors.Hand, TextDecorations = TextDecorations.Underline, Margin = new Thickness(0, 2, 14, 2), ToolTip = url };
+            var t = new TextBlock { Text = s + "  ↗", Cursor = System.Windows.Input.Cursors.Hand, TextDecorations = TextDecorations.Underline, Margin = new Thickness(0, 2, 14, 2), ToolTip = url }.Res(TextBlock.ForegroundProperty, "Accent");
             t.MouseLeftButtonUp += (_, _) => OpenFile(url); return t;
         }
         Border Card(string title, string brush, params UIElement[] body)
         {
-            var sp = new StackPanel(); sp.Children.Add(new TextBlock { Text = title, Style = (Style)FindResource("H"), Foreground = B(brush), Margin = new Thickness(0, 0, 0, 4) });
+            var sp = new StackPanel(); sp.Children.Add(new TextBlock { Text = title, Style = (Style)FindResource("H"), Margin = new Thickness(0, 0, 0, 4) }.Res(TextBlock.ForegroundProperty, brush));
             foreach (var b in body) sp.Children.Add(b);
-            return new Border { Child = sp, Background = B("Card"), BorderBrush = B(brush), BorderThickness = new Thickness(3, 1, 1, 1), Padding = new Thickness(12, 8, 12, 10), Margin = new Thickness(0, 0, 8, 8) };
+            return new Border { Child = sp, BorderThickness = new Thickness(3, 1, 1, 1), Padding = new Thickness(12, 8, 12, 10), Margin = new Thickness(0, 0, 8, 8) }.Res(Border.BackgroundProperty, "Card").Res(Border.BorderBrushProperty, brush);
         }
         var f = r.F; var a = r.Asset; var tier = r.Tier is "Act" or "Attend" or "Track" ? r.Tier : "Ignore";
         var due = last?.Profile.Sla.TryGetValue(r.Tier, out var d) == true ? $" Deadline: {DateTime.Today.AddDays(d):yyyy-MM-dd} ({d} days)." : "";
@@ -667,8 +685,8 @@ public partial class MainWindow : Window
         // headline: what, where, decision
         var head = new WrapPanel { Margin = new Thickness(0, 0, 0, 8) };
         head.Children.Add(new TextBlock { Text = $"{r.Cve}  on  {a.Name}", FontSize = 18, FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 0, 14, 0), VerticalAlignment = VerticalAlignment.Center });
-        head.Children.Add(new Border { Background = B(tier), CornerRadius = new CornerRadius(3), Padding = new Thickness(8, 2, 8, 2), VerticalAlignment = VerticalAlignment.Center,
-            Child = new TextBlock { Text = r.Tier.ToUpper(), Foreground = Brushes.Black, FontWeight = FontWeights.Bold, FontFamily = (FontFamily)FindResource("Mono"), FontSize = 12 } });
+        head.Children.Add(new Border { CornerRadius = new CornerRadius(3), Padding = new Thickness(8, 2, 8, 2), VerticalAlignment = VerticalAlignment.Center,
+            Child = new TextBlock { Text = r.Tier.ToUpper(), FontWeight = FontWeights.Bold, FontFamily = (FontFamily)FindResource("Mono"), FontSize = 12 }.Res(TextBlock.ForegroundProperty, "OnAccent") }.Res(Border.BackgroundProperty, tier));
         head.Children.Add(Text($"   {Analyse.Action[r.Tier]}.{due}"));
         DetailPanel.Children.Add(head);
         var links = new WrapPanel { Margin = new Thickness(0, 0, 0, 8) };
@@ -743,11 +761,11 @@ public partial class MainWindow : Window
             var open = new Button { Content = "Open", Margin = new Thickness(0, 0, 6, 0) }; open.Click += (_, _) => OpenFile(path);
             var save = new Button { Content = pdf ? "Export PDF..." : $"Export {Path.GetExtension(path)}...", Margin = new Thickness(0) };
             save.Click += (_, _) => Export(path, pdf);
-            OutputButtons.Children.Add(new Border { BorderBrush = (Brush)FindResource("Line"), BorderThickness = new Thickness(0, 0, 0, 1), Padding = new Thickness(0, 4, 0, 8),
+            OutputButtons.Children.Add(new Border { BorderThickness = new Thickness(0, 0, 0, 1), Padding = new Thickness(0, 4, 0, 8),
                 Child = new StackPanel { Children = {
                     new TextBlock { Text = label, FontWeight = FontWeights.SemiBold },
                     new TextBlock { Text = who, Style = (Style)FindResource("Muted"), FontSize = 11, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 4) },
-                    new StackPanel { Orientation = Orientation.Horizontal, Children = { open, save } } } } });
+                    new StackPanel { Orientation = Orientation.Horizontal, Children = { open, save } } } } }.Res(Border.BorderBrushProperty, "Line"));
         }
         OutputText.Text = $"Brief: {(r.BriefSource.StartsWith("template") ? "fixed template, no AI" : "AI draft (" + r.BriefSource + "), verify before sending")}. All outputs are in {r.OutDir}.";
     }
@@ -889,16 +907,16 @@ public partial class MainWindow : Window
         double x = 10, y = 40; const double w = 190, h = 56, gap = 70;
         Border Node(string title, string sub, string brush)
         {
-            var b = new Border { Width = w, Height = h, CornerRadius = new CornerRadius(4), BorderThickness = new Thickness(1), BorderBrush = (Brush)FindResource(brush), Background = (Brush)FindResource("Card"), Padding = new Thickness(8, 4, 8, 4),
-                Child = new StackPanel { Children = { new TextBlock { Text = title, FontWeight = FontWeights.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis }, new TextBlock { Text = sub, Style = (Style)FindResource("Muted"), FontSize = 11, TextTrimming = TextTrimming.CharacterEllipsis } } } };
+            var b = new Border { Width = w, Height = h, CornerRadius = new CornerRadius(4), BorderThickness = new Thickness(1), Padding = new Thickness(8, 4, 8, 4),
+                Child = new StackPanel { Children = { new TextBlock { Text = title, FontWeight = FontWeights.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis }, new TextBlock { Text = sub, Style = (Style)FindResource("Muted"), FontSize = 11, TextTrimming = TextTrimming.CharacterEllipsis } } } }.Res(Border.BorderBrushProperty, brush).Res(Border.BackgroundProperty, "Card");
             Canvas.SetLeft(b, x); Canvas.SetTop(b, y); PathCanvas.Children.Add(b); return b;
         }
         Node("Internet", "attacker", "Dim"); x += w + gap;
         foreach (var hop in row.P.Hops)
         {
-            var arrow = new Line { X1 = x - gap + 4, X2 = x - 4, Y1 = y + h / 2, Y2 = y + h / 2, Stroke = (Brush)FindResource("Accent"), StrokeThickness = 2 };
+            var arrow = new Line { X1 = x - gap + 4, X2 = x - 4, Y1 = y + h / 2, Y2 = y + h / 2, StrokeThickness = 2 }.Res(Line.StrokeProperty, "Accent");
             PathCanvas.Children.Add(arrow);
-            var lab = new TextBlock { Text = hop.Cve, FontSize = 10, FontFamily = (FontFamily)FindResource("Mono"), Foreground = (Brush)FindResource("Mute") }; Canvas.SetLeft(lab, x - gap - 2); Canvas.SetTop(lab, y - 4); PathCanvas.Children.Add(lab);
+            var lab = new TextBlock { Text = hop.Cve, FontSize = 10, FontFamily = (FontFamily)FindResource("Mono") }.Res(TextBlock.ForegroundProperty, "Mute"); Canvas.SetLeft(lab, x - gap - 2); Canvas.SetTop(lab, y - 4); PathCanvas.Children.Add(lab);
             var n = Node(hop.Asset, $"{hop.Cap}, likelihood {hop.Likelihood:0.00}", hop.Asset == row.P.Target ? "Act" : "Track"); n.ToolTip = hop.Basis; x += w + gap;
         }
         var note = new TextBlock { Text = "Possible, not proven. " + string.Join("   ", row.P.Hops.Select(h => $"{h.Asset}: {h.Basis}")), Style = (Style)FindResource("Muted"), Width = 1000, FontSize = 11 };
@@ -996,7 +1014,8 @@ public partial class MainWindow : Window
         }
         foreach (var (key, label) in new[] { ("NVD_API_KEY", "NVD (faster sync)"), ("ANTHROPIC_API_KEY", "Anthropic (brief)"), ("AZURE_OPENAI_KEY", "Azure OpenAI (brief)"), (TriageLlm.KeyName, "OpenRouter (triage LLM)") })
         {
-            var box = new PasswordBox { Width = 300, Margin = new Thickness(0, 0, 8, 0), Background = (Brush)FindResource("Card"), Foreground = (Brush)FindResource("Fg"), BorderBrush = (Brush)FindResource("Line"), Padding = new Thickness(4) };
+            var box = new PasswordBox { Width = 300, Margin = new Thickness(0, 0, 8, 0), Padding = new Thickness(4) }; // colours from the PasswordBox style
+            System.Windows.Automation.AutomationProperties.SetName(box, label + " API key");
             var state = Cell(Secrets.Get(key) is { Length: > 0 } ? "set" : "not set", 60, true);
             var row = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 2, 0, 2) };
             row.Children.Add(Cell(label, 170));
@@ -1040,7 +1059,7 @@ public partial class MainWindow : Window
         var path = Path.Combine(data, "assets.csv");
         if (Example) { Status("Untick the Example Organisation first"); return; }
         if (!Inventory.IsInventory(path)) { Status("assets.csv is already in Stenwatch format (it has a cpe column)"); return; }
-        if (!File.Exists(Db)) { Status("Converting needs the database (NVD's product names): sync or choose a cve.db on 2 Collection first"); Go(3); return; }
+        if (!File.Exists(Db)) { Status("Converting needs the database (NVD's product names): sync or choose a cve.db on Feeds first"); Go(3); return; }
         Status("converting the inventory: looking up every OS and product in NVD's product list...");
         try
         {
