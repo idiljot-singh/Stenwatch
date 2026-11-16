@@ -19,7 +19,7 @@
                 <Border Background="#ffc233" CornerRadius="3" Padding="8,2" Margin="12,0,0,0" VerticalAlignment="Center" ToolTip="Need-to-know only"><TextBlock Text="TLP:AMBER" Foreground="#000" FontFamily="{StaticResource Mono}" FontSize="11" FontWeight="Bold"/></Border></StackPanel>
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock Text="STENWATCH" FontFamily="{StaticResource Mono}" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource Accent}" VerticalAlignment="Center"/>
-                <Border BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="3" Padding="5,0" Margin="8,0,28,0" VerticalAlignment="Center"><TextBlock Text="0.2 beta" FontFamily="{StaticResource Mono}" FontSize="10" Foreground="{DynamicResource Mute}"/></Border>
+                <Border BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="3" Padding="5,0" Margin="8,0,28,0" VerticalAlignment="Center"><TextBlock Text="0.3 beta" FontFamily="{StaticResource Mono}" FontSize="10" Foreground="{DynamicResource Mute}"/></Border>
                 <RadioButton x:Name="Area0" Style="{StaticResource Segment}" Content="Home" Tag="0" Checked="AreaClick"/>
                 <RadioButton x:Name="Area1" Style="{StaticResource Segment}" Content="Exposure" Tag="1" Checked="AreaClick"/>
                 <RadioButton x:Name="Area2" Style="{StaticResource Segment}" Content="Intelligence" Tag="2" Checked="AreaClick"/>
@@ -61,7 +61,7 @@
 
             <!-- 0 Guide (toolbar icon) -->
             <TabItem Tag="Guide. How to start, how to read a finding, and what the labels mean. The toolbar has four areas: Home, Exposure, Intelligence and Response; the rail on the left shows the pages of the one you pick. The CTI lifecycle (Direction, Collection, Processing, Analysis, Dissemination, Feedback) runs through Threat profile, Feeds, Estate, Findings, Reports and Remediation: each of those shows at the bottom what it still needs, and the Next button turns green when it is done. Guided run takes the six stages in order."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel MaxWidth="980" HorizontalAlignment="Left">
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,10"><TextBlock Text="Guide" FontSize="26" FontWeight="SemiBold"/><local:HelpButton Title="Guide" Text="Stenwatch 0.2.0 beta. A vulnerability management tool that explains which vulnerabilities matter to your organisation, with the evidence, and checks that the work actually gets done."/></StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10"><TextBlock Text="Guide" FontSize="26" FontWeight="SemiBold"/><local:HelpButton Title="Guide" Text="Stenwatch 0.3.0 beta. A vulnerability management tool that explains which vulnerabilities matter to your organisation, with the evidence, and checks that the work actually gets done."/></StackPanel>
 
                 <TextBlock Text="START HERE: FOUR STEPS" Style="{StaticResource H}"/>
                 <TextBlock TextWrapping="Wrap" LineHeight="22"><Run FontWeight="SemiBold" Text="1  Pick the data. "/><Run Foreground="{DynamicResource Mute}" Text="Dashboard has a tick box for the Example Organisation: fictional data with services, links and a control already filled in, so every page has something to show. Untick it to use your own profile.yaml and asset lists."/><LineBreak/>
@@ -219,6 +219,12 @@
                 <TextBlock Grid.Row="3" Text="DETAIL OF THE SELECTED FINDING" Style="{StaticResource H}"/>
                 <ScrollViewer Grid.Row="4" VerticalScrollBarVisibility="Auto"><StackPanel>
                     <StackPanel x:Name="DetailPanel"><TextBlock Style="{StaticResource Muted}" Text="Click a finding."/></StackPanel>
+                    <StackPanel x:Name="KqlPanel" Margin="0,4,0,0" Visibility="Collapsed">
+                        <Button x:Name="KqlBtn" Content="Hunting query (KQL)" Click="KqlClick" HorizontalAlignment="Left" Margin="0" ToolTip="A Microsoft Defender advanced hunting query for this CVE" AutomationProperties.Name="Hunting query (KQL)"/>
+                        <StackPanel x:Name="KqlBox" Visibility="Collapsed" Margin="0,6,0,0">
+                            <TextBlock Style="{StaticResource Muted}" FontSize="11" Text="A template: Stenwatch fills in the CVE id and does not run it against any tenant. Paste it in Defender, Hunting, Advanced hunting and check the result."/>
+                            <TextBox x:Name="KqlText" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" FontFamily="{StaticResource Mono}" FontSize="12" Margin="0,4,0,4" AutomationProperties.Name="Hunting query text"/>
+                            <Button Content="Copy" Click="KqlCopy" HorizontalAlignment="Left" Margin="0" AutomationProperties.Name="Copy hunting query"/></StackPanel></StackPanel>
                     <Expander Header="All evidence behind this priority (table)" Foreground="{DynamicResource Mute}" Margin="0,10,0,0">
                     <DataGrid x:Name="EvidenceGrid" MaxHeight="190">
                         <DataGrid.Columns><DataGridTextColumn Header="SIGNAL" Binding="{Binding Signal}" Width="120"/><DataGridTextColumn Header="KIND" Binding="{Binding Kind}" Width="90"/><DataGridTextColumn Header="CONF" Binding="{Binding Confidence}" Width="70"/>
@@ -256,13 +262,15 @@
                 <DataGrid x:Name="TasksGrid" Grid.Row="2">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="STATE" Binding="{Binding State}" Width="100"/><DataGridTextColumn Header="TIER" Binding="{Binding Tier}" Width="70"/><DataGridTextColumn Header="CVE" Binding="{Binding Cve}" Width="130"/>
-                        <DataGridTextColumn Header="ASSET" Binding="{Binding Asset}" Width="220"/><DataGridTextColumn Header="OWNER" Binding="{Binding Owner}" Width="110"/><DataGridTextColumn Header="TICKET" Binding="{Binding Ticket}" Width="100"/>
+                        <DataGridTextColumn Header="ASSET" Binding="{Binding Asset}" Width="220"/><DataGridTextColumn Header="OWNER" Binding="{Binding Owner}" Width="110"/><DataGridTextColumn Header="TICKET" Binding="{Binding Ticket}" Width="100"/><DataGridTemplateColumn Header="TICKET STATE" Width="120" SortMemberPath="TicketState"><DataGridTemplateColumn.CellTemplate><DataTemplate><local:TicketPill State="{Binding TicketState}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
                         <DataGridTextColumn Header="OPENED" Binding="{Binding Opened}" Width="90"/><DataGridTextColumn Header="DUE" Binding="{Binding Due}" Width="90"/><DataGridTextColumn Header="CLOSED" Binding="{Binding Closed}" Width="90"/><DataGridTextColumn Header="NOTE" Binding="{Binding Note}" Width="*"/></DataGrid.Columns></DataGrid>
-                <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,10,0,0">
+                <WrapPanel Grid.Row="3" Margin="0,10,0,0">
                     <TextBlock Text="Owner " VerticalAlignment="Center" Style="{StaticResource Muted}"/><TextBox x:Name="TaskOwner" Width="120" Margin="0,0,8,0"/>
                     <TextBlock Text="Ticket " VerticalAlignment="Center" Style="{StaticResource Muted}"/><TextBox x:Name="TaskTicket" Width="110" Margin="0,0,8,0"/>
                     <Button Content="Assign" Click="AssignTask"/><Button Content="Claim fixed" Click="ClaimTask"/><Button Content="Reload" Click="LoadTasks"/>
-                    <TextBlock x:Name="TaskStatus" Style="{StaticResource Muted}" VerticalAlignment="Center"/></StackPanel>
+                    <Button x:Name="PushBtn" Content="Push to ticket" Click="PushTicket" ToolTip="Send the selected task to your ticket webhook (Integrations). One task, eight fields, shown before the first push." AutomationProperties.Name="Push to ticket"/>
+                    <TextBlock x:Name="PushNote" Style="{StaticResource Muted}" VerticalAlignment="Center" Margin="0,0,8,0"/><Button x:Name="PushSetupBtn" Content="Open Integrations" Click="GoIntegrations" Visibility="Collapsed" AutomationProperties.Name="Open Integrations to set the ticket webhook"/>
+                    <TextBlock x:Name="TaskStatus" Style="{StaticResource Muted}" VerticalAlignment="Center"/></WrapPanel>
             </Grid></TabItem>
 
             <!-- 8 Attack paths -->
@@ -352,6 +360,7 @@
                             <local:HelpButton Title="Your mark" Text="Type a reason, then:&#10;Agree: keep the tier, note that you checked it.&#10;Raise / Lower: move it one tier.&#10;Snooze: keep the tier but take it off today's decision list, until the date in the second box.&#10;Marks are kept and shown on later runs."/></StackPanel>
                         <ScrollViewer VerticalScrollBarVisibility="Auto"><TextBlock x:Name="TriDetail" TextWrapping="Wrap" Style="{StaticResource Muted}" Text="Click a row."/></ScrollViewer></DockPanel></TabItem>
                     <TabItem Header="Note to IT"><DockPanel Margin="0,8,0,0">
+                        <StackPanel x:Name="EmlLine" DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,6,0,0" Visibility="Collapsed"><TextBlock x:Name="EmlText" Style="{StaticResource Muted}" VerticalAlignment="Center" Margin="0,0,8,0"/><Button Content="Open" Click="OpenEml" Margin="0" AutomationProperties.Name="Open briefing.eml"/></StackPanel>
                         <WrapPanel DockPanel.Dock="Bottom" Margin="0,6,0,0"><Button Content="Copy" Click="TriageCopy"/><Button Content="Briefing" Click="TriageBriefing"/><Button Content="Excel" Click="TriageXlsx"/><Button Content="Folder" Click="TriageOutFolder"/>
                             <local:HelpButton Title="Outputs" Text="Copy: the note to IT, ready to paste into an email.&#10;Briefing: the one-page HTML briefing.&#10;Excel: fix actions and every CVE, with the added columns.&#10;Folder: where all three are saved."/></WrapPanel>
                         <TextBox x:Name="TriNote" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" FontFamily="{StaticResource Mono}" FontSize="12"/></DockPanel></TabItem>
@@ -381,15 +390,16 @@
             </StackPanel></ScrollViewer></TabItem>
 
             <!-- 16 Tickets (page shell: content built in step B into TicketsHost) -->
-            <TabItem Tag="Tickets. Remediation tasks that were sent to a ticket system, their state and link."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
+            <TabItem Tag="Tickets. Remediation tasks that were sent to a ticket system, their state (Not sent, Sent, Failed) and reference. Push again retries a failed one."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
                 <TextBlock Text="Tickets" FontSize="26" FontWeight="SemiBold" Margin="0,0,0,10"/>
                 <StackPanel x:Name="TicketsHost"/>
             </StackPanel></ScrollViewer></TabItem>
 
             <!-- 17 Integrations (page shell: content built in step B into IntegrationsHost) -->
-            <TabItem Tag="Integrations. Everything that goes in or out: file imports, API connections, the ticket webhook, the intelligence sources and API keys, and the schedule."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
+            <TabItem Tag="Integrations. Everything that goes in or out: file imports, API connections, the ticket webhook, briefing delivery, the scheduled morning run, the end-of-life check, the intelligence sources and API keys."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
                 <TextBlock Text="Integrations" FontSize="26" FontWeight="SemiBold" Margin="0,0,0,10"/>
                 <StackPanel x:Name="IntegrationsHost"/>
+                <StackPanel x:Name="DailyHost"/>
                 <StackPanel Orientation="Horizontal"><TextBlock Text="INTELLIGENCE SOURCES" Style="{StaticResource H}"/>
                     <local:HelpButton x:Name="SourcesHelp" Title="Sources" Text="Advisory feeds Morning triage reads (Feeds). Add any RSS or Atom feed, for example your national CERT.&#10;Grade A-F: how much its word counts. An 'actively exploited' claim from grade A or B means Act; from C to F it means Attend.&#10;TLP: CLEAR may go to a cloud LLM, AMBER only to a model on this machine (llm.txt), RED never to any LLM.&#10;CVE posts only: skip items that name no CVE (vendor blogs)."/></StackPanel>
                 <StackPanel x:Name="SourcesPanel"/>

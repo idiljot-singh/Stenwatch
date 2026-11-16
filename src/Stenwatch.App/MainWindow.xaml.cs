@@ -45,7 +45,7 @@ public partial class MainWindow : Window
         if (int.TryParse(Environment.GetEnvironmentVariable("STENWATCH_PAGE"), out var pg)) Go(pg);
         if (Environment.GetEnvironmentVariable("STENWATCH_TRIAGE") is { Length: > 0 } tx) Loaded += (_, _) => { Go(12); triExport = tx; TriLlm.IsChecked = Environment.GetEnvironmentVariable("STENWATCH_TRIAGE_LLM") == "1"; TriageRun(this, null!); }; // dev only: run the Morning triage on a file
         if (Environment.GetEnvironmentVariable("STENWATCH_SYNC") == "quick") Loaded += async (_, _) => await SyncFeeds(DateTimeOffset.UtcNow.AddDays(-2));
-        if (Environment.GetEnvironmentVariable("STENWATCH_AUTORUN") == "1") Loaded += async (_, _) => { await RunEngine(false); if (pg > 0) Go(pg); if (Environment.GetEnvironmentVariable("STENWATCH_FIRST") == "1") { FindingsGrid.SelectedIndex = 0; PathsGrid.SelectedIndex = int.TryParse(Environment.GetEnvironmentVariable("STENWATCH_PATHROW"), out var pr) ? pr : 0; } };
+        if (Environment.GetEnvironmentVariable("STENWATCH_AUTORUN") == "1") Loaded += async (_, _) => { await RunEngine(false); if (pg > 0) Go(pg); if (Environment.GetEnvironmentVariable("STENWATCH_COMPONENT") is { Length: > 0 } cf) { ComponentFilter.SelectedItem = cf; TierFilter.SelectedIndex = 1; } if (Environment.GetEnvironmentVariable("STENWATCH_FIRST") == "1") { FindingsGrid.SelectedIndex = 0; PathsGrid.SelectedIndex = int.TryParse(Environment.GetEnvironmentVariable("STENWATCH_PATHROW"), out var pr) ? pr : 0; } };
     }
 
     bool Example => ExampleBox.IsChecked == true;
@@ -294,13 +294,7 @@ public partial class MainWindow : Window
                     new TextBlock { Text = Analyse.Action[t], Style = (Style)FindResource("Muted"), FontSize = 12 } } } }.Res(Border.BorderBrushProperty, brush).Res(Border.BackgroundProperty, "Card"));
         }
         EventsGrid.ItemsSource = r.Events;
-        // ponytail: exposures have no risk score, so they follow the ranked CVEs (by tier) instead of interleaving; interleave when they get a comparable score
-        allFindings = r.Ranked.Select(x => new FindingRow { R = x })
-            .Concat(Exposure.Load(Example ? AppPaths.Examples() : data).OrderBy(x => Array.IndexOf(DefenderTriage.Tiers, x.Tier)).Select(x => new FindingRow { E = x })).ToList();
-        var pick = ComponentFilter.SelectedItem as string;
-        ComponentFilter.ItemsSource = new[] { AllComponents }.Concat(allFindings.Select(f => f.Component).Distinct()).ToList();
-        ComponentFilter.SelectedItem = ComponentFilter.Items.Contains(pick ?? "") ? pick : AllComponents;
-        ApplyFilter();
+        LoadFindings();
         PathsGrid.ItemsSource = r.Paths?.Paths.Select(p => new PathRow { P = p }).ToList();
         ShowOutputs(r);
         LoadTasks(null, null!); LoadEvidence(); LoadFeeds();
@@ -657,6 +651,7 @@ public partial class MainWindow : Window
     {
         if (FindingsGrid.SelectedItem is not FindingRow f) return;
         EvidenceGrid.ItemsSource = f.R?.Evidence;
+        ShowKql(f);
         if (f.R != null) { ShowDetail(f.R); return; }
         var x = f.E!; DetailPanel.Children.Clear(); // an exposure: what the import said, and the rule that set its tier
         DetailPanel.Children.Add(new TextBlock { Text = $"{x.Title}  on  {x.Asset}", FontSize = 18, FontWeight = FontWeights.SemiBold, TextWrapping = TextWrapping.Wrap });
@@ -796,6 +791,7 @@ public partial class MainWindow : Window
         ("Findings table", "report.csv", false, "Excel, ticketing or another tool: every finding, one row each."),
         ("STIX 2.1 bundle", "bundle.json", false, "Threat-intelligence platforms (MISP, OpenCTI, Sentinel)."),
         ("ATT&CK Navigator layer", "attack-layer.json", false, "The techniques your findings enable, for the MITRE ATT&CK Navigator."),
+        ("Hunting queries (KQL)", Kql.FileName, false, "The detection team: one Defender advanced hunting query per Act finding. Templates, not run against a tenant."),
     };
 
     /// <summary>Save a copy; a document is turned into PDF first (reused while it is newer than the page).</summary>
@@ -876,6 +872,7 @@ public partial class MainWindow : Window
     // ---------- feedback ----------
     void LoadTasks(object? s, RoutedEventArgs e)
     {
+        PushSetupBtn.Visibility = Visibility.Collapsed; PushNote.Text = "";
         if (!File.Exists(TaskDb)) { TasksGrid.ItemsSource = null; TaskStatus.Text = Example ? "   Rank the Example Organisation to replay its simulated history." : ""; OpsText.Text = ""; return; }
         using var db = Collect.Connect(TaskDb);
         var tasks = Remediation.Load(db);
@@ -1029,6 +1026,7 @@ public partial class MainWindow : Window
             }));
             KeysPanel.Children.Add(row);
         }
+        BuildDaily();
     }
 
     void AfterFileChange(string name)

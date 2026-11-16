@@ -17,9 +17,6 @@ public class AdvisoryRow
     public string Cves => string.Join(", ", A.Cves); public string Mark => A.ActivelyExploited ? "actively exploited" : A.ExploitExists ? "exploit exists" : "";
 }
 
-/// <summary>A task that carries a ticket reference, as the Tickets grid shows it.</summary>
-public record TicketRow(string Task, string Item, string Asset, string Owner, string Ticket);
-
 /// <summary>The pages drawn in code from the data folder: Coverage, the Dashboard's coverage line, Guided run, Advisories, Tickets and the Integrations connectors table.
 /// BuildPage redraws the page that is open; it runs from UpdateGate, so on every page change and after every rank.</summary>
 public partial class MainWindow
@@ -40,6 +37,7 @@ public partial class MainWindow
             switch (page)
             {
                 case 1: BuildDashCoverage(); break;
+                case 12: ShowEml(); break;
                 case 13: BuildGuided(); break;
                 case 14: BuildCoverage(); break;
                 case 15: BuildAdvisories(); break;
@@ -159,7 +157,7 @@ public partial class MainWindow
         grid.Children.Add(name); Grid.SetRow(status, 1); grid.Children.Add(status); Grid.SetRow(bottom, 2); grid.Children.Add(bottom);
         var b = new Button { Style = (Style)FindResource("Tile"), Width = 220, Height = 112, Margin = new Thickness(0, 0, 6, 12), Content = grid, ToolTip = c.Note };
         AutomationProperties.SetName(b, not ? $"{comp}: not connected. Needs {c.Component.Needs}" : $"{comp}: {Word(c.Status)}. {(c.Count > 0 ? $"{c.Count:N0} {c.Caption}. " : "")}Open");
-        b.Click += (_, _) => Go(not ? 17 : OpenPage(comp));
+        b.Click += (_, _) => OpenTile(comp, not);
         return b;
     }
 
@@ -234,22 +232,6 @@ public partial class MainWindow
         if (grid.Items.Count > 0) grid.SelectedIndex = 0;
     }
 
-    // ---------- Tickets ----------
-    void BuildTickets()
-    {
-        var host = TicketsHost; host.Children.Clear();
-        var rows = new List<TicketRow>();
-        if (File.Exists(TaskDb)) { using var db = Collect.Connect(TaskDb); rows = Remediation.Load(db).Where(t => t.Ticket != "").Select(t => new TicketRow($"T-{t.Id}", t.Cve, t.Asset, t.Owner, t.Ticket)).ToList(); }
-        host.Children.Add(new TextBlock { Style = (Style)FindResource("Muted"), Margin = new Thickness(0, 0, 0, 8),
-            Text = rows.Count == 0 ? "No task has a ticket reference yet. Pushing tasks to a ticket system arrives in the next version; until then, type a reference in the Ticket box on Remediation and it shows here."
-                : "Tasks that carry a ticket reference. Pushing tasks to a ticket system arrives in the next version." });
-        if (rows.Count == 0) return;
-        var grid = new DataGrid { MaxHeight = 420, ItemsSource = rows }; AutomationProperties.SetName(grid, "Tickets");
-        void Col(string head, string path, double w) => grid.Columns.Add(new DataGridTextColumn { Header = head, Binding = new System.Windows.Data.Binding(path), Width = w > 0 ? new DataGridLength(w) : new DataGridLength(1, DataGridLengthUnitType.Star) });
-        Col("TASK", "Task", 90); Col("ITEM", "Item", 150); Col("ASSET", "Asset", 0); Col("OWNER", "Owner", 140); Col("TICKET", "Ticket", 140);
-        host.Children.Add(grid);
-    }
-
     // ---------- Integrations: the connectors table (sources and API keys sit below it, moved here from Settings) ----------
     Dictionary<string, string> DbMeta()
     {
@@ -263,7 +245,7 @@ public partial class MainWindow
     {
         var host = IntegrationsHost; host.Children.Clear();
         host.Children.Add(Head("CONNECTORS"));
-        host.Children.Add(new TextBlock { Text = "Everything that goes in or out: files, APIs and webhooks. A row that names a phase is not built yet.", Style = (Style)FindResource("Muted"), Margin = new Thickness(0, 0, 0, 8) });
+        host.Children.Add(new TextBlock { Text = "Everything that goes in or out: files, APIs and webhooks. A row that names a phase is not built yet. The settings for the schedule, ticket webhook, briefing delivery and endoflife.date are under the table.", Style = (Style)FindResource("Muted"), Margin = new Thickness(0, 0, 0, 8) });
         var rows = new List<UIElement[]>();
         void Row(string name, string feeds, string kind, string status, string last, string? action = null, Action? click = null, string? word = null)
             => rows.Add(new UIElement[] { Txt(name), CompTag(feeds), Txt(kind, "Mute"), Mark(status, word), Txt(last, status == Coverage.NotConnected ? "Dim" : "Mute"),
@@ -278,16 +260,22 @@ public partial class MainWindow
         var api = false; try { api = File.Exists(files.Profile) && Profile.Load(files.Profile).Defender.Enabled; } catch { } // a broken profile is reported on Threat profile
         Row("Defender API", "Vulnerabilities", "API", api ? Coverage.Connected : Coverage.NotConnected, api ? "not recorded" : "never", File.Exists(files.Profile) ? "Open" : null, () => OpenFile(files.Profile));
         var meta = DbMeta();
-        foreach (var (name, key, feeds) in new[] { ("NVD", "nvd_sync", "Vulnerabilities"), ("CISA KEV", "kev_sync", "Intelligence"), ("FIRST EPSS", "epss_sync", "Intelligence"), ("MITRE ATT&CK", "attack_sync", "Intelligence"), ("CTID mappings", "ctid_sync", "Intelligence"), ("MITRE D3FEND", "d3fend_sync", "Intelligence") })
+        foreach (var (name, key, feeds, table) in new[] { ("NVD", "nvd_sync", "Vulnerabilities", "cve"), ("CISA KEV", "kev_sync", "Intelligence", "kev"), ("FIRST EPSS", "epss_sync", "Intelligence", "epss"), ("MITRE ATT&CK", "attack_sync", "Intelligence", "technique"), ("CTID mappings", "ctid_sync", "Intelligence", "cve_technique"), ("MITRE D3FEND", "d3fend_sync", "Intelligence", "defend") })
         {
             var has = meta.TryGetValue(key, out var v); var stale = has && EvidenceOf.IsStale(v!, DateTimeOffset.UtcNow);
-            Row(name, feeds, "API", !has ? Coverage.NotConnected : stale ? Coverage.Attention : Coverage.Connected, has ? Day(v!) : "never", "Open", () => Go(3));
+            // the "done" stamp is written when a sync finishes; the NVD full download takes many runs and resumes (nvd_index), so rows without the stamp are a partial sync, not "never"
+            var rowsIn = has ? 0 : Rows(table);
+            if (rowsIn > 0) Row(name, feeds, "API", Coverage.Partly, $"{rowsIn:N0} rows, sync not finished", "Open", () => Go(3), "partly connected");
+            else Row(name, feeds, "API", !has ? Coverage.NotConnected : stale ? Coverage.Attention : Coverage.Connected, has ? Day(v!) : "never", "Open", () => Go(3));
         }
         var on = Sources.Load(data).Count(s => s.Enabled); var advFile = Path.Combine(data, "advisories.json"); var stored = File.Exists(advFile) ? Advisories.Load(data).Count : 0;
         Row($"Advisory sources ({on} on)", "Intelligence", "API", on == 0 ? Coverage.NotConnected : stored > 0 ? Coverage.Connected : Coverage.Partly, stored > 0 ? File.GetLastWriteTime(advFile).ToString("yyyy-MM-dd") : "never", "Edit", () => SourcesPanel.BringIntoView());
 
         // not built yet
-        Later("Scheduled morning run", "Vulnerabilities", "file", 2); Later("Ticket webhook", "Ticketing", "webhook", 2); Later("Briefing delivery (Teams, email file)", "Reports", "webhook", 2); Later("endoflife.date", "End-of-life software", "API", 2);
+        var (ss, sl, sw) = ScheduleState(); Row("Scheduled morning run", "Vulnerabilities", "file", ss, sl, "Set up", () => schedSec?.BringIntoView(), sw);
+        var (ts, tl, tw) = TicketState(); Row("Ticket webhook", "Ticketing", "webhook", ts, tl, "Set up", () => ticketSec?.BringIntoView(), tw);
+        var (bs, bl, bw) = BriefingState(); Row("Briefing delivery (Teams, email file)", "Reports", "webhook", bs, bl, "Set up", () => briefSec?.BringIntoView(), bw);
+        var (es, el, ew) = EolState(); Row("endoflife.date", "End-of-life software", "API", es, el, "Set up", () => eolSec?.BringIntoView(), ew);
         Later("Intune", "Assets", "API", 3); Later("Entra", "Identity", "API", 3); Later("Defender for Cloud", "Cloud workloads", "file", 3); Later("Defender security recommendations", "Misconfiguration", "file", 3); Later("Exposure Management", "Attack surface", "file", 3);
         Later("Defender EASM", "Attack surface", "file", 4); Later("OWASP ZAP report", "Web apps", "file", 4); Later("SARIF file", "Web apps", "file", 4);
         Later("Defender for Cloud Apps", "AI discovery", "file", 5); Later("Defender for IoT", "OT and IoT", "file", 5);

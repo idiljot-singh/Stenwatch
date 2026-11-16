@@ -52,12 +52,16 @@ public static class Tickets
         }.ToJsonString();
     }
 
+    /// <summary>Why a webhook address cannot be used (the same words Post gives), or null when it is a well-formed https address. Sends nothing.</summary>
+    public static string? UrlProblem(string? url) => string.IsNullOrWhiteSpace(url) ? "no webhook set"
+        : Uri.TryCreate(url.Trim(), UriKind.Absolute, out var u) && u.Scheme == Uri.UriSchemeHttps ? null : "the webhook address must start with https://";
+
     /// <summary>POST json to a webhook. https only (same rule as Sources.Fetch and TriageLlm.Ask). Fails soft: (false, "", note).
     /// The note never contains the URL or an exception message (a host name can be in one).</summary>
     public static async Task<(bool Ok, string Reply, string Note)> Post(HttpClient http, string? url, string json, (string Name, string Value)? header = null)
     {
-        if (string.IsNullOrWhiteSpace(url)) return (false, "", "no webhook set");
-        if (!Uri.TryCreate(url.Trim(), UriKind.Absolute, out var u) || u.Scheme != Uri.UriSchemeHttps) return (false, "", "the webhook address must start with https://");
+        if (UrlProblem(url) is { } bad) return (false, "", bad);
+        var u = new Uri(url!.Trim());
         try
         {
             using var req = new HttpRequestMessage(HttpMethod.Post, u) { Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json") };

@@ -30,6 +30,14 @@ public class DailyOperationTests : IDisposable
         "CVE-2026-1001,High,8.8,0.30000,30,\"27 May, 2026\",\"29 May, 2026\",\"06 Oct, 2026\",False,False,False,google:chrome,150,\"Summary: fixed prior to 148.0.1\",RemediationRequired\n";
 
     [Fact]
+    public void Tickets_UrlProblem_NamesTheReason()
+    {
+        Assert.Equal("no webhook set", Tickets.UrlProblem(" "));
+        Assert.Equal("the webhook address must start with https://", Tickets.UrlProblem("http://example.test/hook"));
+        Assert.Null(Tickets.UrlProblem("https://example.test/hook"));
+    }
+
+    [Fact]
     public async Task Morning_PicksNewestExport_WritesEml_PostsDecisions_ThenSaysNothingNew()
     {
         var watch = Directory.CreateDirectory(Path.Combine(dir, "watch")).FullName; var data = Directory.CreateDirectory(Path.Combine(dir, "data")).FullName;
