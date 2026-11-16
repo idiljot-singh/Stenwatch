@@ -11,7 +11,7 @@ From every CVE in the world to the few that matter to *your* organisation, with 
 ![STIX 2.1](https://img.shields.io/badge/STIX-2.1-5aa9ff?labelColor=0a101b)
 ![MITRE ATT&CK](https://img.shields.io/badge/MITRE-ATT%26CK-ff4d5e?labelColor=0a101b)
 
-**[Download for Windows (0.2.0 beta) →](https://github.com/idiljot-singh/Stenwatch/releases/tag/v0.2.0-beta)** · **[Live page and films →](https://idiljot-singh.github.io/Stenwatch/)**
+**[Get it from the Microsoft Store →](https://apps.microsoft.com/detail/9PBKG30523KJ)** · **[Installer (0.2.0 beta) →](https://github.com/idiljot-singh/Stenwatch/releases/tag/v0.2.0-beta)** · **[Live page and films →](https://idiljot-singh.github.io/Stenwatch/)**
 
 </div>
 
@@ -51,11 +51,11 @@ An optional LLM (OpenRouter's free model, or a model on your own machine) reads 
 
 ## Install
 
-1. Download `Stenwatch-Setup-0.2.0-beta.exe` from the [release page](https://github.com/idiljot-singh/Stenwatch/releases/tag/v0.2.0-beta) and run it. No admin rights; .NET is included.
-2. The beta is unsigned, so Windows shows a blue "unknown publisher" screen: choose **More info → Run anyway**, or ask IT to allow-list the file by its SHA-256 (in the release notes).
+1. Get it from the [Microsoft Store](https://apps.microsoft.com/detail/9PBKG30523KJ). It is signed by Microsoft, installs without admin rights and updates itself. .NET is included.
+2. Or download `Stenwatch-Setup-0.2.0-beta.exe` from the [release page](https://github.com/idiljot-singh/Stenwatch/releases/tag/v0.2.0-beta). That installer is unsigned, so Windows shows a blue "unknown publisher" screen: choose **More info → Run anyway**, or ask IT to allow-list the file by its SHA-256 (in the release notes).
 3. The app opens on **Guide**. The toolbar has three workspaces: **Start** (Guide, Overview, Morning triage), **CTI cycle** (the six steps) and **Intelligence**. Tick **Example Organisation** on Overview to try every page with fictional data, or open Morning triage with your Defender export. Every **?** explains the thing next to it.
 
-Your files live in `%APPDATA%\Stenwatch` and survive updates. To update, use **Check for updates** in the toolbar, or run the newer Setup over the old one.
+Your files live in `%APPDATA%\Stenwatch` and survive updates. The Store updates the app for you; with the Setup installer use **Check for updates** in the toolbar, or run the newer Setup over the old one.
 
 ## How it works: the intelligence cycle
 
