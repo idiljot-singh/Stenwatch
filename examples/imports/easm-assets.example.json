@@ -1,0 +1,14 @@
+{
+  "totalElements": 4,
+  "value": [
+    { "id": "host$$portal.example-org.invalid", "name": "portal.example-org.invalid", "displayName": "portal.example-org.invalid", "kind": "host", "uuid": "00000000-0000-4000-8000-000000000501", "createdDate": "2025-05-10T17:33:27.960+00:00", "updatedDate": "2026-11-13T04:10:00.000+00:00", "state": "confirmed", "labels": [], "wildcard": false,
+      "asset": { "host": "portal.example-org.invalid", "domain": "example-org.invalid", "ipAddresses": [ { "value": "192.0.2.10", "firstSeen": "2025-05-10T06:01:35.000+00:00", "lastSeen": "2026-11-12T10:41:09.000+00:00", "count": 412, "recent": true } ],
+        "webComponents": [ { "name": "PHP", "type": "Framework", "version": "8.1.12", "firstSeen": "2025-05-10T03:51:55.275+00:00", "lastSeen": "2026-11-12T06:00:53.930+00:00", "cve": [ { "name": "CVE-2024-4577", "cweId": "CWE-78", "cvssScore": 9.8 } ], "recent": true, "ports": [ { "port": 443, "firstSeen": "2025-05-10T07:10:44.930+00:00", "lastSeen": "2026-11-12T06:00:53.930+00:00", "count": 300 } ] } ] } },
+    { "id": "host$$vpn.example-org.invalid", "name": "vpn.example-org.invalid", "displayName": "vpn.example-org.invalid", "kind": "host", "uuid": "00000000-0000-4000-8000-000000000502", "createdDate": "2025-05-10T17:33:27.960+00:00", "updatedDate": "2026-11-13T04:10:00.000+00:00", "state": "confirmed", "labels": [], "wildcard": false,
+      "asset": { "host": "vpn.example-org.invalid", "domain": "example-org.invalid", "ipAddresses": [ { "value": "192.0.2.20", "firstSeen": "2025-05-10T06:01:35.000+00:00", "lastSeen": "2026-11-12T10:41:09.000+00:00", "count": 380, "recent": true } ], "webComponents": [] } },
+    { "id": "ipAddress$$192.0.2.44", "name": "192.0.2.44", "displayName": "192.0.2.44", "kind": "ipAddress", "uuid": "00000000-0000-4000-8000-000000000503", "createdDate": "2026-02-01T09:00:00.000+00:00", "updatedDate": "2026-11-09T04:10:00.000+00:00", "state": "confirmed", "labels": [], "wildcard": false,
+      "asset": { "ipAddress": "192.0.2.44", "services": [ { "scheme": "rdp", "port": 3389, "firstSeen": "2026-10-28T00:00:00.000+00:00", "lastSeen": "2026-11-09T00:00:00.000+00:00", "recent": true } ] } },
+    { "id": "host$$old-intranet.example-org.invalid", "name": "old-intranet.example-org.invalid", "displayName": "old-intranet.example-org.invalid", "kind": "host", "uuid": "00000000-0000-4000-8000-000000000504", "createdDate": "2025-05-10T17:33:27.960+00:00", "updatedDate": "2026-06-01T04:10:00.000+00:00", "state": "candidate", "labels": [], "wildcard": false,
+      "asset": { "host": "old-intranet.example-org.invalid", "domain": "example-org.invalid", "webComponents": [] } }
+  ]
+}

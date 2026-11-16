@@ -1,0 +1,6 @@
+Name,Type,Vendor,Model,Firmware version,IP address,MAC address,Protocols,Purdue level,Site,Zone,Importance,Authorization,Last activity
+EX-PLC-CRANE-01,PLC,Siemens,SIMATIC S7-1500,2.9.4,10.40.1.11,00:00:5E:00:53:01,S7,1,Yard North,Cranes,High,Authorized,2026-11-16
+EX-PLC-BATCH-02,PLC,Siemens,SIMATIC S7-1200,,10.40.1.12,00:00:5E:00:53:02,S7,1,Batching plant,Mixing,High,Authorized,2026-11-16
+EX-HMI-BATCH-01,HMI,Schneider Electric,Magelis GTO,6.2.1,10.40.2.21,00:00:5E:00:53:03,Modbus,2,Batching plant,Mixing,Normal,Authorized,2026-11-15
+UNKNOWN-10.40.2.77,Unclassified,,,,10.40.2.77,00:00:5E:00:53:04,HTTP,2,Batching plant,Mixing,Normal,Unauthorized,2026-11-14
+EX-CAM-GATE-03,IP Camera,Axis,P3265-LVE,11.8.61,10.40.5.33,00:00:5E:00:53:05,RTSP,3,Yard North,Gate,Low,Authorized,2026-11-16

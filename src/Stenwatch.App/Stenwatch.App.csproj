@@ -12,6 +12,7 @@
   <!-- the bundled Example Organisation and the documentation travel with the app -->
   <ItemGroup>
     <Content Include="..\..\examples\*.example.*" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\examples\imports\*" Link="imports\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\examples\evaluation\*" Link="evaluation\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\docs\pillars.md" Link="docs\pillars.md" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\docs\evaluation.md" Link="docs\evaluation.md" CopyToOutputDirectory="PreserveNewest" />
@@ -33,9 +34,9 @@
     <Authors>Diljot Singh Johal</Authors>
     <Description>Threat-informed vulnerability management</Description>
     <Copyright>Copyright (c) 2026 Diljot Singh Johal</Copyright>
-    <Version>0.3.0-beta</Version>
-    <AssemblyVersion>0.3.0.0</AssemblyVersion>
-    <FileVersion>0.3.0.0</FileVersion>
+    <Version>0.6.0-beta</Version>
+    <AssemblyVersion>0.6.0.0</AssemblyVersion>
+    <FileVersion>0.6.0.0</FileVersion>
   </PropertyGroup>
 
 </Project>

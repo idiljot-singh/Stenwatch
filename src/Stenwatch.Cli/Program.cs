@@ -6,7 +6,7 @@ CultureInfo.DefaultThreadCurrentCulture = CultureInfo.CurrentCulture = CultureIn
 // stenwatch [--example] [--data DIR]  (default data folder: data/ in a checkout, else %APPDATA%\Stenwatch) [--out DIR] [--collect [--since 2026-10-20]] [--no-pdf]
 // stenwatch --evaluate-attack | --evaluate-paths chains.csv | --rating-sheet | --rating-import sheet.csv key.csv
 // stenwatch --morning [FOLDER] [--llm] | --schedule HH:mm | --unschedule | --set-webhook ticket|briefing URL [--json [--header NAME VALUE]] | --push-ticket ID [--reason TEXT]
-// stenwatch --import-services|--import-links|--import-controls|--import-assets FILE
+// stenwatch --import-services|--import-links|--import-controls|--import-assets FILE | --import EXPORT
 var a = args.ToList();
 string Opt(string name, string dflt) { var i = a.IndexOf(name); return i >= 0 && i + 1 < a.Count ? a[i + 1] : dflt; }
 var data = Opt("--data", AppPaths.Data());
@@ -112,6 +112,11 @@ if (Opt("--defender-export", "") is { Length: > 0 } dx) // stenwatch --defender-
     var run = await DefenderTriage.Run(new(dx, data, files.Db, a.Contains("--fetch-feeds"), a.Contains("--llm"), a.Where((x, i) => i > 0 && a[i - 1] == "--advisory-file").ToList()), log: Console.WriteLine);
     foreach (var f in run.Actions) Console.WriteLine($"  {f.Tier,-7} {f.Product,-26} {(f.Fix == "" ? "-" : f.Fix),-16} {f.Rows.Count,4} CVEs {f.Exposed,5} machines  {f.Rule}");
     Console.WriteLine($"{DefenderTriage.CveCount(run.Actions)} CVEs -> {run.Actions.Count} fix actions -> {run.OutDir} (IT note: {run.NoteSource})");
+    return;
+}
+if (Opt("--import", "") is { Length: > 0 } imp) // stenwatch-cli --import FILE: an export for a component other than CVEs (ZAP, SARIF, Entra, Intune, Defender for Cloud, EASM...); the format is recognised from the file
+{
+    try { Console.WriteLine(Imports.Run(imp, data).Note); } catch (Exception e) when (e is IOException or InvalidDataException) { Console.WriteLine("not imported: " + e.Message); }
     return;
 }
 foreach (var (flag, import) in new (string, Func<Microsoft.Data.Sqlite.SqliteConnection, string, int>)[] {

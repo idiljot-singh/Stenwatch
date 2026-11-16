@@ -1,0 +1,10 @@
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#identityProtection/riskyUsers",
+  "value": [
+    { "id": "00000000-0000-4000-8000-000000000101", "isDeleted": false, "isProcessing": false, "riskLastUpdatedDateTime": "2026-11-12T06:41:09Z", "riskLevel": "high", "riskState": "confirmedCompromised", "riskDetail": "adminConfirmedUserCompromised", "userDisplayName": "Example Payroll Clerk", "userPrincipalName": "payroll.clerk@example-org.invalid" },
+    { "id": "00000000-0000-4000-8000-000000000102", "isDeleted": false, "isProcessing": false, "riskLastUpdatedDateTime": "2026-11-14T18:02:55Z", "riskLevel": "high", "riskState": "atRisk", "riskDetail": "none", "userDisplayName": "Example Site Manager", "userPrincipalName": "site.manager@example-org.invalid" },
+    { "id": "00000000-0000-4000-8000-000000000103", "isDeleted": false, "isProcessing": false, "riskLastUpdatedDateTime": "2026-11-10T09:15:00Z", "riskLevel": "medium", "riskState": "atRisk", "riskDetail": "none", "userDisplayName": "Example CAD Designer", "userPrincipalName": "cad.designer@example-org.invalid" },
+    { "id": "00000000-0000-4000-8000-000000000104", "isDeleted": false, "isProcessing": false, "riskLastUpdatedDateTime": "2026-10-30T11:20:31Z", "riskLevel": "none", "riskState": "remediated", "riskDetail": "userPerformedSecuredPasswordReset", "userDisplayName": "Example Project Engineer", "userPrincipalName": "project.engineer@example-org.invalid" },
+    { "id": "00000000-0000-4000-8000-000000000105", "isDeleted": false, "isProcessing": false, "riskLastUpdatedDateTime": "2026-10-22T07:05:12Z", "riskLevel": "low", "riskState": "dismissed", "riskDetail": "adminDismissedAllRiskForUser", "userDisplayName": "Example Service Desk", "userPrincipalName": "service.desk@example-org.invalid" }
+  ]
+}

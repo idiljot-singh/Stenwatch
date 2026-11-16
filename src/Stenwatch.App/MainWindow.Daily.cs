@@ -50,6 +50,15 @@ public partial class MainWindow
         ApplyFilter();
     }
 
+    /// <summary>Integrations, Import: one export file for a component other than CVEs. Imports.Run recognises the format; its note, or why it could not be read, goes to the status bar.</summary>
+    void ImportExposure()
+    {
+        var dlg = new Microsoft.Win32.OpenFileDialog { Title = "Choose an export to import", Filter = "Exports (*.json;*.csv;*.sarif)|*.json;*.csv;*.sarif|All files|*.*" };
+        if (dlg.ShowDialog() != true) return;
+        try { Status(Imports.Run(dlg.FileName, ExposureDir).Note); LoadFindings(); BuildPage(17); }
+        catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException) { Status("Not imported: " + ex.Message); }
+    }
+
     // ---------- Remediation and Tickets: push to ticket ----------
     async void PushTicket(object s, RoutedEventArgs e)
     {

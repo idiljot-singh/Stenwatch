@@ -1,0 +1,31 @@
+{
+  "@programName": "ZAP",
+  "@version": "2.16.1",
+  "@generated": "Fri, 13 Nov 2026 09:14:02",
+  "created": "2026-11-13T09:14:02.236211400Z",
+  "site": [
+    {
+      "@name": "https://portal.example-org.invalid",
+      "@host": "portal.example-org.invalid",
+      "@port": "443",
+      "@ssl": "true",
+      "alerts": [
+        { "pluginid": "40018", "alertRef": "40018", "alert": "SQL Injection", "name": "SQL Injection", "riskcode": "3", "confidence": "2", "riskdesc": "High (Medium)", "desc": "<p>SQL injection may be possible.</p>",
+          "instances": [ { "uri": "https://portal.example-org.invalid/projects/search.php?q=1%27", "nodeName": "https://portal.example-org.invalid/projects/search.php (q)", "method": "GET", "param": "q", "attack": "1'", "evidence": "You have an error in your SQL syntax", "otherinfo": "" } ],
+          "count": "1", "systemic": false, "solution": "<p>Use prepared statements with parameterised queries.</p>", "otherinfo": "", "reference": "<p>https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html</p>", "cweid": "89", "wascid": "19", "sourceid": "1204" },
+        { "pluginid": "10202", "alertRef": "10202", "alert": "Absence of Anti-CSRF Tokens", "name": "Absence of Anti-CSRF Tokens", "riskcode": "2", "confidence": "1", "riskdesc": "Medium (Low)", "desc": "<p>No Anti-CSRF tokens were found in a HTML submission form.</p>",
+          "instances": [ { "uri": "https://portal.example-org.invalid/contact.php", "nodeName": "https://portal.example-org.invalid/contact.php", "method": "GET", "param": "", "attack": "", "evidence": "<form action=\"contact.php\" method=\"post\">", "otherinfo": "" },
+                         { "uri": "https://portal.example-org.invalid/login.php", "nodeName": "https://portal.example-org.invalid/login.php", "method": "GET", "param": "", "attack": "", "evidence": "<form action=\"login.php\" method=\"post\">", "otherinfo": "" } ],
+          "count": "2", "systemic": false, "solution": "<p>Use a vetted library or framework that provides anti-CSRF tokens.</p>", "otherinfo": "", "reference": "<p>https://cwe.mitre.org/data/definitions/352.html</p>", "cweid": "352", "wascid": "9", "sourceid": "31" },
+        { "pluginid": "10020", "alertRef": "10020-1", "alert": "Missing Anti-clickjacking Header", "name": "Missing Anti-clickjacking Header", "riskcode": "2", "confidence": "2", "riskdesc": "Medium (Medium)", "desc": "<p>The response does not protect against 'ClickJacking' attacks.</p>",
+          "instances": [ { "uri": "https://portal.example-org.invalid/", "nodeName": "https://portal.example-org.invalid/", "method": "GET", "param": "x-frame-options", "attack": "", "evidence": "", "otherinfo": "" } ],
+          "count": "1", "systemic": true, "solution": "<p>Set the Content-Security-Policy frame-ancestors directive or X-Frame-Options.</p>", "otherinfo": "", "reference": "", "cweid": "1021", "wascid": "15", "sourceid": "3" },
+        { "pluginid": "10036", "alertRef": "10036", "alert": "Server Leaks Version Information via \"Server\" HTTP Response Header Field", "name": "Server Leaks Version Information via \"Server\" HTTP Response Header Field", "riskcode": "1", "confidence": "3", "riskdesc": "Low (High)", "desc": "<p>The web server is leaking version information.</p>",
+          "instances": [ { "uri": "https://portal.example-org.invalid/", "nodeName": "https://portal.example-org.invalid/", "method": "GET", "param": "", "attack": "", "evidence": "Apache/2.4.57", "otherinfo": "" } ],
+          "count": "1", "systemic": true, "solution": "<p>Suppress the Server header.</p>", "otherinfo": "", "reference": "", "cweid": "497", "wascid": "13", "sourceid": "3" },
+        { "pluginid": "10109", "alertRef": "10109", "alert": "Modern Web Application", "name": "Modern Web Application", "riskcode": "0", "confidence": "2", "riskdesc": "Informational (Medium)", "desc": "<p>The application appears to be a modern web application.</p>",
+          "instances": [], "count": "1", "systemic": false, "solution": "<p>This is an informational alert.</p>", "otherinfo": "", "reference": "", "cweid": "-1", "wascid": "-1", "sourceid": "3" }
+      ]
+    }
+  ]
+}

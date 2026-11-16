@@ -49,7 +49,7 @@ public partial class MainWindow
     }
 
     // ---------- small parts ----------
-    List<CoverageStatus> Cov() => Coverage.Of(data, files.Assets);
+    List<CoverageStatus> Cov() => Coverage.Of(data, files.Assets, exposureDir: ExposureDir);
     static string Word(string status) => status == Coverage.Partly ? "partly connected" : status;
     TextBlock Txt(string text, string brush = "Fg", double size = 0) { var t = new TextBlock { Text = text, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center }.Res(TextBlock.ForegroundProperty, brush); if (size > 0) t.FontSize = size; return t; }
     TextBlock Head(string text) => new() { Text = text, Style = (Style)FindResource("H") };
@@ -245,12 +245,11 @@ public partial class MainWindow
     {
         var host = IntegrationsHost; host.Children.Clear();
         host.Children.Add(Head("CONNECTORS"));
-        host.Children.Add(new TextBlock { Text = "Everything that goes in or out: files, APIs and webhooks. A row that names a phase is not built yet. The settings for the schedule, ticket webhook, briefing delivery and endoflife.date are under the table.", Style = (Style)FindResource("Muted"), Margin = new Thickness(0, 0, 0, 8) });
+        host.Children.Add(new TextBlock { Text = "Everything that goes in or out: files, APIs and webhooks. Import takes any of the export files in the table and recognises the format from the file itself; columns assumed means no real export of that kind has been read yet, so check its rows. The settings for the schedule, ticket webhook, briefing delivery and endoflife.date are under the table.", Style = (Style)FindResource("Muted"), Margin = new Thickness(0, 0, 0, 8) });
         var rows = new List<UIElement[]>();
         void Row(string name, string feeds, string kind, string status, string last, string? action = null, Action? click = null, string? word = null)
             => rows.Add(new UIElement[] { Txt(name), CompTag(feeds), Txt(kind, "Mute"), Mark(status, word), Txt(last, status == Coverage.NotConnected ? "Dim" : "Mute"),
                 action == null ? new TextBlock() : SmallBtn(action, click!, $"{action}: {name}") });
-        void Later(string name, string feeds, string kind, int phase) => Row(name, feeds, kind, Coverage.NotConnected, $"arrives in phase {phase}");
         string Day(string v) => v[..Math.Min(10, v.Length)];
 
         // what works today
@@ -276,9 +275,11 @@ public partial class MainWindow
         var (ts, tl, tw) = TicketState(); Row("Ticket webhook", "Ticketing", "webhook", ts, tl, "Set up", () => ticketSec?.BringIntoView(), tw);
         var (bs, bl, bw) = BriefingState(); Row("Briefing delivery (Teams, email file)", "Reports", "webhook", bs, bl, "Set up", () => briefSec?.BringIntoView(), bw);
         var (es, el, ew) = EolState(); Row("endoflife.date", "End-of-life software", "API", es, el, "Set up", () => eolSec?.BringIntoView(), ew);
-        Later("Intune", "Assets", "API", 3); Later("Entra", "Identity", "API", 3); Later("Defender for Cloud", "Cloud workloads", "file", 3); Later("Defender security recommendations", "Misconfiguration", "file", 3); Later("Exposure Management", "Attack surface", "file", 3);
-        Later("Defender EASM", "Attack surface", "file", 4); Later("OWASP ZAP report", "Web apps", "file", 4); Later("SARIF file", "Web apps", "file", 4);
-        Later("Defender for Cloud Apps", "AI discovery", "file", 5); Later("Defender for IoT", "OT and IoT", "file", 5);
+        foreach (var f in Imports.Formats) // file imports: one button, the format is recognised from the file
+        {
+            var last = Imports.Last(ExposureDir, f); var assumed = f.Basis == Imports.Assumed ? " (columns assumed)" : "";
+            Row(f.Name, f.Component, "file", last is null ? Coverage.NotConnected : Coverage.Connected, (last?.ToString("yyyy-MM-dd") ?? "never") + assumed, "Import", ImportExposure);
+        }
         host.Children.Add(Table(new[] { "NAME", "FEEDS", "KIND", "STATUS", "LAST RUN", "" }, new double[] { -2, 190, 80, 140, 150, 100 }, rows));
     }
 }

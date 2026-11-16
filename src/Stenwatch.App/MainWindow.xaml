@@ -19,7 +19,7 @@
                 <Border Background="#ffc233" CornerRadius="3" Padding="8,2" Margin="12,0,0,0" VerticalAlignment="Center" ToolTip="Need-to-know only"><TextBlock Text="TLP:AMBER" Foreground="#000" FontFamily="{StaticResource Mono}" FontSize="11" FontWeight="Bold"/></Border></StackPanel>
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock Text="STENWATCH" FontFamily="{StaticResource Mono}" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource Accent}" VerticalAlignment="Center"/>
-                <Border BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="3" Padding="5,0" Margin="8,0,28,0" VerticalAlignment="Center"><TextBlock Text="0.3 beta" FontFamily="{StaticResource Mono}" FontSize="10" Foreground="{DynamicResource Mute}"/></Border>
+                <Border BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="3" Padding="5,0" Margin="8,0,28,0" VerticalAlignment="Center"><TextBlock Text="0.6 beta" FontFamily="{StaticResource Mono}" FontSize="10" Foreground="{DynamicResource Mute}"/></Border>
                 <RadioButton x:Name="Area0" Style="{StaticResource Segment}" Content="Home" Tag="0" Checked="AreaClick"/>
                 <RadioButton x:Name="Area1" Style="{StaticResource Segment}" Content="Exposure" Tag="1" Checked="AreaClick"/>
                 <RadioButton x:Name="Area2" Style="{StaticResource Segment}" Content="Intelligence" Tag="2" Checked="AreaClick"/>
@@ -61,7 +61,7 @@
 
             <!-- 0 Guide (toolbar icon) -->
             <TabItem Tag="Guide. How to start, how to read a finding, and what the labels mean. The toolbar has four areas: Home, Exposure, Intelligence and Response; the rail on the left shows the pages of the one you pick. The CTI lifecycle (Direction, Collection, Processing, Analysis, Dissemination, Feedback) runs through Threat profile, Feeds, Estate, Findings, Reports and Remediation: each of those shows at the bottom what it still needs, and the Next button turns green when it is done. Guided run takes the six stages in order."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel MaxWidth="980" HorizontalAlignment="Left">
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,10"><TextBlock Text="Guide" FontSize="26" FontWeight="SemiBold"/><local:HelpButton Title="Guide" Text="Stenwatch 0.3.0 beta. A vulnerability management tool that explains which vulnerabilities matter to your organisation, with the evidence, and checks that the work actually gets done."/></StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10"><TextBlock Text="Guide" FontSize="26" FontWeight="SemiBold"/><local:HelpButton Title="Guide" Text="Stenwatch 0.6.0 beta. A vulnerability management tool that explains which vulnerabilities matter to your organisation, with the evidence, and checks that the work actually gets done."/></StackPanel>
 
                 <TextBlock Text="START HERE: FOUR STEPS" Style="{StaticResource H}"/>
                 <TextBlock TextWrapping="Wrap" LineHeight="22"><Run FontWeight="SemiBold" Text="1  Pick the data. "/><Run Foreground="{DynamicResource Mute}" Text="Dashboard has a tick box for the Example Organisation: fictional data with services, links and a control already filled in, so every page has something to show. Untick it to use your own profile.yaml and asset lists."/><LineBreak/>

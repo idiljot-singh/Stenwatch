@@ -49,6 +49,11 @@ public static class Engine
         // end-of-life check of the asset list; the Example Organisation's rows stay in its own output folder, the cycle cache is shared (public data)
         try { await Eol.Check(Path.GetDirectoryName(Path.GetFullPath(files.Db))!, Process.LoadAssets(files.Assets), saveTo: o.Example ? outDir : null, log: log); }
         catch (Exception e) when (e is IOException or InvalidDataException or KeyNotFoundException or FormatException) { log($"End of life: skipped ({e.Message})"); }
+        // the Example Organisation's fictional exports (examples/imports), so every component has rows to show; your own are imported on Integrations
+        var samples = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(files.Profile))!, "imports");
+        if (o.Example && Directory.Exists(samples))
+            foreach (var f in Directory.GetFiles(samples))
+                try { log("Import: " + Imports.Run(f, outDir).Note); } catch (Exception e) when (e is IOException or InvalidDataException) { log($"Import: {Path.GetFileName(f)} skipped ({e.Message})"); }
         var names = ranked.Select(r => r.Asset.Name).Distinct().Append(profile.Organisation.Name);
         var (brief, source) = await Llm.Brief(ranked, profile.Llm, names, $"a {profile.Organisation.Sector} organisation in {profile.Organisation.Country}", log: log);
         Disseminate.WriteBrief(brief, source, outDir, profile);
@@ -76,6 +81,8 @@ public static class Engine
         }
         FullReport.Write(files, outDir, profile, db, ctx, ranked, allTasks, o.Example, o.Pdf);
         log("Full report: full-report.html" + (o.Pdf ? " and .pdf" : ""));
+        Compliance.Write(outDir, profile.Organisation.Name, ranked, allTasks, Exposure.Load(o.Example ? outDir : Path.GetDirectoryName(Path.GetFullPath(files.Db))!), DateOnly.FromDateTime(DateTime.Today));
+        log("Compliance evidence: " + Compliance.FileName);
         return new RunResult(ranked, suppressed, paths, run, events, tasks, ctx, profile, outDir, source);
     }
 }

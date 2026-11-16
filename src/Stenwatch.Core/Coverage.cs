@@ -36,10 +36,10 @@ public static class Coverage
 
     /// <summary>Every component's status from <paramref name="dir"/> (cve.db, assets.csv, advisories.json, sources.json, triage-history/, tasks, exposures/).
     /// assetsCsv overrides the asset list (the Example Organisation's assets.example.csv).</summary>
-    public static List<CoverageStatus> Of(string dir, string? assetsCsv = null, DateTimeOffset? now = null)
+    public static List<CoverageStatus> Of(string dir, string? assetsCsv = null, DateTimeOffset? now = null, string? exposureDir = null)
     {
-        var at = now ?? DateTimeOffset.UtcNow;
-        var exposures = Exposure.Load(dir).ToLookup(e => e.Component);
+        var at = now ?? DateTimeOffset.UtcNow; var xdir = exposureDir ?? dir; // the Example Organisation keeps its exposure rows in its output folder
+        var exposures = Exposure.Load(xdir).ToLookup(e => e.Component);
         var db = Path.Combine(dir, "cve.db"); var assets = assetsCsv ?? Path.Combine(dir, "assets.csv");
         static string Day(DateTime t) => t.ToString("yyyy-MM-dd");
         static string Newest(IEnumerable<string> days) => days.Where(d => d != "").DefaultIfEmpty("").Max()!;
@@ -89,8 +89,8 @@ public static class Coverage
             CoverageStatus R(string status, int n, string caption, string day, string note) => new(k, status, n, caption, day, note);
             var mine = exposures[k.Name].ToList();
             if (mine.Count > 0) // an import for this component: its own rows count first
-                return R(Connected, mine.Count, "findings", Newest(mine.Select(e => e.Date).Append(Day(File.GetLastWriteTime(Exposure.FileFor(dir, k.Name))))), $"{mine.Count} rows imported");
-            var not = R(NotConnected, 0, "", "", "Needs " + k.Needs);
+                return R(Connected, mine.Count, "findings", Day(Exposure.Imported(xdir, k.Name) ?? DateTime.Today), $"{mine.Count} rows imported");
+            var not = Exposure.Imported(xdir, k.Name) is { } seen ? R(Connected, 0, "findings", Day(seen), "imported, nothing to report") : R(NotConnected, 0, "", "", "Needs " + k.Needs);
             switch (k.Name)
             {
                 case "Assets":
@@ -110,7 +110,7 @@ public static class Coverage
                     return R(kev > 0 && advisories > 0 ? Connected : Partly, sources, "sources", Newest(new[] { Meta("kev_sync"), advDay }),
                         kev > 0 && advisories > 0 ? "public feeds and advisories" : kev > 0 ? "public feeds; no advisories read yet" : "advisories; public feeds not synced");
                 case "End-of-life software": // checked, nothing past or near end of life: connected with 0
-                    return File.Exists(Exposure.FileFor(dir, k.Name)) ? R(Connected, 0, "past or near end of life", Day(File.GetLastWriteTime(Exposure.FileFor(dir, k.Name))), "asset list checked against endoflife.date") : not;
+                    return File.Exists(Exposure.FileFor(xdir, k.Name)) ? R(Connected, 0, "past or near end of life", Day(File.GetLastWriteTime(Exposure.FileFor(xdir, k.Name))), "asset list checked against endoflife.date") : not;
                 case "Ticketing":
                     if (pushed > 0) return R(Connected, (int)pushed, "tickets sent", "", "ticket webhook");
                     return tasks > 0 || ticketed > 0 ? R(Partly, (int)tasks, "active tasks", "", "tasks with owner and ticket field; nothing is pushed yet. Needs " + k.Needs) : not;

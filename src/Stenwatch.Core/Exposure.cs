@@ -10,7 +10,7 @@ public record Exposure(string Component, string Asset, string ItemId, string Tit
                        string Tier = "", string Rule = "")
 {
     static readonly string[] Head = { "component", "asset", "item_id", "title", "severity", "evidence", "source", "date", "tier", "rule" };
-    static readonly Regex Exploited = new(@"actively exploited|exploited in the wild|known exploited|\bkev\b", RegexOptions.IgnoreCase);
+    static readonly Regex Exploited = new(@"actively exploited|exploited in the wild|known exploited|\bkev\b|confirmed compromised", RegexOptions.IgnoreCase);
     static readonly Regex Exposed = new(@"internet|public|external|exposed", RegexOptions.IgnoreCase);
 
     /// <summary>Severity as 0 (none or info) to 4 (critical): words as written, or a 0-10 score.</summary>
@@ -28,7 +28,7 @@ public record Exposure(string Component, string Asset, string ItemId, string Tit
     {
         var lvl = Level(e.Severity);
         var (tier, rule) =
-            Exploited.IsMatch(e.Evidence) ? ("Act", "the evidence says it is exploited") :
+            Exploited.IsMatch(e.Evidence) ? ("Act", "the evidence says it is exploited or compromised") :
             lvl >= 3 && Exposed.IsMatch(e.Evidence) ? ("Attend", "high or critical, and the evidence says it is reachable from the internet") :
             lvl == 4 ? ("Attend", "critical severity") :
             lvl == 3 ? ("Track", "high severity, no sign of exploitation") :
@@ -38,13 +38,18 @@ public record Exposure(string Component, string Asset, string ItemId, string Tit
 
     static string Dir(string data) => Path.Combine(data, "exposures");
     /// <summary>File name for a component: "End-of-life software" -> end-of-life-software.csv.</summary>
-    public static string FileFor(string data, string component) => Path.Combine(Dir(data), Regex.Replace(component.ToLowerInvariant(), "[^a-z0-9]+", "-").Trim('-') + ".csv");
+    static string Slug(string s) => Regex.Replace(s.ToLowerInvariant(), "[^a-z0-9]+", "-").Trim('-');
+    /// <summary>A component fed by several formats keeps one file per format: misconfiguration--intune-devices.csv.</summary>
+    public static string FileFor(string data, string component, string? source = null) => Path.Combine(Dir(data), Slug(component) + (source is null ? "" : "--" + Slug(source)) + ".csv");
+    /// <summary>The newest import for a component (any of its files), or null when nothing was imported. A file with no rows counts: it was checked and nothing was found.</summary>
+    public static DateTime? Imported(string data, string component) => !Directory.Exists(Dir(data)) ? null
+        : Directory.GetFiles(Dir(data), Slug(component) + "*.csv").Select(File.GetLastWriteTime).Cast<DateTime?>().DefaultIfEmpty(null).Max();
 
-    /// <summary>Replace one component's rows (an import replaces the previous import), ranked on the way in.</summary>
-    public static void Save(string data, string component, IEnumerable<Exposure> rows)
+    /// <summary>Replace one component's rows from one source (an import replaces the previous import of the same format), ranked on the way in.</summary>
+    public static void Save(string data, string component, IEnumerable<Exposure> rows, string? source = null)
     {
         Directory.CreateDirectory(Dir(data));
-        Csv.Write(FileFor(data, component), new[] { Head }.Concat(rows.Select(r => Rank(r with { Component = component }))
+        Csv.Write(FileFor(data, component, source), new[] { Head }.Concat(rows.Select(r => Rank(r with { Component = component }))
             .Select(r => new[] { r.Component, r.Asset, r.ItemId, r.Title, r.Severity, r.Evidence, r.Source, r.Date, r.Tier, r.Rule })));
     }
 
@@ -52,8 +57,7 @@ public record Exposure(string Component, string Asset, string ItemId, string Tit
     public static List<Exposure> Load(string data, string? component = null)
     {
         if (!Directory.Exists(Dir(data))) return new();
-        var files = component is null ? Directory.GetFiles(Dir(data), "*.csv") : File.Exists(FileFor(data, component)) ? new[] { FileFor(data, component) } : Array.Empty<string>();
-        return files.SelectMany(Csv.ReadDict).Select(r => Rank(new Exposure(r.GetValueOrDefault("component", ""), r.GetValueOrDefault("asset", ""), r.GetValueOrDefault("item_id", ""),
+        return Directory.GetFiles(Dir(data), "*.csv").SelectMany(Csv.ReadDict).Where(r => component is null || r.GetValueOrDefault("component", "") == component).Select(r => Rank(new Exposure(r.GetValueOrDefault("component", ""), r.GetValueOrDefault("asset", ""), r.GetValueOrDefault("item_id", ""),
             r.GetValueOrDefault("title", ""), r.GetValueOrDefault("severity", ""), r.GetValueOrDefault("evidence", ""), r.GetValueOrDefault("source", ""), r.GetValueOrDefault("date", "")))).ToList();
     }
 }

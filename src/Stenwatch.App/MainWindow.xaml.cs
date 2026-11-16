@@ -792,6 +792,7 @@ public partial class MainWindow : Window
         ("STIX 2.1 bundle", "bundle.json", false, "Threat-intelligence platforms (MISP, OpenCTI, Sentinel)."),
         ("ATT&CK Navigator layer", "attack-layer.json", false, "The techniques your findings enable, for the MITRE ATT&CK Navigator."),
         ("Hunting queries (KQL)", Kql.FileName, false, "The detection team: one Defender advanced hunting query per Act finding. Templates, not run against a tenant."),
+        ("Compliance evidence (NIS2, ISO 27001)", Compliance.FileName, true, "Auditors: what is recorded about vulnerability handling, beside the requirements it relates to. Evidence, not a statement of compliance."),
     };
 
     /// <summary>Save a copy; a document is turned into PDF first (reused while it is newer than the page).</summary>

@@ -1,0 +1,6 @@
+Name,Category,Risk score,Users,IP addresses,Traffic (MB),Uploads (MB),Transactions,Last seen,Tags
+ExampleChat AI,Generative AI,3,212,340,1840,620,48211,2026-11-15,Unsanctioned
+ExampleDraft Assistant,Generative AI,6,58,71,410,95,6120,2026-11-14,
+ExampleCode Copilot,Generative AI,9,44,44,2210,130,91400,2026-11-16,Sanctioned
+ExampleDrive,Cloud storage,8,1490,2100,88200,31400,402118,2026-11-16,Sanctioned
+ExampleMeet,Online meetings,9,1322,1800,120400,900,88010,2026-11-16,Sanctioned

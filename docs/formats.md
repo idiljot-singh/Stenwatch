@@ -284,3 +284,26 @@ None beyond the Defender vulnerabilities export you already pull (Defender porta
 - **Defender for IoT device inventory**: Defender for IoT, Device inventory, Export. Path not confirmed on a public page.
 
 Tenable and Qualys exports are not scheduled in any phase. Pull one only if you want that import to be considered.
+
+## File imports built in 0.6 (phases 3 to 5)
+
+Checked 2026-11-16. No real export from a tenant was available, so these readers were built from public material and from fictional files, and the rule at the top of this page ("built only against a format someone has seen") is relaxed for them by the user's decision. Each file in `examples/imports/` is fictional (Example Organisation values, `example-org.invalid` names, documentation IP ranges) and is the test input in `ImportTests.cs`. One button on Integrations (Import) and one CLI flag (`--import FILE`) read all of them; the format is recognised from the file's own keys or headings. Names are compared with case, spaces and punctuation removed, so the Graph property `riskLevel` and a portal heading "Risk level" are the same column.
+
+| Format | Component | Shape the reader was built from | Example file | Status |
+|---|---|---|---|---|
+| OWASP ZAP traditional JSON report | Web apps | The sample on the ZAP documentation page | `zap-report.example.json` | From documentation only (public sample) |
+| SARIF 2.1.0 | Web apps | The schema, and `simple-example.sarif` from microsoft/sarif-tutorials, which was downloaded and imported | `code-scan.example.sarif` | Read one real public file |
+| Entra risky users | Identity | Graph `riskyUser` list response (`value[]`) | `entra-risky-users.example.json` | From documentation only |
+| Intune devices | Misconfiguration | Graph `managedDevice` list response | `intune-devices.example.json` | From documentation only |
+| Defender security recommendations | Misconfiguration | Defender API "List all recommendations" response | `defender-recommendations.example.json` | From documentation only |
+| Defender for Cloud assessments | Cloud workloads | Azure Resource Graph `securityresources`, type `microsoft.security/assessments`, as `az graph query` writes it (`data[]`) | `defender-for-cloud.example.json` | From documentation only |
+| Exposure Management graph nodes | Attack surface | Advanced hunting table `ExposureGraphNodes` exported as CSV, `NodeProperties` as a JSON cell | `exposure-graph-nodes.example.csv` | From documentation only |
+| Defender EASM assets | Attack surface | EASM data-plane API "List asset resource" response | `easm-assets.example.json` | From documentation only |
+| Defender for Cloud Apps discovered apps | AI discovery | No public column list. Headings assumed: Name, Category, Risk score, Users, Last seen, Tags | `cloud-apps-discovered.example.csv` | Columns assumed |
+| Defender for IoT device inventory | OT and IoT | No public column list. Headings assumed: Name, Type, Vendor, Model, Firmware version, Purdue level, Site, Authorization, Last activity | `iot-device-inventory.example.csv` | Columns assumed |
+
+The two "columns assumed" formats are marked so on Integrations and in the import's own note. A real export with other headings will be refused as "not a format Stenwatch knows" rather than read wrongly; send the header line and the reader gets the real names.
+
+What each reader keeps as a finding: risky users in state atRisk or confirmedCompromised; devices that are noncompliant or not encrypted; active recommendations of type ConfigurationChange with exposed devices (software updates stay with the CVE findings); unhealthy assessments; graph nodes that carry `exposedToInternet` or `IsInternetFacing`; confirmed EASM assets (High when a CVE id is on a web component, else Low); ZAP alerts above Informational; SARIF results that are not suppressed, one per rule and file; discovered apps in the Generative AI category (the 0 to 10 risk score is turned round, 10 being the lowest risk); OT devices that are unauthorised or have no firmware version.
+
+Not built: live Graph, Defender and Azure API pulls (no tenant to test against), Secure Score, Intune update compliance, Entra role assignments, Exposure Management edges on the Attack paths page, the EASM result feeding the internet-facing flag of the asset list, MITRE ATLAS and ATT&CK for ICS context.
