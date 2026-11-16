@@ -265,11 +265,14 @@ public static class DefenderTriage
     public static List<Advisory> Unmatched(List<FixAction> actions, List<Advisory> advisories, DateOnly today, int days = 30) =>
         advisories.Where(a => (!DateOnly.TryParse(a.Published, out var d) || d >= today.AddDays(-days)) && !actions.Any(f => f.Matched?.Any(m => m.Advisory.Link == a.Link) == true)).ToList();
 
+    /// <summary>"Needs a decision today": Act and Attend fix actions, not snoozed, that are new or changed tier since the previous export (all of them on the first day).</summary>
+    public static List<FixAction> Decide(List<FixAction> actions, Diff diff) => actions.Where(a => a.Tier is "Act" or "Attend" && !a.Snoozed
+        && (!diff.HasPrevious || diff.New.Contains(a.Key) || diff.Changed.Any(c => c.Key == a.Key))).ToList();
+
     public static string Html(List<FixAction> actions, Diff diff, string source, DateOnly today, List<Advisory>? unmatched = null)
     {
         string E(string s) => WebUtility.HtmlEncode(s);
-        var decide = actions.Where(a => a.Tier is "Act" or "Attend" && !a.Snoozed
-            && (!diff.HasPrevious || diff.New.Contains(a.Key) || diff.Changed.Any(c => c.Key == a.Key))).ToList();
+        var decide = Decide(actions, diff);
         var sb = new StringBuilder($"<!doctype html><meta charset=utf-8><title>Stenwatch morning briefing</title><style>body{{font:15px system-ui;max-width:1000px;margin:24px auto;padding:0 16px}}" +
             "table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #ddd;padding:6px;text-align:left;vertical-align:top}.Act{color:#b00020;font-weight:700}.Attend{color:#b25e00;font-weight:700}" +
             $".n{{color:#666;font-size:13px}}</style><h1>Morning briefing {today:yyyy-MM-dd}</h1><p class=n>Source: {E(source)}. {CveCount(actions)} CVEs in {actions.Count} fix actions.</p>");

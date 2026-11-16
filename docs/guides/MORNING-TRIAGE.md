@@ -32,3 +32,5 @@ Take the Microsoft Defender vulnerability export, add what the feeds and nationa
 - The export is a snapshot. Advisories newer than it show as unmatched until the next export.
 
 Command line: `stenwatch-cli --defender-export FILE [--fetch-feeds] [--llm] [--advisory-file mail.txt]`, and `--triage-flag "Microsoft Edge" Lower "reason" [until]`. Output goes to `out/triage/` in the data folder.
+
+To run this every morning on a schedule, post the briefing to Teams, push tasks to a ticket system, or check for end-of-life software, see [DAILY-OPERATION.md](DAILY-OPERATION.md) (planned for 0.3).

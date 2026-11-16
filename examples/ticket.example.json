@@ -1,0 +1,10 @@
+{
+  "task_id": 17,
+  "item": "CVE-2026-0001",
+  "asset": "Example mail server (fictional)",
+  "tier": "Act",
+  "deadline": "2026-11-20",
+  "owner": "Example IT Operations",
+  "reason": "Fictional example. Listed in CISA KEV (rule: KEV lists the CVE). Mail server is internet-facing.",
+  "link": "https://example.invalid/vuln/CVE-2026-0001"
+}

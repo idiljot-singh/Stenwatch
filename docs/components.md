@@ -196,5 +196,5 @@ Phase numbers are in the order of the plan, not a promise of dates.
 
 Not solved now, listed for later:
 
-- How a scheduled run starts from a Store-packaged app. Task Scheduler against a packaged path is fragile; a startup task or an alias for the CLI are the candidates.
+- How a scheduled run starts from a Store-packaged app. Checked against Microsoft's pages on 2026-11-16 ([`formats.md`](formats.md), Task Scheduler section): the package folder name carries the version and changes with each update, so a task pointing at that path breaks on update; an execution alias in the manifest (`uap5:AppExecutionAlias` or `uap3` with `desktop:ExecutionAlias`, Windows 10 1709 or later) is the documented way to start a packaged program by a fixed name, and the manifest in `installer/msix` has none yet. No Microsoft page says whether Task Scheduler can start such an alias; one community report says it could not be selected as a task action. This stays open until it is tried on a real Store install, and the Setup-edition fallback stands.
 - Whether Graph sign-in should be interactive (simpler for a security manager) or the certificate app registration `Defender.cs` uses today.

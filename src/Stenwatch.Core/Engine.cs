@@ -45,6 +45,10 @@ public static class Engine
         Disseminate.WriteNavigator(ranked, outDir, profile);
         File.WriteAllText(Path.Combine(outDir, "threat-profile.md"), ThreatProfileAuto.Markdown(profile, groups, groupNote));
         if (paths != null) Disseminate.WritePaths(paths, outDir, profile);
+        log($"Hunting queries: {Kql.Write(ranked, outDir)} Act findings in {Kql.FileName}");
+        // end-of-life check of the asset list; the Example Organisation's rows stay in its own output folder, the cycle cache is shared (public data)
+        try { await Eol.Check(Path.GetDirectoryName(Path.GetFullPath(files.Db))!, Process.LoadAssets(files.Assets), saveTo: o.Example ? outDir : null, log: log); }
+        catch (Exception e) when (e is IOException or InvalidDataException or KeyNotFoundException or FormatException) { log($"End of life: skipped ({e.Message})"); }
         var names = ranked.Select(r => r.Asset.Name).Distinct().Append(profile.Organisation.Name);
         var (brief, source) = await Llm.Brief(ranked, profile.Llm, names, $"a {profile.Organisation.Sector} organisation in {profile.Organisation.Country}", log: log);
         Disseminate.WriteBrief(brief, source, outDir, profile);

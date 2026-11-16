@@ -10,5 +10,6 @@ Documentation, and the public GitHub Pages site (`index.html`, `video.html`, the
 | [`formats.md`](formats.md) | The register of every file format and API the planned imports read: what is read, how to export it, where the format knowledge comes from, and whether it has been checked against a real export. |
 | [`adr/`](adr) | Architecture decisions (hybrid SaaS on Azure; the C# rewrite on the research pillars). |
 | [`guides/CUSTOMISE.md`](guides/CUSTOMISE.md) | Setting Stenwatch up for your own organisation (written for the retired Python edition 0.1). |
+| [`guides/DAILY-OPERATION.md`](guides/DAILY-OPERATION.md) | The scheduled morning run, the Teams webhook, ticket push, the end-of-life check and the hunting queries (planned for 0.3). |
 | [`guides/WALKTHROUGH.md`](guides/WALKTHROUGH.md) | How every stage works and why (PDF alongside). |
 | `diagrams/`, `img/`, `*.mp4`, `index.html`, `video.html` | The public site: architecture diagrams, screenshots, films. |

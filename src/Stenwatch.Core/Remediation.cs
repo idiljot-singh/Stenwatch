@@ -14,6 +14,8 @@ public static class TaskState
 public record RemediationTask(long Id, string Cve, string Asset, string State, string Tier, string Owner, string Ticket, string Opened,
                               string Due, string Closed, string Note)
 {
+    /// <summary>Ticket push state: "" (Not sent), Sent or Failed (Tickets.Push).</summary>
+    public string TicketState { get; init; } = "";
     public bool Overdue(DateOnly today) => TaskState.Active.Contains(State) && string.CompareOrdinal(Due, today.ToString("yyyy-MM-dd")) < 0;
 }
 
@@ -36,7 +38,13 @@ CREATE INDEX IF NOT EXISTS task_key ON task (cve, asset);";
         return c;
     }
 
-    public static void EnsureSchema(SqliteConnection db) { using var c = Cmd(db, Schema); c.ExecuteNonQuery(); }
+    public static void EnsureSchema(SqliteConnection db)
+    {
+        using var c = Cmd(db, Schema); c.ExecuteNonQuery();
+        // phase 2: ticket push state; added to databases made before it, existing rows read as "" (Not sent)
+        using var q = Cmd(db, "SELECT count(*) FROM pragma_table_info('task') WHERE name = 'ticket_state'");
+        if ((long)q.ExecuteScalar()! == 0) { using var a = Cmd(db, "ALTER TABLE task ADD COLUMN ticket_state TEXT DEFAULT ''"); a.ExecuteNonQuery(); }
+    }
 
     /// <summary>Days allowed to fix a finding of this tier. Act matches the "within 48 h" decision.</summary>
     public static int SlaDays(string tier, Profile p) => p.Sla.TryGetValue(tier, out var d) ? d : 0;
@@ -44,13 +52,13 @@ CREATE INDEX IF NOT EXISTS task_key ON task (cve, asset);";
     public static List<RemediationTask> Load(SqliteConnection db, params string[] states)
     {
         EnsureSchema(db);
-        var sql = "SELECT id, cve, asset, state, tier, owner, ticket, opened, due, closed, note FROM task"
+        var sql = "SELECT id, cve, asset, state, tier, owner, ticket, opened, due, closed, note, ticket_state FROM task"
             + (states.Length > 0 ? " WHERE state IN (" + string.Join(",", states.Select((_, i) => "@s" + i)) + ")" : "") + " ORDER BY due, id";
         using var c = Cmd(db, sql, states.Select((s, i) => ("@s" + i, (object?)s)).ToArray());
         using var r = c.ExecuteReader();
         var l = new List<RemediationTask>();
         string S(int i) => r.IsDBNull(i) ? "" : r.GetString(i);
-        while (r.Read()) l.Add(new(r.GetInt64(0), S(1), S(2), S(3), S(4), S(5), S(6), S(7), S(8), S(9), S(10)));
+        while (r.Read()) l.Add(new(r.GetInt64(0), S(1), S(2), S(3), S(4), S(5), S(6), S(7), S(8), S(9), S(10)) { TicketState = S(11) });
         return l;
     }
 
@@ -113,6 +121,14 @@ CREATE INDEX IF NOT EXISTS task_key ON task (cve, asset);";
     public static void Assign(SqliteConnection db, long id, string owner, string ticket = "")
     {
         using var c = Cmd(db, "UPDATE task SET owner=@o, ticket=@t, state=CASE WHEN state IN ('Open','Reopened') THEN 'InProgress' ELSE state END WHERE id=@i", ("@o", owner), ("@t", ticket), ("@i", id));
+        c.ExecuteNonQuery();
+    }
+
+    /// <summary>Ticket push result: the state, and the reply's reference when there is one (an empty reference keeps what the ticket field had).</summary>
+    public static void SetTicket(SqliteConnection db, long id, string state, string reference = "")
+    {
+        EnsureSchema(db);
+        using var c = Cmd(db, "UPDATE task SET ticket_state=@s, ticket=CASE WHEN @r = '' THEN ticket ELSE @r END WHERE id=@i", ("@s", state), ("@r", reference), ("@i", id));
         c.ExecuteNonQuery();
     }
 

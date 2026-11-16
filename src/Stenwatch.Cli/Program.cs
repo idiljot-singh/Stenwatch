@@ -5,6 +5,7 @@ CultureInfo.DefaultThreadCurrentCulture = CultureInfo.CurrentCulture = CultureIn
 
 // stenwatch [--example] [--data DIR]  (default data folder: data/ in a checkout, else %APPDATA%\Stenwatch) [--out DIR] [--collect [--since 2026-10-20]] [--no-pdf]
 // stenwatch --evaluate-attack | --evaluate-paths chains.csv | --rating-sheet | --rating-import sheet.csv key.csv
+// stenwatch --morning [FOLDER] [--llm] | --schedule HH:mm | --unschedule | --set-webhook ticket|briefing URL [--json [--header NAME VALUE]] | --push-ticket ID [--reason TEXT]
 // stenwatch --import-services|--import-links|--import-controls|--import-assets FILE
 var a = args.ToList();
 string Opt(string name, string dflt) { var i = a.IndexOf(name); return i >= 0 && i + 1 < a.Count ? a[i + 1] : dflt; }
@@ -73,6 +74,37 @@ if (a.Contains("--triage-flag")) // stenwatch --triage-flag "Microsoft Edge" Low
     var i = a.IndexOf("--triage-flag");
     DefenderTriage.SetFlag(data, a[i + 1], a[i + 2], a.ElementAtOrDefault(i + 3) ?? "", a.ElementAtOrDefault(i + 4) ?? "");
     Console.WriteLine($"flag kept in {Path.Combine(data, "triage-flags.json")}");
+    return;
+}
+if (a.Contains("--morning")) // stenwatch-cli --morning [FOLDER] [--llm]: newest Defender export in the watched folder (remembered in morning.json) -> briefing.html, briefing.eml, Teams post if set
+{
+    var i = a.IndexOf("--morning");
+    var m = await Morning.Run(data, i + 1 < a.Count && !a[i + 1].StartsWith("--") ? a[i + 1] : null, a.Contains("--llm") ? true : null, log: Console.WriteLine);
+    if (m.Triage is { } t) Console.WriteLine($"{DefenderTriage.CveCount(t.Actions)} CVEs -> {t.Actions.Count} fix actions -> {t.OutDir}");
+    return;
+}
+if (Opt("--schedule", "") is { Length: > 0 } at) // stenwatch-cli --schedule 07:00: prints the schtasks command for a daily --morning run (does not run it)
+{
+    var r = Morning.ScheduleCommand(TimeOnly.ParseExact(at, "HH:mm", CultureInfo.InvariantCulture));
+    if (r.Command is not null) Console.WriteLine(r.Command);
+    Console.WriteLine(r.Note);
+    return;
+}
+if (a.Contains("--unschedule")) { Console.WriteLine(Morning.UnscheduleCommand()); return; } // prints the command that removes it
+if (a.Contains("--set-webhook")) // stenwatch-cli --set-webhook ticket|briefing https://... [--json [--header NAME VALUE]]: kept in Windows Credential Manager, never in a file
+{
+    var i = a.IndexOf("--set-webhook"); var kind = a.ElementAtOrDefault(i + 1); var url = a.ElementAtOrDefault(i + 2) ?? "";
+    if (kind is not ("ticket" or "briefing") || !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) { Console.WriteLine("usage: --set-webhook ticket|briefing https://... [--json]"); return; }
+    Secrets.Set(kind == "ticket" ? Tickets.Secret : Morning.BriefingSecret, url);
+    if (kind == "ticket") Tickets.SetFormat(data, !a.Contains("--json"));
+    if (kind == "ticket" && a.IndexOf("--header") is var h and >= 0 && h + 2 < a.Count) { Secrets.Set(Tickets.HeaderName, a[h + 1]); Secrets.Set(Tickets.HeaderValue, a[h + 2]); }
+    Console.WriteLine($"{kind} webhook stored in Windows Credential Manager" + (kind == "ticket" ? $" ({(a.Contains("--json") ? "plain JSON" : "Teams card")})" : ""));
+    return;
+}
+if (Opt("--push-ticket", "") is { Length: > 0 } tid) // stenwatch-cli --push-ticket 12 [--reason "..."]: one task to the ticket webhook
+{
+    using var db = Collect.Connect(files.Db);
+    Console.WriteLine((await Tickets.Push(db, long.Parse(tid.TrimStart('T', 't', '-'), CultureInfo.InvariantCulture), Opt("--reason", ""), data)).Note);
     return;
 }
 if (Opt("--defender-export", "") is { Length: > 0 } dx) // stenwatch --defender-export export-tvm-vulnerabilities.xlsx [--fetch-feeds] [--llm] [--advisory-file mail.txt]: briefing, xlsx and IT note in data/out/triage

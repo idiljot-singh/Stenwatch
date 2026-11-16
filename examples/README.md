@@ -20,6 +20,7 @@ Its business runs on servers and network drives: project and CAD data on Windows
 | `sbom.example.json` | C# edition | A CycloneDX SBOM of the customer portal: PHP, WordPress, OpenSSL and libraries a host inventory cannot see. |
 | `defender-export.example.csv` | Morning triage | A fictional Microsoft Defender vulnerability export: 17 public CVEs (Chrome, Edge, Firefox, Windows 11, 7-Zip, PHP, OpenSSL) with invented machine counts. |
 | `advisory.example.txt` | Morning triage | A fictional Finnish advisory email to try "Add advisory email" with (it names CVE-2026-9998 and says it is actively exploited). |
+| `ticket.example.json` | Ticket push (planned for 0.3) | One fictional ticket as the plain JSON object the app is planned to post: `task_id`, `item`, `asset`, `tier`, `deadline`, `owner`, `reason`, `link`. For trying a Jira, ServiceNow or Azure DevOps rule on a test project. The link uses `example.invalid`. |
 | `evaluation/` | C# edition | The published evaluation results (docs/evaluation.md), shown on Effectiveness until you run the evaluation yourself. |
 
 Run it:

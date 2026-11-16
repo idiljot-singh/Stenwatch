@@ -45,7 +45,7 @@ public static class Coverage
         static string Newest(IEnumerable<string> days) => days.Where(d => d != "").DefaultIfEmpty("").Max()!;
 
         // what the database holds; every table may be missing (feeds not synced, never ranked)
-        var meta = new Dictionary<string, string>(); long cves = 0, kev = 0, lastRun = 0, tasks = 0, ticketed = 0; var runAt = "";
+        var meta = new Dictionary<string, string>(); long cves = 0, kev = 0, lastRun = 0, tasks = 0, ticketed = 0, pushed = 0; var runAt = "";
         if (File.Exists(db))
         {
             using var c = new SqliteConnection($"Data Source={db};Mode=ReadOnly;Pooling=False"); c.Open();
@@ -54,7 +54,7 @@ public static class Coverage
             cves = N("SELECT COUNT(*) FROM cve"); kev = N("SELECT COUNT(*) FROM kev");
             lastRun = N("SELECT COUNT(DISTINCT cve) FROM finding_history WHERE state = 'open' AND run = (SELECT MAX(id) FROM run)");
             try { using var q = c.CreateCommand(); q.CommandText = "SELECT at FROM run ORDER BY id DESC LIMIT 1"; runAt = q.ExecuteScalar() as string ?? ""; } catch (SqliteException) { }
-            tasks = N("SELECT COUNT(*) FROM task WHERE state IN ('Open','InProgress','Fixed','Reopened')"); ticketed = N("SELECT COUNT(*) FROM task WHERE ticket <> ''");
+            tasks = N("SELECT COUNT(*) FROM task WHERE state IN ('Open','InProgress','Fixed','Reopened')"); ticketed = N("SELECT COUNT(*) FROM task WHERE ticket <> ''"); pushed = N("SELECT COUNT(*) FROM task WHERE ticket_state = 'Sent'");
         }
         string Meta(string k) => meta.TryGetValue(k, out var v) ? v[..Math.Min(10, v.Length)] : "";
         bool Stale(string k) => meta.TryGetValue(k, out var v) && EvidenceOf.IsStale(v, at);
@@ -109,7 +109,10 @@ public static class Coverage
                     if (Stale("kev_sync")) return R(Attention, sources, "sources", Newest(new[] { Meta("kev_sync"), advDay }), "the KEV feed is out of date: sync on Feeds");
                     return R(kev > 0 && advisories > 0 ? Connected : Partly, sources, "sources", Newest(new[] { Meta("kev_sync"), advDay }),
                         kev > 0 && advisories > 0 ? "public feeds and advisories" : kev > 0 ? "public feeds; no advisories read yet" : "advisories; public feeds not synced");
+                case "End-of-life software": // checked, nothing past or near end of life: connected with 0
+                    return File.Exists(Exposure.FileFor(dir, k.Name)) ? R(Connected, 0, "past or near end of life", Day(File.GetLastWriteTime(Exposure.FileFor(dir, k.Name))), "asset list checked against endoflife.date") : not;
                 case "Ticketing":
+                    if (pushed > 0) return R(Connected, (int)pushed, "tickets sent", "", "ticket webhook");
                     return tasks > 0 || ticketed > 0 ? R(Partly, (int)tasks, "active tasks", "", "tasks with owner and ticket field; nothing is pushed yet. Needs " + k.Needs) : not;
                 case "Reports":
                     return reports.Length > 0 ? R(Connected, reports.Length, "reports", Newest(reports.Select(f => Day(File.GetLastWriteTime(f)))), "written by every rank") : not;
