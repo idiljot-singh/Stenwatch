@@ -46,5 +46,8 @@ public static class Pipeline
             string.Join(";", r.Mitigations.Select(m => $"{m.Name} ({m.Id})")),
             r.Diamond.Adversary, r.Diamond.Capability, r.Diamond.Infrastructure, r.Diamond.Victim, r.Diamond.Phase,
             r.Confidence, r.Exploitation, string.Join(";", r.Evidence.Select(e => $"{e.Signal} [{e.Kind}, {e.Confidence}, {e.Source}]")),
-        })));
+        }.Select(NoFormula))));
+
+    /// <summary>A text cell Excel would run as a formula (=, +, -, @ first) gets a leading ' so it shows as text. Numbers, negative ones too, stay as they are.</summary>
+    static string NoFormula(string s) => s.Length > 0 && "=+-@".Contains(s[0]) && !double.TryParse(s, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out _) ? "'" + s : s;
 }

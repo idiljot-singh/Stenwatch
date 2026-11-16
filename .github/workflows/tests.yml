@@ -11,3 +11,9 @@ jobs:
         with:
           dotnet-version: "8.0.x"
       - run: dotnet test src/Stenwatch.Tests
+      - name: no vulnerable packages
+        shell: bash
+        run: |
+          out=$(dotnet list src/Stenwatch.sln package --vulnerable --include-transitive)
+          echo "$out"
+          ! echo "$out" | grep -q "has the following vulnerable packages"

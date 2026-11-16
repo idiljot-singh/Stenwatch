@@ -51,7 +51,7 @@ public static class Inventory
     {
         using var zip = ZipFile.OpenRead(path);
         XNamespace ns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
-        XDocument Load(string name) { using var s = zip.GetEntry(name)!.Open(); return XDocument.Load(s); }
+        XDocument Load(string name) { using var s = zip.GetEntry(name)!.Open(); return Advisories.Xml(new StreamReader(s)); }
         var shared = zip.GetEntry("xl/sharedStrings.xml") is null ? new List<string>()
             : Load("xl/sharedStrings.xml").Root!.Elements(ns + "si").Select(si => string.Concat(si.Descendants(ns + "t").Select(t => t.Value))).ToList();
         var sheet = zip.Entries.Where(e => e.FullName.StartsWith("xl/worksheets/sheet") && e.FullName.EndsWith(".xml")).OrderBy(e => e.FullName.Length).ThenBy(e => e.FullName).First();

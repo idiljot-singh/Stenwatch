@@ -48,6 +48,7 @@ public static class TriageLlm
     {
         var key = Secrets.Get(KeyName);
         if (key is null && !Local) throw new InvalidOperationException("no OpenRouter key: add OPENROUTER_API_KEY on the Settings page");
+        if (!Local && !Url.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) throw new InvalidOperationException("the LLM url must be https unless the model runs on this machine"); // the key must not travel in clear text
         using var req = new HttpRequestMessage(HttpMethod.Post, Url + "/chat/completions")
         {
             Content = JsonContent.Create(new { model = Model, temperature = 0, max_tokens = 4000,

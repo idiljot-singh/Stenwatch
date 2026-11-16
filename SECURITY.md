@@ -7,8 +7,9 @@ Please **don't open a public issue**. Report it privately through GitHub:
 **Security → Report a vulnerability** on this repository. You'll get an answer within 7 days.
 
 ## Scope
-In scope: the pipeline code, the local web interface (`python/app.py`, `python/cti/app.html`), the generated
-dashboard, and how feed data is parsed.
+In scope: the Windows app (`src/Stenwatch.App`), the command line (`src/Stenwatch.Cli`), the shared engine
+(`src/Stenwatch.Core`), the reports it generates (dashboard, briefing, report.csv, STIX), and how feeds,
+inventories and Defender exports are parsed.
 Out of scope: the upstream feeds themselves (NVD, CISA KEV, FIRST EPSS, MITRE ATT&CK, CTID).
 
 ## Built-in controls

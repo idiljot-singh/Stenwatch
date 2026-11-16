@@ -46,7 +46,7 @@ public static class Advisories
     /// <summary>NCSC-FI's vulnerability stream: each description reads "Classification: Critical, Solution: ..., Exploit Maturity: Functional, CVSSv3.1: 9.5, CVEs: CVE-..., Summary: ...".</summary>
     public static List<Advisory> ParseRss(string xml, string source)
     {
-        var items = XDocument.Parse(xml).Descendants("item");
+        var items = Xml(new StringReader(xml)).Descendants("item");
         return items.Select(i =>
         {
             var text = ((string?)i.Element("description") ?? "").Trim();
@@ -56,6 +56,9 @@ public static class Advisories
                 CveId.Matches(text + " " + (string?)i.Element("title")).Select(c => c.Value.ToUpperInvariant()).Distinct().ToList(), maturity);
         }).ToList();
     }
+
+    /// <summary>XML from outside (feeds, .xlsx parts) with any DTD ignored: some real feeds carry a DOCTYPE, none needs it.</summary>
+    internal static XDocument Xml(TextReader r) { using var x = System.Xml.XmlReader.Create(r, new System.Xml.XmlReaderSettings { DtdProcessing = System.Xml.DtdProcessing.Ignore }); return XDocument.Load(x); }
 
     /// <summary>An advisory pasted or saved by the analyst (.txt, .eml, .msg saved as text): the whole file is the text, its first line is the title.</summary>
     public static Advisory FromText(string path)

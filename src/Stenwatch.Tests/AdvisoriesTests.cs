@@ -100,6 +100,22 @@ public class AdvisoriesTests
         Assert.Equal(3, all.Count); Assert.Contains("not reachable", note);
     }
 
+    [Fact]
+    public async Task Refresh_ReadsHttpsFeedsWithADoctype_AndRefusesPlainHttp()
+    {
+        var dir = Directory.CreateTempSubdirectory().FullName;
+        var http = new HttpClient(new Serve(Feed.Replace("<rss", "<!DOCTYPE rss><rss")));
+        var (all, note) = await Advisories.Refresh(dir, http, new[] { new Source("Plain", "rss", "http://example.invalid/feed") }, Today);
+        Assert.Empty(all); Assert.Contains("Plain: not reachable", note); // http could be changed in transit to say "actively exploited"
+        (all, _) = await Advisories.Refresh(dir, http, new[] { new Source("Tls", "rss", "https://example.invalid/feed") }, Today);
+        Assert.Equal(3, all.Count);
+    }
+
+    class Serve(string body) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage r, CancellationToken c) => Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(body) });
+    }
+
     class Down : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage r, CancellationToken c) => throw new HttpRequestException("offline");

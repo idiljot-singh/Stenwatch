@@ -290,7 +290,7 @@ public static class DefenderTriage
         if (unmatched is { Count: > 0 })
         {
             sb.Append($"<h2>Advisories with no match in this export ({unmatched.Count})</h2><details class=n><summary>What is this list?</summary>Advisories from the last 30 days that matched nothing in this export: other products, or something Defender does not see. Your call.</details><ul>");
-            foreach (var u in unmatched) sb.Append($"<li>{E(u.Source)} {E(u.Published)}: <a href=\"{E(u.Link)}\">{E(u.Title)}</a>{(u.ActivelyExploited ? " <b class=Act>actively exploited</b>" : u.ExploitExists ? " <b class=Attend>exploit exists</b>" : "")}" +
+            foreach (var u in unmatched) sb.Append($"<li>{E(u.Source)} {E(u.Published)}: {(u.Link.StartsWith("https://", StringComparison.OrdinalIgnoreCase) || u.Link.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ? $"<a href=\"{E(u.Link)}\">{E(u.Title)}</a>" : E(u.Title))}{(u.ActivelyExploited ? " <b class=Act>actively exploited</b>" : u.ExploitExists ? " <b class=Attend>exploit exists</b>" : "")}" +
                 (u.Cves.Count > 0 ? $" <span class=n>{E(string.Join(", ", u.Cves.Take(4)))}</span>" : "") + "</li>");
             sb.Append("</ul>");
         }

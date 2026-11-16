@@ -166,6 +166,17 @@ public class CoreTests
     }
 
     [Fact]
+    public void ReportCsv_FormulaCellsGetAQuote_NumbersDoNot()
+    {
+        using var db = Db();
+        var r = Analyse.Rank(Process.Match(db, new[] { Mail with { Name = "=cmd|' /C calc'!A0" } }), P, NoThreat);
+        var f = Path.GetTempFileName(); Pipeline.WriteCsv(f, r);
+        var row = Csv.ReadDict(f).Single();
+        Assert.Equal("'=cmd|' /C calc'!A0", row["asset"]); // Excel shows it as text instead of running it
+        Assert.Equal("1", row["rank"]); Assert.False(row["risk"].StartsWith("'"));
+    }
+
+    [Fact]
     public void Stix_IdsAreDeterministicAndHostileTextStaysData()
     {
         using var db = Db();

@@ -1084,7 +1084,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex) { UpdateText.Text = "Could not check: " + ex.Message; }
     }
-    void OpenUpdate(object s, RoutedEventArgs e) { if (releaseUrl != null) OpenFile(releaseUrl); }
+    void OpenUpdate(object s, RoutedEventArgs e) { if (releaseUrl?.StartsWith("https://github.com/idiljot-singh/Stenwatch/", StringComparison.Ordinal) == true) OpenFile(releaseUrl); } // the URL comes from GitHub's reply: only our own release pages go to the shell
 
     void OpenEvaluation(object s, RoutedEventArgs e) { var d = System.IO.Path.Combine(data, "out", "evaluation"); Directory.CreateDirectory(d); OpenFile(d); }
 }

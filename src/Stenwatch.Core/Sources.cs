@@ -30,6 +30,7 @@ public static class Sources
     /// <summary>One source's items, stamped with its name, grade and TLP, from the last <paramref name="days"/> days.</summary>
     public static async Task<List<Advisory>> Fetch(Source s, HttpClient http, string dir, DateOnly today, int days = 30)
     {
+        if (!s.Url.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) throw new InvalidOperationException("https only"); // plain http could be changed in transit to say "actively exploited"; Refresh notes it as not reachable
         var items = s.Type switch
         {
             "atom" => ParseAtom(await http.GetStringAsync(s.Url), s.Name),
@@ -43,7 +44,7 @@ public static class Sources
     public static List<Advisory> ParseAtom(string xml, string source)
     {
         XNamespace a = "http://www.w3.org/2005/Atom";
-        return XDocument.Parse(xml).Descendants(a + "entry").Select(e =>
+        return Advisories.Xml(new StringReader(xml)).Descendants(a + "entry").Select(e =>
         {
             var html = (string?)e.Element(a + "content") ?? (string?)e.Element(a + "summary") ?? "";
             var text = Regex.Replace(System.Net.WebUtility.HtmlDecode(Regex.Replace(html, "<[^>]+>", " ")), @"\s+", " ").Trim();

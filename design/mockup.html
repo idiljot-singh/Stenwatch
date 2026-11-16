@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stenwatch interface mock-up</title>
+<!--
+Static design mock-up for future versions of Stenwatch (see docs/components.md). Fictional Example Organisation data only.
+Self-contained: no external fonts, scripts, images or network requests.
+
+Icon code points (Segoe Fluent Icons / Segoe MDL2 Assets). UNVERIFIED: chosen from memory, not seen rendered.
+Every icon has a text label or a title next to it, so nothing is lost if a glyph is wrong or missing.
+  Vulnerabilities  bug          U+EBE8      Assets            devices      U+E772
+  Attack surface   globe        U+E774      Cloud workloads   cloud        U+E753
+  Web apps         web page     U+E7C3      OT and IoT        chip         U+E950
+  AI discovery     robot        U+E99A      Identity          person       U+E77B
+  Misconfiguration wrench       U+E90F      Intelligence      eye (stand-in for radar, no radar glyph known) U+E7B3
+  Ticketing        tag          U+E8EC      Reports           document     U+E8A5
+  Connectors       plug         U+E839
+  Toolbar: Integrations U+E839, Guide U+E897, Theme U+E706, Settings U+E713
+-->
+<style>
+:root, :root[data-theme="dark"] {
+  --Bg:#050505; --Card:#0b0b0b; --Raised:#151b23; --RaisedHover:#1b2430; --Line:#2a3340; --LineStrong:#344050;
+  --Fg:#e8edf3; --Mute:#9aa6b6; --Dim:#808c9c; --Accent:#3ee6a8; --AccentHover:#6ff0c0; --OnAccent:#03140d;
+  --Selected:#10261f; --Act:#ff4d5e; --Attend:#ff9f43; --Track:#4ea3ff; --Ignore:#7a8699; --Warn:#ffc233;
+}
+:root[data-theme="light"] {
+  --Bg:#ffffff; --Card:#f5f6f8; --Raised:#eef1f5; --RaisedHover:#e4e9f0; --Line:#d5dae2; --LineStrong:#b8c0cc;
+  --Fg:#10141c; --Mute:#4a5568; --Dim:#5f6a7a; --Accent:#087a57; --AccentHover:#07704f; --OnAccent:#ffffff;
+  --Selected:#dcf3ea; --Act:#b00020; --Attend:#a85400; --Track:#1f63c4; --Ignore:#5b6676; --Warn:#8a6100;
+}
+*{box-sizing:border-box}
+html{color-scheme:dark}
+html[data-theme="light"]{color-scheme:light}
+body{margin:0;min-width:980px;background:var(--Bg);color:var(--Fg);font:13px "Segoe UI",system-ui,sans-serif}
+.mono,h1,h2,h3,th,.rail button,.crumb{font-family:"Cascadia Code",Consolas,monospace}
+.ico{font-family:"Segoe Fluent Icons","Segoe MDL2 Assets";font-style:normal;font-size:16px;line-height:1;display:inline-block;width:18px;text-align:center}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--Accent);outline-offset:1px}
+
+/* toolbar */
+.toolbar{position:fixed;top:0;left:0;right:0;height:48px;background:var(--Card);border-bottom:1px solid var(--Line);display:flex;align-items:center;padding:0 16px;gap:4px;z-index:5}
+.word{font-family:"Cascadia Code",Consolas,monospace;font-weight:700;letter-spacing:.12em;color:var(--Accent);margin-right:20px}
+.seg{background:transparent;border:1px solid transparent;border-radius:4px;padding:5px 14px;color:var(--Mute);margin-right:4px}
+.seg:hover{color:var(--Fg);border-color:var(--Line)}
+.seg[aria-selected="true"]{background:var(--Accent);color:var(--OnAccent);font-weight:600}
+.spacer{flex:1}
+.ibtn{background:transparent;border:1px solid transparent;border-radius:4px;width:34px;height:30px;color:var(--Mute);margin:0 2px;padding:0}
+.ibtn:hover{color:var(--Fg);background:var(--RaisedHover)}
+.ibtn[aria-current="page"]{color:var(--Accent);border-color:var(--Line)}
+.tlp{background:#000;color:#ffc000;border:1px solid #ffc000;border-radius:4px;padding:3px 8px;font:700 11px "Cascadia Code",Consolas,monospace;margin-left:10px}
+
+/* rail and page */
+.rail{position:fixed;top:48px;left:0;bottom:0;width:200px;border-right:1px solid var(--Line);background:var(--Bg);padding:8px 0;overflow:auto}
+.rail button{display:block;width:100%;text-align:left;background:transparent;border:0;border-left:2px solid transparent;padding:9px 16px;font-size:12px;color:var(--Mute)}
+.rail button:hover{color:var(--Fg)}
+.rail button[aria-current="page"]{border-left-color:var(--Accent);background:var(--Selected);color:var(--Fg)}
+.rail hr{border:0;border-top:1px solid var(--Line);margin:8px 16px}
+main{margin:48px 0 0 200px;padding:24px}
+h1{font:600 26px "Segoe UI",system-ui,sans-serif;margin:4px 0 12px}
+h2{font-size:11px;color:var(--Accent);text-transform:uppercase;margin:20px 0 8px;font-weight:400;letter-spacing:.04em}
+.crumb{font-size:11px;color:var(--Accent);text-transform:uppercase}
+.cap{font-size:11px;color:var(--Mute)}
+p{margin:0 0 8px;color:var(--Mute);max-width:70ch}
+
+/* buttons */
+.btn{background:var(--Raised);border:1px solid var(--LineStrong);border-radius:4px;padding:7px 14px;color:var(--Fg)}
+.btn:hover{background:var(--RaisedHover);border-color:var(--Accent)}
+.btn.primary{background:var(--Accent);border-color:var(--Accent);color:var(--OnAccent);font-weight:600}
+.btn.primary:hover{background:var(--AccentHover);border-color:var(--AccentHover)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.sm{padding:3px 10px;font-size:12px}
+select{background:var(--Card);color:var(--Fg);border:1px solid var(--LineStrong);border-radius:4px;padding:5px 8px;font:inherit}
+
+/* tables */
+table{border-collapse:collapse;width:100%;background:var(--Bg)}
+th{background:var(--Card);color:var(--Dim);font-size:11px;font-weight:400;text-align:left;padding:6px 8px;border-bottom:1px solid var(--Line)}
+td{padding:5px 8px;border-bottom:1px solid var(--Line);vertical-align:middle}
+tbody tr:hover{background:var(--Card)}
+tbody tr[aria-selected="true"]{background:var(--Selected)}
+.tier{font-weight:600}
+.t-Act{color:var(--Act)}.t-Attend{color:var(--Attend)}.t-Track{color:var(--Track)}.t-Ignore{color:var(--Ignore)}
+.tag{white-space:nowrap}.tag .ico{margin-right:6px;color:var(--Mute)}
+.scroll{overflow-x:auto}
+
+/* status mark: dot plus a word */
+.mark{white-space:nowrap}
+.mark::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;border:1.5px solid var(--Dim);vertical-align:0}
+.mark.connected::before{background:var(--Accent);border-color:var(--Accent)}
+.mark.partly::before{border-color:var(--Accent);background:transparent}
+.mark.not::before{border-color:var(--Dim);background:transparent}
+.mark.attention::before{background:var(--Warn);border-color:var(--Warn)}
+.mark.attention{color:var(--Warn)}
+.mark.not{color:var(--Dim)}
+
+/* tiles */
+.groups{display:flex;flex-wrap:wrap;gap:0 32px}
+.tiles{display:flex;flex-wrap:wrap;gap:12px}
+.tile{width:220px;height:112px;background:var(--Card);border:1px solid var(--Line);border-radius:6px;padding:8px 12px;text-align:left;display:flex;flex-direction:column;justify-content:space-between}
+.tile:hover,.tile:focus-visible{border-color:var(--Accent)}
+.tile .name{display:flex;align-items:center;gap:6px;font-weight:600}
+.tile .name .ico{color:var(--Mute)}
+.tile .src{font-size:11px;color:var(--Mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .bot{display:flex;align-items:center;justify-content:space-between}
+.tile .num{font-size:22px;font-weight:600;line-height:1}
+.tile .go{border:1px solid var(--LineStrong);background:var(--Raised);border-radius:4px;padding:3px 10px;font-size:12px}
+.tile.is-not,.tile.is-not .name,.tile.is-not .num,.tile.is-not .src{color:var(--Dim)}
+.tile.is-not .name .ico{color:var(--Dim)}
+.card{background:var(--Card);border:1px solid var(--Line);border-radius:6px;padding:12px 16px}
+.stat{width:220px;height:112px;background:var(--Card);border:1px solid var(--Line);border-radius:6px;padding:8px 12px;display:flex;flex-direction:column;justify-content:space-between}
+.stat .num{font-size:22px;font-weight:600}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.counter{display:flex;align-items:center;gap:12px;margin:4px 0 8px}
+.bar{width:180px;height:4px;background:var(--Line);border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--Accent)}
+
+/* ticket pills */
+.pill{display:inline-block;border:1px solid currentColor;border-radius:10px;padding:1px 10px;font-size:12px;white-space:nowrap}
+.p-Not{color:var(--Dim)}.p-Sent{color:var(--Track)}.p-Prog{color:var(--Attend)}.p-Done{color:var(--Accent)}.p-Failed{color:var(--Warn)}
+
+/* tokens */
+.sw{display:flex;align-items:center;gap:12px}
+.chip{width:36px;height:22px;border-radius:4px;border:1px solid var(--LineStrong)}
+.bad{color:var(--Warn);font-weight:600}
+.toast{position:fixed;right:16px;bottom:16px;background:var(--Raised);border:1px solid var(--Accent);border-radius:6px;padding:8px 14px;display:none;z-index:9}
+</style>
+</head>
+<body>
+<header class="toolbar" role="banner">
+  <span class="word">STENWATCH</span>
+  <nav id="segs" role="tablist" aria-label="Areas"></nav>
+  <span class="spacer"></span>
+  <button class="ibtn" data-page="integrations" title="Integrations" aria-label="Integrations"><i class="ico" aria-hidden="true">&#xE839;</i></button>
+  <button class="ibtn" data-page="guide" title="Guide" aria-label="Guide"><i class="ico" aria-hidden="true">&#xE897;</i></button>
+  <button class="ibtn" id="theme" title="Theme: dark (click for light)" aria-label="Theme: dark. Switch to light"><i class="ico" aria-hidden="true">&#xE706;</i></button>
+  <button class="ibtn" data-page="settings" title="Settings" aria-label="Settings"><i class="ico" aria-hidden="true">&#xE713;</i></button>
+  <span class="tlp" title="Traffic Light Protocol marking for this session">TLP:AMBER</span>
+</header>
+<nav class="rail" id="rail" aria-label="Pages"></nav>
+<main id="page" tabindex="-1"></main>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+"use strict";
+// ---- data (fictional Example Organisation only) ----
+var AREAS = {
+  home:    {label:"Home",         pages:[["dashboard","Dashboard"],["triage","Morning triage"],["guided","Guided run"]]},
+  exposure:{label:"Exposure",     pages:[["findings","Findings"],["estate","Estate"],["paths","Attack paths"],["coverage","Coverage"]]},
+  intel:   {label:"Intelligence", pages:[["profile","Threat profile"],["feeds","Feeds"],["advisories","Advisories"],["graph","Knowledge graph"]]},
+  response:{label:"Response",     pages:[["remediation","Remediation"],["tickets","Tickets"],["reports","Reports"],["effect","Effectiveness"]]}
+};
+var EXTRA = {integrations:["Integrations","toolbar"],guide:["Guide","toolbar"],settings:["Settings","toolbar"],tokens:["Tokens","mock-up only"]};
+var UNCHANGED = { // page -> [was, note from the design]
+  triage:["Morning triage","No change."], estate:["3 Processing","Renamed. Same four tabs (services, asset context, links, controls)."],
+  paths:["Attack paths","No change."], profile:["1 Direction","Renamed."], feeds:["2 Collection","Renamed."],
+  graph:["Knowledge graph","No change."], reports:["5 Dissemination","Renamed. The full report gains a Coverage section."],
+  effect:["Effectiveness","No change."], guide:["Guide (rail)","Moves from the rail to an icon. Text updated to the new names."],
+  settings:["Settings","Keeps your files and updates."]
+};
+var ICON = {Vulnerabilities:"",Assets:"","Attack surface":"","Cloud workloads":"","Web apps":"","OT and IoT":"",
+  "AI discovery":"",Identity:"",Misconfiguration:"",Intelligence:"",Ticketing:"",Reports:"",Connectors:""};
+// [component, group, status, source/last import, number, caption, open-page]
+var COMP = [
+  ["Assets","Know your estate","connected","Inventory export, 28 Oct","2,844","hosts","estate"],
+  ["Attack surface","Know your estate","partly","Internet-facing flag only","12","exposed","paths"],
+  ["Cloud workloads","Know your estate","not","Needs Defender for Cloud export (CSV)","0","","integrations"],
+  ["OT and IoT","Know your estate","not","Needs Defender for IoT inventory export","0","","integrations"],
+  ["AI discovery","Know your estate","not","Needs Cloud Apps discovered apps (CSV)","0","","integrations"],
+  ["Identity","Know your estate","not","Needs Entra risky users export","0","","integrations"],
+  ["Vulnerabilities","Find weaknesses","connected","Defender export, 28 Oct","17","CVEs","findings"],
+  ["Web apps","Find weaknesses","not","Needs OWASP ZAP JSON or SARIF","0","","integrations"],
+  ["Misconfiguration","Find weaknesses","not","Needs Defender recommendations export","0","","integrations"],
+  ["Intelligence","Know the threat","connected","5 sources, synced 29 Oct","5","sources","feeds"],
+  ["Ticketing","Act and prove","attention","Webhook test failed 27 Oct","3","tasks","tickets"],
+  ["Reports","Act and prove","connected","Last report 29 Oct","8","reports","reports"],
+  ["Connectors","Act and prove","connected","3 of 7 active","3","active","integrations"]
+];
+var STATUS = {connected:"connected",partly:"partly connected",not:"not connected",attention:"needs attention"};
+var GO = {connected:"Open",partly:"Open",attention:"Open",not:"Import"};
+var FIND = [ // tier, risk, cve, component, asset, exploitation, why
+  ["Act",92,"CVE-2026-14266","Vulnerabilities","7-Zip on 640 machines","Public exploit code","Remote code execution, Defender marks remediation required, widely installed"],
+  ["Act",88,"CVE-2026-106016","Vulnerabilities","Firefox on 96 machines","None known","Critical (9.8), runs on engineering laptops, reachable from the internet"],
+  ["Attend",71,"CVE-2026-91765","Attack surface","ex-portal-01 (PHP)","None known","Customer portal is internet-facing; only 3 machines but a crown jewel"],
+  ["Attend",64,"CVE-2026-88097","Vulnerabilities","Edge on 1,580 machines","None known","Very wide exposure, High severity, EPSS low"],
+  ["Attend",58,"CVE-2026-84784","Intelligence","OpenSSL on 57 machines","Advisory mentions it","Named in a national CERT advisory, no exploit seen"],
+  ["Track",41,"CVE-2026-81963","Vulnerabilities","Windows 11 24H2 on 1,210 machines","None known","High (7.8) but local access needed; patched by monthly update"],
+  ["Track",33,"CVE-2026-113344","Vulnerabilities","Chrome on 412 machines","None known","Browser auto-updates within days"],
+  ["Ignore",8,"CVE-2026-68820","Vulnerabilities","Windows 11 24H2 on 1,210 machines","None known","Analyst decision: exception until 31 Dec (compensating control)"]
+];
+var TASKS = [ // id, cve, asset, owner, due, overdue, ticket state
+  ["T-101","CVE-2026-14266","7-Zip, 640 machines","Client IT","30 Oct",true,"Not sent"],
+  ["T-102","CVE-2026-106016","Firefox, 96 machines","Client IT","03 Nov",false,"Not sent"],
+  ["T-103","CVE-2026-91765","ex-portal-01","Web team","05 Nov",false,"Failed"],
+  ["T-104","CVE-2026-88097","Edge, 1,580 machines","Client IT","12 Nov",false,"Sent"],
+  ["T-105","CVE-2026-84784","OpenSSL, 57 machines","Server team","14 Nov",false,"In progress"],
+  ["T-106","CVE-2026-81963","Windows 11, 1,210 machines","Client IT","20 Nov",false,"Done"]
+];
+var PILL = {"Not sent":"p-Not","Sent":"p-Sent","In progress":"p-Prog","Done":"p-Done","Failed":"p-Failed"};
+var TICKETS = {"T-103":["EX-1040","Webhook (chat)","example.invalid/EX-1040"],"T-104":["EX-1041","Webhook (chat)","example.invalid/EX-1041"],
+  "T-105":["EX-1042","Webhook (chat)","example.invalid/EX-1042"],"T-106":["EX-1039","Webhook (chat)","example.invalid/EX-1039"]};
+var STAGES = [
+  ["Direction","Say who you are and which threat groups matter to you.","Done","profile","Threat profile"],
+  ["Collection","Pull the public feeds: KEV, EPSS, ATT&CK and the advisories.","Done","feeds","Feeds"],
+  ["Processing","Describe your estate so findings can be matched to it.","Needs attention","estate","Estate"],
+  ["Analysis","Rank the findings and give the reason for each tier.","Done","findings","Findings"],
+  ["Dissemination","Send the people who must act what they need.","Not started","reports","Reports"],
+  ["Feedback","Check that fixed things stayed fixed.","Not started","remediation","Remediation"]
+];
+var ADV = [
+  ["National CERT feed","Actively exploited flaw in a VPN gateway","A","TLP:CLEAR","28 Oct","No match"],
+  ["Vendor security blog","Update available for OpenSSL QUIC issue","B","TLP:CLEAR","27 Oct","Matched: CVE-2026-84784"],
+  ["Advisory email (example.invalid)","Customer portal: PHP SOAP parser","B","TLP:AMBER","26 Oct","Matched: CVE-2026-91765"],
+  ["Vendor security blog","Edge security update notes","A","TLP:CLEAR","25 Oct","Matched: CVE-2026-88097"],
+  ["National CERT feed","Industrial control system notice","C","TLP:CLEAR","24 Oct","No match"]
+];
+var CONN = [ // name, feeds, kind, status, last run, action
+  ["Defender vulnerability export","Vulnerabilities","file","connected","28 Oct 07:00","Import"],
+  ["Inventory export","Assets","file","connected","28 Oct 07:05","Import"],
+  ["Public feeds (KEV, EPSS, ATT&CK)","Intelligence","API","connected","29 Oct 06:30","Sync"],
+  ["Advisory sources (5)","Intelligence","API","partly","29 Oct 06:30","Open"],
+  ["Ticket webhook","Ticketing","webhook","attention","27 Oct 14:12 (failed)","Retry"],
+  ["Defender for Cloud recommendations","Cloud workloads","file","not","never","Import"],
+  ["OWASP ZAP report","Web apps","file","not","never","Import"]
+];
+
+// ---- helpers ----
+var $ = function(s){return document.querySelector(s)};
+var state = {area:"home", page:"dashboard"};
+function mark(s,t){return '<span class="mark '+s+'">'+(t||STATUS[s])+'</span>'}
+function tag(c){return '<span class="tag"><i class="ico" aria-hidden="true">'+ICON[c]+'</i>'+c+'</span>'}
+function toast(t){var e=$("#toast");e.textContent=t;e.style.display="block";clearTimeout(toast.h);toast.h=setTimeout(function(){e.style.display="none"},2600)}
+function areaOf(p){for(var a in AREAS)for(var i=0;i<AREAS[a].pages.length;i++)if(AREAS[a].pages[i][0]===p)return a;return null}
+function titleOf(p){var a=areaOf(p);if(a)return AREAS[a].pages.filter(function(x){return x[0]===p})[0][1];return EXTRA[p][0]}
+function coverageCount(){return COMP.filter(function(c){return c[2]==="connected"}).length}
+
+// ---- navigation ----
+function drawSegs(){
+  $("#segs").innerHTML=Object.keys(AREAS).map(function(k){return '<button class="seg" role="tab" data-area="'+k+'" aria-selected="'+(k===state.area)+'">'+AREAS[k].label+'</button>'}).join("");
+}
+function drawRail(){
+  $("#rail").innerHTML=AREAS[state.area].pages.map(function(p){return '<button data-page="'+p[0]+'"'+(p[0]===state.page?' aria-current="page"':'')+'>'+p[1]+'</button>'}).join("")
+    +'<hr><button data-page="tokens"'+(state.page==="tokens"?' aria-current="page"':'')+' title="Mock-up only: not part of the app">Tokens</button>';
+}
+function show(p){
+  state.page=p;var a=areaOf(p);if(a)state.area=a;
+  drawSegs();drawRail();
+  document.querySelectorAll(".ibtn[data-page]").forEach(function(b){if(b.dataset.page===p)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
+  var crumb=a?AREAS[a].label:(EXTRA[p][1]);
+  $("#page").innerHTML='<div class="crumb">'+crumb+' &gt; '+titleOf(p)+'</div><h1>'+titleOf(p)+'</h1>'+(PAGES[p]?PAGES[p]():placeholder(p));
+  window.scrollTo(0,0);
+  if(p==="tokens")drawTokens();
+}
+function placeholder(p){var u=UNCHANGED[p];return '<div class="card"><p>This page is unchanged from today. Its content is not redrawn in this mock-up.</p><p class="cap">Was: '+u[0]+'. Change in the design: '+u[1]+'</p></div>'}
+
+// ---- pages ----
+var PAGES = {
+dashboard:function(){
+  var n=coverageCount();
+  return '<div class="row">'
+   +'<div class="stat"><span class="tier t-Act">Act</span><span class="num t-Act">4</span><span class="cap">fix now, 1 overdue</span></div>'
+   +'<div class="stat"><span class="tier t-Attend">Attend</span><span class="num t-Attend">11</span><span class="cap">plan this week</span></div>'
+   +'<div class="stat"><span class="tier t-Track">Track</span><span class="num t-Track">27</span><span class="cap">watch</span></div>'
+   +'<div class="stat"><span class="tier t-Ignore">Ignore</span><span class="num t-Ignore">9</span><span class="cap">decided, with a reason</span></div></div>'
+   +'<h2>Coverage</h2><div class="counter"><span>Coverage: '+n+' of 13 connected</span><span class="bar"><i style="width:'+(n/13*100)+'%"></i></span><button class="btn sm" data-page="coverage">Open Coverage</button></div>'
+   +'<h2>What changed since the last run</h2><div class="scroll"><table><thead><tr><th>CHANGE</th><th>CVE</th><th>ASSET</th><th>WHY</th></tr></thead><tbody>'
+   +[["Moved to Act","CVE-2026-14266","7-Zip, 640 machines","Defender now marks remediation required"],
+     ["New","CVE-2026-113344","Chrome, 412 machines","Published 20 Oct, matched on import"],
+     ["Moved to Ignore","CVE-2026-68820","Windows 11, 1,210 machines","Exception recorded, compensating control"],
+     ["Fixed","CVE-2026-85046","Chrome, 412 machines","Version no longer in the inventory"]]
+     .map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td>'+r[3]+'</td></tr>'}).join("")
+   +'</tbody></table></div>';
+},
+guided:function(){
+  return '<p>The six stages of the CTI cycle in order. Each has one sentence, its state and a button to its page.</p><div class="scroll"><table><thead><tr><th>#</th><th>STAGE</th><th>WHAT IT IS</th><th>STATE</th><th></th></tr></thead><tbody>'
+   +STAGES.map(function(s,i){var m=s[2]==="Done"?"connected":s[2]==="Needs attention"?"attention":"not";
+     return '<tr><td>'+(i+1)+'</td><td><b>'+s[0]+'</b></td><td>'+s[1]+'</td><td>'+mark(m,s[2])+'</td><td><button class="btn sm" data-page="'+s[3]+'" aria-label="Open '+s[4]+' ('+s[0]+')">Open '+s[4]+'</button></td></tr>'}).join("")
+   +'</tbody></table></div>';
+},
+coverage:function(){
+  var n=coverageCount(),groups=["Know your estate","Find weaknesses","Know the threat","Act and prove"];
+  var h='<div class="counter"><span>'+n+' of 13 connected</span><span class="bar" role="img" aria-label="'+n+' of 13 connected"><i style="width:'+(n/13*100)+'%"></i></span></div>'
+   +'<p class="cap">Status kinds: '+mark("connected")+' &nbsp; '+mark("partly")+' &nbsp; '+mark("not")+' &nbsp; '+mark("attention")+'</p>';
+  h+='<div class="groups">';
+  groups.forEach(function(g){
+    h+='<section><h2>'+g+'</h2><div class="tiles">'+COMP.map(function(c,i){return c[1]===g?c:null}).filter(Boolean).map(function(c){
+      var label=c[0]+": "+STATUS[c[2]]+". "+GO[c[2]];
+      return '<button class="tile'+(c[2]==="not"?" is-not":"")+'" data-comp="'+c[0]+'" aria-label="'+label+'">'
+        +'<span class="name"><i class="ico" aria-hidden="true">'+ICON[c[0]]+'</i>'+c[0]+'</span>'
+        +'<span>'+mark(c[2])+'</span><span class="src" title="'+c[3]+'">'+c[3]+'</span>'
+        +'<span class="bot"><span class="num">'+c[4]+(c[5]?' <span class="cap">'+c[5]+'</span>':'')+'</span><span class="go">'+GO[c[2]]+'</span></span></button>'}).join("")+'</div></section>';
+  });
+  return h+'</div>';
+},
+findings:function(){
+  var comps=Object.keys(ICON).filter(function(c){return FIND.some(function(f){return f[3]===c})});
+  return '<div class="row" style="margin-bottom:12px"><label for="cf" class="cap">Component</label><select id="cf"><option>All</option>'+comps.map(function(c){return '<option>'+c+'</option>'}).join("")+'</select>'
+   +'<span class="cap">Findings from every component in one ranked list. Click a row to select it.</span></div>'
+   +'<div class="scroll"><table id="ft"><thead><tr><th>#</th><th>TIER</th><th>RISK</th><th>CVE</th><th>COMPONENT</th><th>ASSET</th><th>EXPLOITATION</th><th>WHY</th></tr></thead><tbody></tbody></table></div>';
+},
+advisories:function(){
+  return '<div class="scroll"><table><thead><tr><th>SOURCE</th><th>TITLE</th><th>GRADE</th><th>TLP</th><th>DATE</th><th>MATCHED</th></tr></thead><tbody>'
+   +ADV.map(function(a){return '<tr><td>'+a[0]+'</td><td>'+a[1]+'</td><td>'+a[2]+'</td><td>'+a[3]+'</td><td>'+a[4]+'</td><td>'+(a[5]==="No match"?mark("not","No match"):mark("connected",a[5]))+'</td></tr>'}).join("")+'</tbody></table></div>';
+},
+remediation:function(){
+  return '<div class="scroll"><table id="rt"><thead><tr><th>TASK</th><th>CVE</th><th>ASSET</th><th>OWNER</th><th>DUE</th><th>TICKET</th><th></th></tr></thead><tbody>'
+   +TASKS.map(function(t,i){return rtRow(t,i)}).join("")+'</tbody></table></div>';
+},
+tickets:function(){
+  var rows=TASKS.filter(function(t){return TICKETS[t[0]]});
+  return '<p>Tasks that were pushed, their state and link. Links are shown as text in this mock-up.</p><div class="scroll"><table><thead><tr><th>TICKET</th><th>TASK</th><th>CVE</th><th>SYSTEM</th><th>STATE</th><th>LINK</th></tr></thead><tbody>'
+   +rows.map(function(t){var k=TICKETS[t[0]];return '<tr><td>'+k[0]+'</td><td>'+t[0]+'</td><td>'+t[1]+'</td><td>'+k[1]+'</td><td><span class="pill '+PILL[t[6]]+'">'+t[6]+'</span></td><td>'+k[2]+'</td></tr>'}).join("")+'</tbody></table></div>';
+},
+integrations:function(){
+  return '<h2>Connectors</h2><p>Everything that goes in or out: files, APIs and the ticket webhook.</p><div class="scroll"><table><thead><tr><th>NAME</th><th>FEEDS</th><th>KIND</th><th>STATUS</th><th>LAST RUN</th><th></th></tr></thead><tbody>'
+   +CONN.map(function(c){return '<tr><td>'+c[0]+'</td><td>'+tag(c[1])+'</td><td>'+c[2]+'</td><td>'+mark(c[3])+'</td><td>'+c[4]+'</td><td><button class="btn sm" data-toast="'+c[5]+': '+c[0]+' (mock-up, nothing happens)">'+c[5]+'</button></td></tr>'}).join("")+'</tbody></table></div>'
+   +'<h2>Schedule</h2><div class="card"><div class="row"><span>Morning run</span>'+mark("not","not scheduled")+'<span class="cap">Weekdays 07:00 once the scheduler exists (phase 2)</span><button class="btn sm" data-toast="Schedule: mock-up, nothing happens">Set schedule</button></div></div>'
+   +'<h2>Intelligence sources and API keys</h2><p class="cap">Move here from Settings. Not redrawn in this mock-up.</p>';
+},
+tokens:function(){
+  return '<p>Every token in the current theme. Contrast ratios are computed in this page with the WCAG formula; a value under 4.5 is flagged.</p>'
+   +'<h2>Swatches</h2><div class="scroll"><table><thead><tr><th>TOKEN</th><th>SWATCH</th><th>HEX</th></tr></thead><tbody id="sw"></tbody></table></div>'
+   +'<h2>Text contrast</h2><div class="scroll"><table><thead><tr><th>TEXT TOKEN</th><th>ON</th><th>RATIO ON Bg</th><th>RATIO ON Card</th><th>RESULT</th></tr></thead><tbody id="ct"></tbody></table></div>';
+}
+};
+function rtRow(t,i){
+  var canPush=t[6]==="Not sent"||t[6]==="Failed";
+  return '<tr><td>'+t[0]+'</td><td>'+t[1]+'</td><td>'+t[2]+'</td><td>'+t[3]+'</td><td>'+(t[5]?'<span class="t-Act">'+t[4]+' (overdue)</span>':t[4])+'</td>'
+   +'<td><span class="pill '+PILL[t[6]]+'">'+t[6]+'</span></td><td>'+(canPush?'<button class="btn sm primary" data-push="'+i+'" aria-label="Push '+t[0]+' to ticket">Push to ticket</button>':'')+'</td></tr>';
+}
+function drawFindings(){
+  var f=$("#cf");if(!f)return;var v=f.value;
+  $("#ft tbody").innerHTML=FIND.filter(function(r){return v==="All"||r[3]===v}).map(function(r,i){
+    return '<tr tabindex="0"><td>'+(i+1)+'</td><td class="tier t-'+r[0]+'">'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td>'+tag(r[3])+'</td><td>'+r[4]+'</td><td>'+r[5]+'</td><td>'+r[6]+'</td></tr>'}).join("");
+}
+
+// ---- tokens page: swatches and WCAG contrast ----
+var TOKENS=["Bg","Card","Raised","RaisedHover","Line","LineStrong","Fg","Mute","Dim","Accent","AccentHover","OnAccent","Selected","Act","Attend","Track","Ignore","Warn"];
+var TEXT=["Fg","Mute","Dim","Accent","Act","Attend","Track","Ignore","Warn"];
+function tok(n){return getComputedStyle(document.documentElement).getPropertyValue("--"+n).trim().toLowerCase()}
+function lum(h){var c=[1,3,5].map(function(i){var v=parseInt(h.substr(i,2),16)/255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4)});return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2]}
+function ratio(a,b){var x=lum(a),y=lum(b);return (Math.max(x,y)+0.05)/(Math.min(x,y)+0.05)}
+function cell(r){return r<4.5?'<span class="bad">'+r.toFixed(2)+' (under 4.5)</span>':r.toFixed(2)}
+function drawTokens(){
+  $("#sw").innerHTML=TOKENS.map(function(n){return '<tr><td class="mono">'+n+'</td><td><div class="sw"><span class="chip" style="background:'+tok(n)+'"></span></div></td><td class="mono">'+tok(n)+'</td></tr>'}).join("");
+  var bg=tok("Bg"),card=tok("Card"),rows=TEXT.map(function(n){
+    var a=ratio(tok(n),bg),b=ratio(tok(n),card),ok=a>=4.5&&b>=4.5;
+    return '<tr><td class="mono" style="color:var(--'+n+')">'+n+'</td><td>Bg, Card</td><td>'+cell(a)+'</td><td>'+cell(b)+'</td><td>'+(ok?mark("connected","pass"):mark("attention","fail"))+'</td></tr>'});
+  var o=ratio(tok("OnAccent"),tok("Accent"));
+  rows.push('<tr><td class="mono">OnAccent</td><td>Accent</td><td colspan="2">'+cell(o)+'</td><td>'+(o>=4.5?mark("connected","pass"):mark("attention","fail"))+'</td></tr>');
+  $("#ct").innerHTML=rows.join("");
+}
+
+// ---- events ----
+document.addEventListener("click",function(e){
+  var t=e.target.closest("[data-area],[data-page],[data-comp],[data-push],[data-toast],#theme,#ft tr,.tile");if(!t)return;
+  if(t.id==="theme"){
+    var l=document.documentElement.dataset.theme!=="light";document.documentElement.dataset.theme=l?"light":"dark";
+    t.title="Theme: "+(l?"light (click for dark)":"dark (click for light)");t.setAttribute("aria-label","Theme: "+(l?"light. Switch to dark":"dark. Switch to light"));
+    if(state.page==="tokens")drawTokens();return;}
+  if(t.dataset.area){state.area=t.dataset.area;show(AREAS[t.dataset.area].pages[0][0]);return;}
+  if(t.dataset.page){show(t.dataset.page);return;}
+  if(t.dataset.comp){var c=COMP.filter(function(x){return x[0]===t.dataset.comp})[0];
+    if(c[2]==="not")toast("Import "+c[0]+": "+c[3]+" (mock-up, nothing happens)");else show(c[6]);return;}
+  if(t.dataset.push!==undefined){var k=TASKS[+t.dataset.push];k[6]="Sent";TICKETS[k[0]]=["EX-1050","Webhook (chat)","example.invalid/EX-1050"];show("remediation");toast("Task "+k[0]+" pushed (mock-up)");return;}
+  if(t.dataset.toast){toast(t.dataset.toast);return;}
+  if(t.tagName==="TR"){document.querySelectorAll("#ft tr[aria-selected]").forEach(function(r){r.removeAttribute("aria-selected")});t.setAttribute("aria-selected","true");}
+});
+document.addEventListener("change",function(e){if(e.target.id==="cf")drawFindings()});
+document.addEventListener("keydown",function(e){if((e.key==="Enter"||e.key===" ")&&e.target.matches("#ft tr")){e.preventDefault();e.target.click()}});
+var _show=show;show=function(p){_show(p);drawFindings()};
+show("dashboard");
+</script>
+</body>
+</html>

@@ -122,6 +122,15 @@ public class DefenderTriageTests
     }
 
     [Fact]
+    public void Briefing_LinksOnlyHttpUrls_AJavascriptLinkIsPlainText()
+    {
+        var bad = new Advisory("Feed", "Click me", "javascript:alert(1)", "2026-10-28", "", new(), "");
+        var html = DefenderTriage.Html(new(), new(false, "", new(), new(), new()), "x.xlsx", new DateOnly(2026, 10, 29), new() { bad, bad with { Title = "Good", Link = "https://example.org/a" } });
+        Assert.DoesNotContain("javascript:", html); Assert.Contains("Click me", html);
+        Assert.Contains("<a href=\"https://example.org/a\">Good</a>", html);
+    }
+
+    [Fact]
     public void SaveAndCompare_ShowsNewGoneAndChanged_AndBriefingListsOnlyWhatChanged()
     {
         var dir = Directory.CreateTempSubdirectory().FullName;

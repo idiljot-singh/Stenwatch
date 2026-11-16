@@ -160,7 +160,7 @@ public partial class MainWindow
             row.ToolTip = src.Url;
             SourcesPanel.Children.Add(row);
         }
-        // add a source: name, URL (http/https only), type, grade, TLP
+        // add a source: name, URL (https only), type, grade, TLP
         var add = new WrapPanel { Margin = new Thickness(0, 6, 0, 0) };
         var name = new TextBox { Width = 140, Margin = new Thickness(0, 0, 6, 0), ToolTip = "Name" }; var url = new TextBox { Width = 320, Margin = new Thickness(0, 0, 6, 0), ToolTip = "Feed URL (https://...)" };
         var type = new ComboBox { ItemsSource = new[] { "rss", "atom" }, SelectedIndex = 0, Width = 70, Margin = new Thickness(0, 0, 6, 0) };
@@ -170,7 +170,7 @@ public partial class MainWindow
         add.Children.Add(type); add.Children.Add(grade); add.Children.Add(tlp);
         add.Children.Add(Btn("Add source", () =>
         {
-            if (name.Text.Trim() == "" || !Uri.TryCreate(url.Text.Trim(), UriKind.Absolute, out var u) || u.Scheme is not ("https" or "http")) { Status("A source needs a name and an http(s) URL"); return; }
+            if (name.Text.Trim() == "" || !Uri.TryCreate(url.Text.Trim(), UriKind.Absolute, out var u) || u.Scheme != "https") { Status("A source needs a name and an https URL"); return; }
             all.Add(new Source(name.Text.Trim(), (string)type.SelectedItem, u.ToString(), (string)grade.SelectedItem, (string)tlp.SelectedItem)); Save(); LoadSources();
         }));
         SourcesPanel.Children.Add(add);
