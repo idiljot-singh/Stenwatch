@@ -11,7 +11,7 @@
         <!-- toolbar: wordmark, the four areas, icon actions (Integrations, Guide, Theme, Settings), TLP -->
         <Border Grid.ColumnSpan="2" Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1"><DockPanel Margin="14,6">
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
-                <Button Style="{StaticResource IconButton}" Content="&#xE839;" Click="GoIntegrations" ToolTip="Integrations" AutomationProperties.Name="Integrations"/>
+                <Button Style="{StaticResource IconButton}" Content="&#xE71B;" Click="GoIntegrations" ToolTip="Integrations" AutomationProperties.Name="Integrations"/>
                 <Button Style="{StaticResource IconButton}" Content="&#xE897;" Click="GoGuide" ToolTip="Guide (F1: about this page)" AutomationProperties.Name="Guide"/>
                 <Button x:Name="ThemeBtn" Style="{StaticResource IconButton}" Content="&#xE706;" Click="ThemeClick"/>
                 <Button Style="{StaticResource IconButton}" Content="&#xE713;" Click="GoSettings" ToolTip="Settings" AutomationProperties.Name="Settings"/>
@@ -101,6 +101,8 @@
                     <CheckBox x:Name="ExampleBox" ToolTip="Fictional data bundled with the app. Nothing is saved, and your own data is never touched." Content="Example Organisation (no real data)" Margin="12,0,0,0" Checked="ExampleToggled" Unchecked="ExampleToggled"/>
                 </WrapPanel>
                 <UniformGrid Columns="4" Margin="0,16,0,6" x:Name="Cards"/>
+                <TextBlock Text="COVERAGE" Style="{StaticResource H}"/>
+                <StackPanel x:Name="DashCoverage" Orientation="Horizontal"/>
                 <TextBlock Text="WHAT CHANGED SINCE THE LAST RUN" Style="{StaticResource H}"/>
                 <DataGrid x:Name="EventsGrid" Height="170" Margin="0,0,0,6">
                     <DataGrid.Columns>
@@ -136,7 +138,7 @@
             </StackPanel></ScrollViewer></TabItem>
 
             <!-- 3 Feeds (was 2 Collection) -->
-            <TabItem Tag="Feeds (CTI stage 2, Collection). Pillars 1 to 5 (exploitation evidence, prediction, adversary use, source reliability, freshness). Public feeds only: NVD, CISA KEV, FIRST EPSS, MITRE ATT&amp;CK and D3FEND, and the CTID mappings. Nothing about your estate leaves the machine. Settings lists the advisory sources and what each feed is."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
+            <TabItem Tag="Feeds (CTI stage 2, Collection). Pillars 1 to 5 (exploitation evidence, prediction, adversary use, source reliability, freshness). Public feeds only: NVD, CISA KEV, FIRST EPSS, MITRE ATT&amp;CK and D3FEND, and the CTID mappings. Nothing about your estate leaves the machine. Integrations lists the advisory sources and the connectors."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,10"><TextBlock Text="Feeds" FontSize="26" FontWeight="SemiBold"/><local:HelpButton Title="Feeds" Text="Do this: download the public feeds (Sync feeds now), or choose a cve.db you already have. To try the app fast, sync from a recent date."/></StackPanel>
                 <DataGrid x:Name="FeedGrid" Height="200">
                     <DataGrid.Columns><DataGridTextColumn Header="FEED" Binding="{Binding Item1}" Width="200"/><DataGridTextColumn Header="LAST PULLED" Binding="{Binding Item2}" Width="220"/><DataGridTextColumn Header="STATUS" Binding="{Binding Item3}" Width="*"/></DataGrid.Columns></DataGrid>
@@ -153,7 +155,7 @@
                 <DockPanel Margin="0,6,0,6"><Button x:Name="CancelSyncBtn" DockPanel.Dock="Right" Content="Cancel sync" IsEnabled="False" Click="CancelSync" Margin="0" ToolTip="Stops after the current download. What is already saved stays in the database."/>
                     <TextBlock x:Name="SyncStatus" VerticalAlignment="Center" FontFamily="{StaticResource Mono}" FontSize="12" Text="Idle. Nothing is downloaded until you press a sync button."/></DockPanel>
                 <TextBox x:Name="SyncLog" Height="230" IsReadOnly="True" FontFamily="{StaticResource Mono}" FontSize="12" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap"/>
-                <local:HelpButton Title="Sync order" HorizontalAlignment="Left" Margin="0,8,0,0" Text="Order: KEV, EPSS, ATT&amp;CK, CTID mappings, D3FEND, then NVD (the long one). A free NVD API key makes it several times faster: add it on the Settings page."/>
+                <local:HelpButton Title="Sync order" HorizontalAlignment="Left" Margin="0,8,0,0" Text="Order: KEV, EPSS, ATT&amp;CK, CTID mappings, D3FEND, then NVD (the long one). A free NVD API key makes it several times faster: add it on the Integrations page."/>
             </StackPanel></ScrollViewer></TabItem>
 
             <!-- 4 Estate (was 3 Processing): assets, services, links, controls -->
@@ -301,17 +303,12 @@
             </StackPanel></ScrollViewer></TabItem>
 
             <!-- 11 Settings (toolbar icon) -->
-            <TabItem Tag="Settings. Import your files, store API keys in Windows Credential Manager, open the data folder, check for a newer version."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel MaxWidth="980" HorizontalAlignment="Left">
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,10"><TextBlock Text="Settings" FontSize="26" FontWeight="SemiBold"/><local:HelpButton Title="Settings" Text="Bring your own files into Stenwatch, store API keys, and check for a newer version. Files are copied into the data folder; edits made there in any editor are picked up when you return to this window."/></StackPanel>
-                <StackPanel Orientation="Horizontal"><TextBlock Text="INTELLIGENCE SOURCES" Style="{StaticResource H}"/>
-                    <local:HelpButton x:Name="SourcesHelp" Title="Sources" Text="Advisory feeds Morning triage reads (Feeds). Add any RSS or Atom feed, for example your national CERT.&#10;Grade A-F: how much its word counts. An 'actively exploited' claim from grade A or B means Act; from C to F it means Attend.&#10;TLP: CLEAR may go to a cloud LLM, AMBER only to a model on this machine (llm.txt), RED never to any LLM.&#10;CVE posts only: skip items that name no CVE (vendor blogs)."/></StackPanel>
-                <StackPanel x:Name="SourcesPanel"/>
+            <TabItem Tag="Settings. Import your files and context CSVs, open the data folder, check for a newer version. Intelligence sources and API keys are on Integrations."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel MaxWidth="980" HorizontalAlignment="Left">
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10"><TextBlock Text="Settings" FontSize="26" FontWeight="SemiBold"/><local:HelpButton Title="Settings" Text="Bring your own files into Stenwatch and check for a newer version. Sources and API keys are on Integrations. Files are copied into the data folder; edits made there in any editor are picked up when you return to this window."/></StackPanel>
                 <TextBlock Text="YOUR FILES" Style="{StaticResource H}"/>
                 <StackPanel x:Name="FilesPanel"/>
                 <TextBlock Text="CONTEXT CSV (imported into the database)" Style="{StaticResource H}"/>
                 <StackPanel x:Name="CtxPanel"/>
-                <TextBlock Text="API KEYS (stored in Windows Credential Manager)" Style="{StaticResource H}"/>
-                <StackPanel x:Name="KeysPanel"/>
                 <TextBlock Text="DATA FOLDER AND UPDATES" Style="{StaticResource H}"/>
                 <WrapPanel><Button Content="Check for updates" Click="CheckUpdates"/><Button Content="Open data folder" Click="OpenDataFolder" ToolTip="Where profile.yaml, the asset lists, cve.db and the reports live"/><Button x:Name="UpdateLink" Content="Open download page" Visibility="Collapsed" Click="OpenUpdate"/><Button Content="Reload files" Click="ReloadFiles"/></WrapPanel>
                 <TextBlock x:Name="UpdateText" Style="{StaticResource Muted}" Margin="0,8,0,24"/>
@@ -329,7 +326,7 @@
                     <CheckBox x:Name="TriFeeds" Content="Feeds" IsChecked="True" VerticalAlignment="Center" Margin="8,0" Foreground="{DynamicResource Fg}"/>
                     <CheckBox x:Name="TriLlm" Content="LLM" VerticalAlignment="Center" Margin="8,0" Foreground="{DynamicResource Fg}"/>
                     <Button x:Name="TriRunBtn" Style="{StaticResource Primary}" Content="Run triage" Click="TriageRun"/>
-                    <local:HelpButton Title="Buttons" Text="Export: choose the Defender vulnerabilities export (.xlsx or .csv).&#10;Folder: pick the folder your exports land in; the newest export-tvm file is used each morning.&#10;Advisory: add a saved advisory email (.txt or .eml), English or Finnish. It is kept for later runs.&#10;Feeds: fetch every enabled source (Settings, Intelligence sources: NCSC-FI, CERT-EU, CISA, Microsoft, Chrome, or your own).&#10;LLM: read advisories and write the note to IT (OpenRouter key on Settings, or a local model). Only public advisory text is sent."/>
+                    <local:HelpButton Title="Buttons" Text="Export: choose the Defender vulnerabilities export (.xlsx or .csv).&#10;Folder: pick the folder your exports land in; the newest export-tvm file is used each morning.&#10;Advisory: add a saved advisory email (.txt or .eml), English or Finnish. It is kept for later runs.&#10;Feeds: fetch every enabled source (Integrations, Intelligence sources: NCSC-FI, CERT-EU, CISA, Microsoft, Chrome, or your own).&#10;LLM: read advisories and write the note to IT (OpenRouter key on Integrations, or a local model). Only public advisory text is sent."/>
                 </WrapPanel>
                 <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,10,0,8">
                     <ProgressBar x:Name="TriBusy" IsIndeterminate="True" Width="160" Height="6" Margin="0,0,12,0" VerticalAlignment="Center" Visibility="Collapsed" Foreground="{DynamicResource Accent}" Background="{DynamicResource Line}" BorderThickness="0" AutomationProperties.Name="Triage running"/>
@@ -393,6 +390,11 @@
             <TabItem Tag="Integrations. Everything that goes in or out: file imports, API connections, the ticket webhook, the intelligence sources and API keys, and the schedule."><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
                 <TextBlock Text="Integrations" FontSize="26" FontWeight="SemiBold" Margin="0,0,0,10"/>
                 <StackPanel x:Name="IntegrationsHost"/>
+                <StackPanel Orientation="Horizontal"><TextBlock Text="INTELLIGENCE SOURCES" Style="{StaticResource H}"/>
+                    <local:HelpButton x:Name="SourcesHelp" Title="Sources" Text="Advisory feeds Morning triage reads (Feeds). Add any RSS or Atom feed, for example your national CERT.&#10;Grade A-F: how much its word counts. An 'actively exploited' claim from grade A or B means Act; from C to F it means Attend.&#10;TLP: CLEAR may go to a cloud LLM, AMBER only to a model on this machine (llm.txt), RED never to any LLM.&#10;CVE posts only: skip items that name no CVE (vendor blogs)."/></StackPanel>
+                <StackPanel x:Name="SourcesPanel"/>
+                <TextBlock Text="API KEYS (stored in Windows Credential Manager)" Style="{StaticResource H}"/>
+                <StackPanel x:Name="KeysPanel" Margin="0,0,0,24"/>
             </StackPanel></ScrollViewer></TabItem>
         </TabControl>
 

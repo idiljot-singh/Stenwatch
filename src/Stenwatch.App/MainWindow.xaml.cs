@@ -35,7 +35,7 @@ public partial class MainWindow : Window
         SetupPickLists();
         ServicesGrid.ItemsSource = services; AssetsGrid.ItemsSource = assetRows; LinksGrid.ItemsSource = links; ControlsGrid.ItemsSource = controls;
         data = AppPaths.Data();
-        ShowArea(0); Go(0); // the Guide first, with the Home pages in the rail
+        ShowArea(0); Go(File.Exists(Path.Combine(data, "profile.yaml")) ? 1 : 13); // the Dashboard; Guided run on a first start with no profile
         ShowTheme();
         KeyDown += (_, e) => { if (e.Key == System.Windows.Input.Key.F1) ShowInfo(this, e); }; // F1: about this page
         ExampleBox.IsChecked = Environment.GetEnvironmentVariable("STENWATCH_EXAMPLE") == "1" || !File.Exists(Path.Combine(data, "profile.yaml"));
@@ -185,6 +185,7 @@ public partial class MainWindow : Window
     void UpdateGate()
     {
         if (GateBar == null || files == null) return;
+        BuildPage(Pages.SelectedIndex); // the pages drawn in code (MainWindow.Coverage.cs) follow every page change and rank
         if (!NextStep.TryGetValue(Pages.SelectedIndex, out var next)) { GateBar.Visibility = Visibility.Collapsed; return; }
         var checks = Checks(Pages.SelectedIndex); var ok = checks.All(c => c.Ok);
         GateBar.Visibility = Visibility.Visible;
