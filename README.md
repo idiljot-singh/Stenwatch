@@ -11,7 +11,7 @@ From every CVE in the world to the few that matter to *your* organisation, with 
 ![STIX 2.1](https://img.shields.io/badge/STIX-2.1-5aa9ff?labelColor=0a101b)
 ![MITRE ATT&CK](https://img.shields.io/badge/MITRE-ATT%26CK-ff4d5e?labelColor=0a101b)
 
-**[Get it from the Microsoft Store →](https://apps.microsoft.com/detail/9PBKG30523KJ)** · **[Installer (0.2.0 beta) →](https://github.com/idiljot-singh/Stenwatch/releases/tag/v0.2.0-beta)** · **[Live page and films →](https://idiljot-singh.github.io/Stenwatch/)**
+**[Get it from the Microsoft Store →](https://apps.microsoft.com/detail/9PBKG30523KJ)** · **[Installer (0.7.0 beta) →](https://github.com/idiljot-singh/Stenwatch/releases/tag/v0.7.0-beta)** · **[Live page and films →](https://idiljot-singh.github.io/Stenwatch/)**
 
 </div>
 
@@ -52,7 +52,7 @@ An optional LLM (OpenRouter's free model, or a model on your own machine) reads 
 ## Install
 
 1. Get it from the [Microsoft Store](https://apps.microsoft.com/detail/9PBKG30523KJ). It is signed by Microsoft, installs without admin rights and updates itself. .NET is included.
-2. Or download `Stenwatch-Setup-0.2.0-beta.exe` from the [release page](https://github.com/idiljot-singh/Stenwatch/releases/tag/v0.2.0-beta). That installer is unsigned, so Windows shows a blue "unknown publisher" screen: choose **More info → Run anyway**, or ask IT to allow-list the file by its SHA-256 (in the release notes).
+2. Or download `Stenwatch-Setup-0.7.0-beta.exe` from the [release page](https://github.com/idiljot-singh/Stenwatch/releases/tag/v0.7.0-beta). That installer is unsigned, so Windows shows a blue "unknown publisher" screen: choose **More info → Run anyway**, or ask IT to allow-list the file by its SHA-256 (in the release notes).
 3. The toolbar has four areas: **Home** (Dashboard, Morning triage, Guided run), **Exposure** (Findings, Estate, Attack paths, Coverage), **Intelligence** (Threat profile, Feeds, Advisories, Knowledge graph) and **Response** (Remediation, Tickets, Reports, Effectiveness). Integrations, the Guide, the theme switch and Settings are icons at the right of the toolbar. Tick **Example Organisation** on the Dashboard to try every page with fictional data, or open Morning triage with your Defender export. Every **?** explains the thing next to it.
 
 Your files live in `%APPDATA%\Stenwatch` and survive updates. The Store updates the app for you; with the Setup installer use **Check for updates** in Settings, or run the newer Setup over the old one.
@@ -95,6 +95,7 @@ Either Stenwatch's own format (`name,cpe,version,criticality,internet_facing`, s
 | **Defend** | Every finding lists MITRE D3FEND countermeasures and ATT&CK mitigations |
 | **Suppliers** | Third-party CVEs weighted by data access and privileged access |
 | **Outputs for each audience** | Full report, findings report, brief, dashboard, CSV, STIX 2.1 for MISP, OpenCTI or Sentinel, ATT&CK Navigator layer |
+| **Several organisations** | For a service provider: an organisation switcher in the toolbar, each organisation in its own data folder with its own scheduled morning run |
 | **Private by design** | Runs on your machine; only public feeds are downloaded; secrets in Windows Credential Manager; outputs marked TLP:AMBER |
 
 ## Stenwatch and Microsoft Defender Vulnerability Management

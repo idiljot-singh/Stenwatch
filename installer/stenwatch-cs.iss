@@ -3,19 +3,19 @@
 [Setup]
 AppId={{6C2D9B6E-3F0A-4B7D-9A51-2E8C1D7F4A90}
 AppName=Stenwatch 0.2
-AppVersion=0.2.0-beta
-AppVerName=Stenwatch 0.2.0 beta
+AppVersion=0.7.0-beta
+AppVerName=Stenwatch 0.7.0 beta
 AppPublisher=Diljot Singh Johal
 AppPublisherURL=https://github.com/idiljot-singh/Stenwatch
 AppCopyright=Copyright (c) 2026 Diljot Singh Johal
-VersionInfoVersion=0.2.0.0
+VersionInfoVersion=0.7.0.0
 DefaultDirName={autopf}\Stenwatch2
 DefaultGroupName=Stenwatch
 PrivilegesRequired=lowest
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 OutputDir=Output
-OutputBaseFilename=Stenwatch-Setup-0.2.0-beta
+OutputBaseFilename=Stenwatch-Setup-0.7.0-beta
 SetupIconFile=..\src\Stenwatch.App\stenwatch.ico
 UninstallDisplayIcon={app}\Stenwatch.exe
 UninstallDisplayName=Stenwatch 0.2

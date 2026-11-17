@@ -104,20 +104,26 @@ public partial class MainWindow : Window
     void ExampleToggled(object s, RoutedEventArgs e) { if (!loading) { last = null; Configure(); } }
 
     // ---- MSP mode: organisation switcher in the toolbar ------------------------------------------------------------------------
-    const string DefaultOrg = "Default";
+    const string DefaultOrg = "Default", NewOrg = "New organisation...";
     void FillOrgs()
     {
         var was = loading; loading = true;
-        OrgPick.ItemsSource = AppPaths.Orgs().Prepend(DefaultOrg).ToList();
+        OrgPick.ItemsSource = AppPaths.Orgs().Prepend(DefaultOrg).Append(NewOrg).ToList();
         OrgPick.SelectedItem = AppPaths.Org() is { Length: > 0 } o ? o : DefaultOrg;
         loading = was;
     }
-    void OrgPicked(object s, SelectionChangedEventArgs e) { if (!loading && OrgPick.SelectedItem is string o) OpenOrg(o); }
+    void OrgPicked(object s, SelectionChangedEventArgs e)
+    {
+        if (loading || OrgPick.SelectedItem is not string o) return;
+        if (o == NewOrg) { OrgNew.Visibility = Visibility.Visible; OrgNew.Focus(); Dispatcher.BeginInvoke(FillOrgs); } // back to the open one until a name is entered
+        else OpenOrg(o);
+    }
     void OrgKey(object s, System.Windows.Input.KeyEventArgs e)
     {
+        if (e.Key == System.Windows.Input.Key.Escape) { OrgNew.Clear(); OrgNew.Visibility = Visibility.Collapsed; return; }
         if (e.Key != System.Windows.Input.Key.Enter) return;
-        var o = OrgPick.Text.Trim();
-        if (o == DefaultOrg || AppPaths.ValidOrg(o)) OpenOrg(o);
+        var o = OrgNew.Text.Trim();
+        if (o != DefaultOrg && o != NewOrg && AppPaths.ValidOrg(o)) OpenOrg(o);
         else Status("Organisation name: letters, digits, space, dot, dash or underscore, up to 63 characters");
     }
     /// <summary>Open another organisation in a fresh window, so nothing of this one's (triage, findings, picks) carries over.</summary>

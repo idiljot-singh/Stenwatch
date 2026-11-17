@@ -4,7 +4,7 @@
 # -TestSign also signs it with a throwaway self-signed certificate, to install and try it on this machine first
 # (installing needs that certificate in Local Machine > Trusted People, which asks for admin once).
 param([Parameter(Mandatory)][string]$Name, [Parameter(Mandatory)][string]$Publisher, [Parameter(Mandatory)][string]$PublisherDisplayName,
-      [string]$Version = "0.2.0.0", [switch]$TestSign)
+      [string]$Version = "0.7.0.0", [switch]$TestSign)
 $ErrorActionPreference = "Stop"
 Set-Location (Split-Path $PSScriptRoot)
 $kit = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin\*\x64\makeappx.exe" -ErrorAction SilentlyContinue | Sort-Object FullName | Select-Object -Last 1
