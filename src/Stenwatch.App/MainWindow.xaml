@@ -11,6 +11,9 @@
         <!-- toolbar: wordmark, the four areas, icon actions (Integrations, Guide, Theme, Settings), TLP -->
         <Border Grid.ColumnSpan="2" Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1"><DockPanel Margin="14,6">
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
+                <!-- MSP mode: the open organisation; type a new name and press Enter to add one -->
+                <ComboBox x:Name="OrgPick" IsEditable="True" Width="170" Margin="0,0,10,0" VerticalAlignment="Center" SelectionChanged="OrgPicked" KeyDown="OrgKey"
+                          ToolTip="Organisation: pick one, or type a new name and press Enter. Each has its own data folder." AutomationProperties.Name="Organisation"/>
                 <Button Style="{StaticResource IconButton}" Content="&#xE71B;" Click="GoIntegrations" ToolTip="Integrations" AutomationProperties.Name="Integrations"/>
                 <Button Style="{StaticResource IconButton}" Content="&#xE897;" Click="GoGuide" ToolTip="Guide (F1: about this page)" AutomationProperties.Name="Guide"/>
                 <Button x:Name="ThemeBtn" Style="{StaticResource IconButton}" Content="&#xE706;" Click="ThemeClick"/>

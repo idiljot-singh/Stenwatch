@@ -9,7 +9,7 @@ namespace Stenwatch.App;
 public static class Theme
 {
     public static readonly string[] Modes = { "windows", "dark", "light" };
-    static string File_ => Path.Combine(Core.AppPaths.Data(), "theme.txt");
+    static string File_ => Path.Combine(Core.AppPaths.DataRoot(), "theme.txt"); // one theme for the install, not per organisation
 
     public static string Mode { get; private set; } = "windows";
     /// <summary>The theme in use: "dark" or "light".</summary>

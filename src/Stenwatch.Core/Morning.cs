@@ -100,14 +100,18 @@ public static class Morning
             return new(null, "Not available in the Store edition yet: the Store program path changes with every update. Use the Setup edition for a scheduled run, or run Morning triage by hand.");
         if (exe is null && !File.Exists(exe = Path.Combine(AppContext.BaseDirectory, "stenwatch-cli.exe")))
             return new(null, "stenwatch-cli.exe was not found next to the program: install the Setup edition, or build src/Stenwatch.Cli.");
-        data ??= Environment.GetEnvironmentVariable("STENWATCH_DATA") is { Length: > 0 } d ? d : null;
+        data ??= AppPaths.Org() != "" ? AppPaths.Data() // MSP mode: pin the open organisation's folder, org.txt may change later
+            : Environment.GetEnvironmentVariable("STENWATCH_DATA") is { Length: > 0 } d ? d : null;
         var tr = $"\\\"{exe}\\\" --morning" + (data is null ? "" : $" --data \\\"{data.TrimEnd('\\')}\\\"");
-        var cmd = $"schtasks /create /f /tn \"{TaskName}\" /sc daily /st {at.ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture)} /tr \"{tr}\"";
+        var cmd = $"schtasks /create /f /tn \"{Task()}\" /sc daily /st {at.ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture)} /tr \"{tr}\"";
         return tr.Replace("\\\"", "\"").Length > 262
             ? new(null, "The program path is too long for Task Scheduler (262 characters for the command). Install to a shorter folder.")
             : new(cmd, "Run it once in a command prompt as yourself. It runs while you are signed in; set the watched folder first (--morning FOLDER).");
     }
 
     /// <summary>The command that removes the daily run. Not run here.</summary>
-    public static string UnscheduleCommand() => $"schtasks /delete /f /tn \"{TaskName}\"";
+    public static string UnscheduleCommand() => $"schtasks /delete /f /tn \"{Task()}\"";
+
+    /// <summary>One scheduled task per organisation: the default one keeps the plain name.</summary>
+    static string Task() => AppPaths.Org() is { Length: > 0 } o ? $"{TaskName} - {o}" : TaskName;
 }

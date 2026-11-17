@@ -33,7 +33,7 @@ public static class AppPaths
 
     /// <summary>Folder for the organisation's own files: STENWATCH_DATA if set, else data/ in a checkout, else %APPDATA%\Stenwatch.
     /// From the Store: the package's own LocalState folder, a real path (MSIX would otherwise redirect %APPDATA% where Explorer cannot see it).</summary>
-    public static string Data()
+    public static string DataRoot()
     {
         var env = Environment.GetEnvironmentVariable("STENWATCH_DATA");
         var dir = !string.IsNullOrEmpty(env) ? env
@@ -43,5 +43,43 @@ public static class AppPaths
                 : Path.Combine(Repo()!, "data");
         Directory.CreateDirectory(dir);
         return dir;
+    }
+
+    // ---- MSP mode: several organisations in one install ----------------------------------------------------------------------
+    // The default organisation keeps the data root itself (nothing moves for a single-organisation install);
+    // every other one gets DataRoot()/orgs/<name>. The open one is named in DataRoot()/org.txt, or STENWATCH_ORG.
+
+    /// <summary>The open organisation's folder.</summary>
+    public static string Data()
+    {
+        var dir = Org() is { Length: > 0 } o ? Path.Combine(DataRoot(), "orgs", o) : DataRoot();
+        Directory.CreateDirectory(dir);
+        return dir;
+    }
+
+    /// <summary>The open organisation: STENWATCH_ORG, else org.txt; "" = the default one. An invalid name falls back to the default.</summary>
+    public static string Org()
+    {
+        var f = Path.Combine(DataRoot(), "org.txt");
+        var o = Environment.GetEnvironmentVariable("STENWATCH_ORG") ?? (File.Exists(f) ? File.ReadAllText(f).Trim() : "");
+        return ValidOrg(o) ? o : "";
+    }
+
+    /// <summary>The other organisations, by folder name.</summary>
+    public static List<string> Orgs()
+    {
+        var d = Path.Combine(DataRoot(), "orgs");
+        return Directory.Exists(d) ? Directory.GetDirectories(d).Select(Path.GetFileName).Where(n => ValidOrg(n!)).Order().ToList()! : new();
+    }
+
+    /// <summary>A name that is safe as one folder name: letters, digits, space, dot, dash, underscore; no path parts, no trailing dot or space.</summary>
+    public static bool ValidOrg(string s) =>
+        System.Text.RegularExpressions.Regex.IsMatch(s, @"^\w[\w .-]{0,62}$") && !s.EndsWith('.') && !s.EndsWith(' ');
+
+    /// <summary>Open another organisation ("" = the default). Its folder is created on first use.</summary>
+    public static void SetOrg(string o)
+    {
+        if (o != "" && !ValidOrg(o)) throw new ArgumentException($"Not a valid organisation name: {o}");
+        File.WriteAllText(Path.Combine(DataRoot(), "org.txt"), o);
     }
 }

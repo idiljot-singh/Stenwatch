@@ -35,6 +35,7 @@ public partial class MainWindow : Window
         SetupPickLists();
         ServicesGrid.ItemsSource = services; AssetsGrid.ItemsSource = assetRows; LinksGrid.ItemsSource = links; ControlsGrid.ItemsSource = controls;
         data = AppPaths.Data();
+        FillOrgs();
         ShowArea(0); Go(File.Exists(Path.Combine(data, "profile.yaml")) ? 1 : 13); // the Dashboard; Guided run on a first start with no profile
         ShowTheme();
         KeyDown += (_, e) => { if (e.Key == System.Windows.Input.Key.F1) ShowInfo(this, e); }; // F1: about this page
@@ -101,6 +102,33 @@ public partial class MainWindow : Window
     void AddLog(string s) => Dispatcher.Invoke(() => { Log.AppendText(s + "\n"); Log.ScrollToEnd(); });
 
     void ExampleToggled(object s, RoutedEventArgs e) { if (!loading) { last = null; Configure(); } }
+
+    // ---- MSP mode: organisation switcher in the toolbar ------------------------------------------------------------------------
+    const string DefaultOrg = "Default";
+    void FillOrgs()
+    {
+        var was = loading; loading = true;
+        OrgPick.ItemsSource = AppPaths.Orgs().Prepend(DefaultOrg).ToList();
+        OrgPick.SelectedItem = AppPaths.Org() is { Length: > 0 } o ? o : DefaultOrg;
+        loading = was;
+    }
+    void OrgPicked(object s, SelectionChangedEventArgs e) { if (!loading && OrgPick.SelectedItem is string o) OpenOrg(o); }
+    void OrgKey(object s, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key != System.Windows.Input.Key.Enter) return;
+        var o = OrgPick.Text.Trim();
+        if (o == DefaultOrg || AppPaths.ValidOrg(o)) OpenOrg(o);
+        else Status("Organisation name: letters, digits, space, dot, dash or underscore, up to 63 characters");
+    }
+    /// <summary>Open another organisation in a fresh window, so nothing of this one's (triage, findings, picks) carries over.</summary>
+    void OpenOrg(string o)
+    {
+        var org = o == DefaultOrg ? "" : o;
+        if (org == AppPaths.Org()) return;
+        AppPaths.SetOrg(org);
+        var w = new MainWindow { WindowState = WindowState, Left = Left, Top = Top, Width = Width, Height = Height, WindowStartupLocation = WindowStartupLocation.Manual };
+        Application.Current.MainWindow = w; w.Show(); Close();
+    }
     void NavChanged(object s, SelectionChangedEventArgs e) { if (Pages != null && Nav.SelectedItem is ListBoxItem { Tag: string t }) Pages.SelectedIndex = int.Parse(t); UpdateGate(); }
 
     /// <summary>Open a page by its index in Pages; the rail item with that Tag is selected, none for pages outside the rail (Guide, Settings, Integrations).</summary>

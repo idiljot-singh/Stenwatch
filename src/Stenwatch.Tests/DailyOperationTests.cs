@@ -73,6 +73,14 @@ public class DailyOperationTests : IDisposable
         Assert.Null(Morning.ScheduleCommand(new TimeOnly(7, 0), @"C:\" + new string('x', 250) + @"\stenwatch-cli.exe", packaged: false).Command); // over 262 characters
     }
 
+    [Fact]
+    public void OrgNames_AreOneSafeFolderName()
+    {
+        foreach (var ok in new[] { "Contoso", "Fabrikam Oy", "client-7_a.b" }) Assert.True(AppPaths.ValidOrg(ok), ok);
+        foreach (var bad in new[] { "", "..", "../x", @"a\b", "a/b", "C:", "x.", "x ", " x", new string('a', 64) }) Assert.False(AppPaths.ValidOrg(bad), bad);
+        Assert.Throws<ArgumentException>(() => AppPaths.SetOrg(".."));
+    }
+
     static long OneTask(SqliteConnection db)
     {
         Remediation.EnsureSchema(db);
